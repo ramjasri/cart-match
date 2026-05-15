@@ -4,6 +4,16 @@
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText } from "lucide-react";
 import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
+
+// Safe hook — returns sensible defaults if Clerk isn't configured
+function useAuth() {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useUser();
+  } catch {
+    return { isSignedIn: false, isLoaded: false };
+  }
+}
 import { generatePdf } from "./utils/generatePdf.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 
@@ -981,7 +991,7 @@ export default function App() {
   const [ran, setRan] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [showLab, setShowLab] = useState(false);
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded } = useAuth();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
   const tog = k => setPt(p => ({ ...p, [k]: !p[k] }));
