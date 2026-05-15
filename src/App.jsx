@@ -30,10 +30,11 @@ const PRODUCTS = [
     targetMarker: "CD19",
     mmReqs: false,
     nctSearch: "axicabtagene+ciloleucel",
+    organThresholds: { altMax: 200, astMax: 200, creatMax: 1.8, crclMin: 30, bilMax: 2.0, lvefMin: 50, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 5× ULN",
-      "Creatinine ≤ 1.5× ULN or CrCl ≥ 30 mL/min",
-      "Bilirubin ≤ 2× ULN",
+      "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+      "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL) or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
       "LVEF ≥ 50% (echo or MUGA)",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -64,10 +65,11 @@ const PRODUCTS = [
     targetMarker: "CD19",
     mmReqs: false,
     nctSearch: "tisagenlecleucel",
+    organThresholds: { altMax: 200, astMax: 200, creatMax: 1.8, crclMin: 30, bilMax: 2.0, lvefMin: 45, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 5× ULN",
-      "Creatinine ≤ 1.5× ULN",
-      "Bilirubin ≤ 2× ULN",
+      "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+      "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL)",
+      "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
       "LVEF ≥ 45% (LBCL); no restriction (ALL)",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -98,10 +100,11 @@ const PRODUCTS = [
     targetMarker: "CD19",
     mmReqs: false,
     nctSearch: "lisocabtagene+maraleucel",
+    organThresholds: { altMax: 200, astMax: 200, creatMax: 1.8, crclMin: 30, bilMax: 2.0, lvefMin: 40, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 5× ULN",
-      "Creatinine ≤ 1.5× ULN or CrCl ≥ 30 mL/min",
-      "Bilirubin ≤ 2× ULN (≤ 3× if Gilbert's)",
+      "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+      "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL) or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL; ≤ 3× if Gilbert's)",
       "LVEF ≥ 40%",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -130,10 +133,11 @@ const PRODUCTS = [
     targetMarker: "CD19",
     mmReqs: false,
     nctSearch: "brexucabtagene+autoleucel",
+    organThresholds: { altMax: 200, astMax: 200, creatMax: 1.8, crclMin: 30, bilMax: 2.0, lvefMin: 50, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 5× ULN",
-      "Creatinine ≤ 1.5× ULN",
-      "Bilirubin ≤ 2× ULN",
+      "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+      "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL)",
+      "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
       "LVEF ≥ 50%",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -161,10 +165,11 @@ const PRODUCTS = [
     targetMarker: "BCMA",
     mmReqs: true,
     nctSearch: "idecabtagene+vicleucel",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 2.4, crclMin: 40, bilMax: 1.5, lvefMin: 45, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 3× ULN",
-      "Creatinine ≤ 2× ULN or CrCl ≥ 40 mL/min",
-      "Bilirubin ≤ 1.5× ULN",
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 2× ULN (≤ 2.4 mg/dL) or CrCl ≥ 40 mL/min",
+      "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
       "LVEF ≥ 45%",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -194,10 +199,11 @@ const PRODUCTS = [
     targetMarker: "BCMA",
     mmReqs: true,
     nctSearch: "ciltacabtagene+autoleucel",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 2.4, crclMin: 30, bilMax: 1.5, lvefMin: 45, spo2Min: 92 },
     organ: [
-      "ALT / AST ≤ 3× ULN",
-      "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
-      "Bilirubin ≤ 1.5× ULN",
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 2× ULN (≤ 2.4 mg/dL) or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
       "LVEF ≥ 45%",
       "SpO₂ ≥ 92% on room air",
     ],
@@ -267,6 +273,46 @@ function score(product, pt) {
     if (!isNaN(months) && months < 6) blocks.push(`Allo-SCT only ${months} months ago (minimum 6 months required)`);
     else if (!isNaN(months)) warnings.push("Prior allo-SCT — screen carefully for active GVHD");
     else warnings.push("Prior allo-SCT reported — confirm timing and GVHD status");
+  }
+
+  // Organ function — only evaluate if values are entered
+  const t = product.organThresholds;
+  const lab = (key) => pt[key] !== "" ? parseFloat(pt[key]) : null;
+
+  const alt  = lab("labAlt"),  ast  = lab("labAst");
+  const creat = lab("labCreat"), crcl = lab("labCrcl");
+  const bil  = lab("labBil"),  lvef = lab("labLvef"), spo2 = lab("labSpo2");
+
+  if (alt !== null) {
+    if (alt > t.altMax) blocks.push(`ALT ${alt} U/L exceeds limit of ${t.altMax} U/L for this product`);
+    else passes.push(`ALT ${alt} U/L: within range (≤ ${t.altMax} U/L)`);
+  }
+  if (ast !== null) {
+    if (ast > t.astMax) blocks.push(`AST ${ast} U/L exceeds limit of ${t.astMax} U/L for this product`);
+    else passes.push(`AST ${ast} U/L: within range (≤ ${t.astMax} U/L)`);
+  }
+  if (creat !== null || crcl !== null) {
+    const creatOk  = creat !== null && creat <= t.creatMax;
+    const crclOk   = crcl  !== null && crcl  >= t.crclMin;
+    if (creatOk || crclOk) {
+      const detail = creatOk ? `Creatinine ${creat} mg/dL` : `CrCl ${crcl} mL/min`;
+      passes.push(`Renal function: ${detail} meets threshold`);
+    } else {
+      const detail = creat !== null ? `Creatinine ${creat} mg/dL (limit ${t.creatMax})` : `CrCl ${crcl} mL/min (minimum ${t.crclMin})`;
+      blocks.push(`Renal function: ${detail} — does not meet threshold`);
+    }
+  }
+  if (bil !== null) {
+    if (bil > t.bilMax) blocks.push(`Bilirubin ${bil} mg/dL exceeds limit of ${t.bilMax} mg/dL for this product`);
+    else passes.push(`Bilirubin ${bil} mg/dL: within range (≤ ${t.bilMax} mg/dL)`);
+  }
+  if (lvef !== null) {
+    if (lvef < t.lvefMin) blocks.push(`LVEF ${lvef}% is below minimum of ${t.lvefMin}% for this product`);
+    else passes.push(`LVEF ${lvef}%: meets threshold (≥ ${t.lvefMin}%)`);
+  }
+  if (spo2 !== null) {
+    if (spo2 < t.spo2Min) blocks.push(`SpO₂ ${spo2}% is below minimum of ${t.spo2Min}%`);
+    else passes.push(`SpO₂ ${spo2}%: meets threshold (≥ ${t.spo2Min}%)`);
   }
 
   return {
@@ -615,6 +661,44 @@ const CSS = `
   }
   .modal-success-text { font-size: 13px; color: #6b645a; line-height: 1.6; }
 
+  /* LAB VALUES SECTION */
+  .lab-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 8px 0; margin-top: 4px;
+  }
+  .lab-toggle-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+  }
+  .lab-toggle-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    color: #98908380; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .lab-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
+    margin-top: 10px;
+  }
+  .lab-field {}
+  .lab-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #6b645a;
+    display: block; margin-bottom: 4px;
+  }
+  .lab-unit {
+    font-size: 8px; color: #98908380; margin-left: 3px;
+  }
+  .lab-inp {
+    width: 100%; padding: 7px 10px; background: #f4f1ea;
+    border: 1px solid #1a181535; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: #1a1815; border-radius: 0; box-sizing: border-box;
+  }
+  .lab-inp:focus { outline: none; border-color: #1a1815; }
+  .lab-inp::placeholder { color: #98908380; }
+  .lab-note {
+    font-family: 'Inter Tight', sans-serif; font-size: 11px; color: #6b645a;
+    margin-top: 8px; line-height: 1.5; font-style: italic;
+  }
+
   /* PDF EXPORT BUTTON */
   .export-bar {
     max-width: 1200px; margin: 0 auto; padding: 0 40px 24px;
@@ -803,6 +887,9 @@ const INIT = {
   activeCns: false, activeAutoimmune: false,
   alloSct: false, alloSctMonths: "",
   priorImid: false, priorPi: false, priorAntiCd38: false,
+  // Lab values — all optional
+  labAlt: "", labAst: "", labCreat: "", labCrcl: "",
+  labBil: "", labLvef: "", labSpo2: "",
 };
 
 // ── Waitlist modal ─────────────────────────────────────────────────────────
@@ -893,6 +980,7 @@ export default function App() {
   const [results, setResults] = useState(null);
   const [ran, setRan] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
+  const [showLab, setShowLab] = useState(false);
   const { isSignedIn, isLoaded } = useUser();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
@@ -1038,6 +1126,59 @@ export default function App() {
                 label="Prior PI (bortezomib / carfilzomib)" />
               <Checkbox checked={pt.priorAntiCd38} onChange={() => tog("priorAntiCd38")}
                 label="Prior anti-CD38 (daratumumab)" />
+            </>
+          )}
+
+          {/* LAB VALUES */}
+          <div className="sec-head" style={{ cursor: "pointer", borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}
+            onClick={() => setShowLab(x => !x)}>
+            <div className="lab-toggle">
+              <span className="lab-toggle-label">Lab values (optional)</span>
+              <span className="lab-toggle-hint">{showLab ? "▲ hide" : "▼ enter"}</span>
+            </div>
+          </div>
+          {showLab && (
+            <>
+              <div className="lab-grid">
+                <div className="lab-field">
+                  <label className="lab-lbl">ALT <span className="lab-unit">U/L</span></label>
+                  <input className="lab-inp" type="number" min="0" placeholder="e.g. 32"
+                    value={pt.labAlt} onChange={e => set("labAlt", e.target.value)} />
+                </div>
+                <div className="lab-field">
+                  <label className="lab-lbl">AST <span className="lab-unit">U/L</span></label>
+                  <input className="lab-inp" type="number" min="0" placeholder="e.g. 28"
+                    value={pt.labAst} onChange={e => set("labAst", e.target.value)} />
+                </div>
+                <div className="lab-field">
+                  <label className="lab-lbl">Creatinine <span className="lab-unit">mg/dL</span></label>
+                  <input className="lab-inp" type="number" min="0" step="0.1" placeholder="e.g. 1.1"
+                    value={pt.labCreat} onChange={e => set("labCreat", e.target.value)} />
+                </div>
+                <div className="lab-field">
+                  <label className="lab-lbl">CrCl <span className="lab-unit">mL/min</span></label>
+                  <input className="lab-inp" type="number" min="0" placeholder="e.g. 65"
+                    value={pt.labCrcl} onChange={e => set("labCrcl", e.target.value)} />
+                </div>
+                <div className="lab-field">
+                  <label className="lab-lbl">Bilirubin <span className="lab-unit">mg/dL</span></label>
+                  <input className="lab-inp" type="number" min="0" step="0.1" placeholder="e.g. 0.8"
+                    value={pt.labBil} onChange={e => set("labBil", e.target.value)} />
+                </div>
+                <div className="lab-field">
+                  <label className="lab-lbl">LVEF <span className="lab-unit">%</span></label>
+                  <input className="lab-inp" type="number" min="0" max="100" placeholder="e.g. 58"
+                    value={pt.labLvef} onChange={e => set("labLvef", e.target.value)} />
+                </div>
+                <div className="lab-field" style={{ gridColumn: "1 / -1" }}>
+                  <label className="lab-lbl">SpO₂ <span className="lab-unit">%</span></label>
+                  <input className="lab-inp" type="number" min="0" max="100" placeholder="e.g. 96"
+                    value={pt.labSpo2} onChange={e => set("labSpo2", e.target.value)} />
+                </div>
+              </div>
+              <p className="lab-note">
+                Enter any available values — the engine will auto-flag organ function criteria per product. Leave blank to skip.
+              </p>
             </>
           )}
 
