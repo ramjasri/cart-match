@@ -2,7 +2,10 @@
 // 6 FDA-approved products: Yescarta, Kymriah, Breyanzi, Tecartus, Abecma, Carvykti
 
 import { useState } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText } from "lucide-react";
+import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
+import { generatePdf } from "./utils/generatePdf.js";
+import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
 const FORMSPREE_URL = "https://formspree.io/f/xwvydwjb";
@@ -612,6 +615,40 @@ const CSS = `
   }
   .modal-success-text { font-size: 13px; color: #6b645a; line-height: 1.6; }
 
+  /* PDF EXPORT BUTTON */
+  .export-bar {
+    max-width: 1200px; margin: 0 auto; padding: 0 40px 24px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  }
+  @media (max-width: 860px) { .export-bar { padding: 0 20px 20px; } }
+  .export-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: #1a1815; color: #f4f1ea;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    border: none; cursor: pointer; transition: background 0.12s;
+  }
+  .export-btn:hover { background: #b54a2c; }
+  .export-btn.secondary {
+    background: transparent; color: #4c6b8c;
+    border: 1px solid #4c6b8c40;
+  }
+  .export-btn.secondary:hover { background: #4c6b8c0d; }
+  .export-signin-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; text-transform: uppercase; letter-spacing: 0.12em;
+  }
+
+  /* CLERK USER BUTTON AREA */
+  .hdr-auth { display: flex; align-items: center; gap: 12px; }
+  .hdr-signin-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    padding: 7px 16px; background: transparent; color: #f4f1ea;
+    border: 1px solid #f4f1ea40; cursor: pointer; transition: all 0.12s;
+  }
+  .hdr-signin-btn:hover { background: #f4f1ea15; }
+
   /* FOOTER */
   .footer {
     border-top: 1px solid #1a181820; padding: 20px 40px;
@@ -739,10 +776,7 @@ function ProductCard({ product, result }) {
             </div>
           </div>
 
-          <a href={trialsUrl} target="_blank" rel="noopener noreferrer" className="trial-link">
-            <ExternalLink size={11} />
-            Recruiting trials — ClinicalTrials.gov
-          </a>
+          <TrialsPanel genericName={product.generic} nctSearch={product.nctSearch} />
         </div>
       )}
     </div>
@@ -859,6 +893,7 @@ export default function App() {
   const [results, setResults] = useState(null);
   const [ran, setRan] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
   const tog = k => setPt(p => ({ ...p, [k]: !p[k] }));
@@ -902,7 +937,15 @@ export default function App() {
               <div className="hdr-badge-dot" />
               6 FDA-approved products
             </div>
-            <div className="hdr-badge">Free · No login required</div>
+            <div className="hdr-auth">
+              {isLoaded && (
+                isSignedIn
+                  ? <UserButton afterSignOutUrl="/" />
+                  : <SignInButton mode="modal">
+                      <button className="hdr-signin-btn">Sign in</button>
+                    </SignInButton>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -1026,6 +1069,31 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {/* PDF EXPORT BAR — shown after screening */}
+      {ran && (
+        <div className="export-bar">
+          {isSignedIn ? (
+            <button
+              className="export-btn"
+              onClick={() => generatePdf({ patient: pt, results, products: PRODUCTS })}
+            >
+              <Download size={13} />
+              Export Eligibility Report (PDF)
+            </button>
+          ) : (
+            <>
+              <span className="export-signin-hint">Sign in to export PDF report</span>
+              <SignInButton mode="modal">
+                <button className="export-btn secondary">
+                  <FileText size={13} />
+                  Sign in &amp; Export PDF
+                </button>
+              </SignInButton>
+            </>
+          )}
+        </div>
+      )}
 
       {/* CTA BANNER */}
       <div className="cta-banner">
