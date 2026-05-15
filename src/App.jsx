@@ -1,8 +1,8 @@
 // CAR-T Match — Standalone CAR-T & Cell Therapy Eligibility Screener
 // 6 FDA-approved products: Yescarta, Kymriah, Breyanzi, Tecartus, Abecma, Carvykti
 
-import { useState } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText, Link2, Check } from "lucide-react";
 import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 
 // Safe hook — returns sensible defaults if Clerk isn't configured
@@ -19,6 +19,19 @@ import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
 const FORMSPREE_URL = "https://formspree.io/f/xwvydwjb";
+
+// ── Case URL encoding ──────────────────────────────────────────────────────
+function encodeCase(pt) {
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(pt))));
+  } catch { return null; }
+}
+
+function decodeCase(str) {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(str))));
+  } catch { return null; }
+}
 
 // ── Product database ───────────────────────────────────────────────────────
 const PRODUCTS = [
@@ -743,6 +756,29 @@ const CSS = `
   }
   .hdr-signin-btn:hover { background: #f4f1ea15; }
 
+  /* SHARE BUTTON */
+  .share-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: transparent; color: #5a7a4a;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    border: 1px solid #5a7a4a50; cursor: pointer; transition: all 0.12s;
+  }
+  .share-btn:hover { background: #5a7a4a10; }
+  .share-btn.copied { color: #5a7a4a; border-color: #5a7a4a; background: #5a7a4a12; }
+
+  /* CASE LOADED BANNER */
+  .case-banner {
+    max-width: 1200px; margin: 0 auto; padding: 12px 40px 0;
+  }
+  .case-banner-inner {
+    background: #5a7a4a15; border: 1px solid #5a7a4a40;
+    padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #3a5a2a;
+  }
+  @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
+
   /* FOOTER */
   .footer {
     border-top: 1px solid #1a181820; padding: 20px 40px;
@@ -991,10 +1027,34 @@ export default function App() {
   const [ran, setRan] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [showLab, setShowLab] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [caseLoaded, setCaseLoaded] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
   const tog = k => setPt(p => ({ ...p, [k]: !p[k] }));
+
+  // ── Load case from URL hash on mount ──────────────────────────────────────
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith("#case=")) {
+      const decoded = decodeCase(hash.slice(6));
+      if (decoded) {
+        const merged = { ...INIT, ...decoded };
+        setPt(merged);
+        // Compute results immediately with the decoded state
+        const res = {};
+        PRODUCTS.forEach(p => { res[p.id] = score(p, merged); });
+        setResults(res);
+        setRan(true);
+        setCaseLoaded(true);
+        // Show lab section if any lab values were saved
+        if (Object.keys(merged).some(k => k.startsWith("lab") && merged[k] !== "")) {
+          setShowLab(true);
+        }
+      }
+    }
+  }, []);
 
   const isMM = pt.cancerType.toLowerCase().includes("myeloma");
   const canRun = pt.cancerType && pt.priorLines !== "" && pt.ecog !== "";
@@ -1004,6 +1064,24 @@ export default function App() {
     PRODUCTS.forEach(p => { res[p.id] = score(p, pt); });
     setResults(res);
     setRan(true);
+    setCaseLoaded(false);
+    // Write case to URL hash so it's shareable immediately
+    const encoded = encodeCase(pt);
+    if (encoded) window.history.replaceState(null, "", `#case=${encoded}`);
+  };
+
+  const copyShareLink = () => {
+    // Make sure hash is up to date
+    const encoded = encodeCase(pt);
+    if (encoded) window.history.replaceState(null, "", `#case=${encoded}`);
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    }).catch(() => {
+      // Fallback for browsers that block clipboard
+      prompt("Copy this link to share the case:", url);
+    });
   };
 
   const eligible = results ? Object.values(results).filter(r => r.eligible).length : 0;
@@ -1067,6 +1145,16 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      {/* CASE LOADED BANNER */}
+      {caseLoaded && (
+        <div className="case-banner">
+          <div className="case-banner-inner">
+            <Check size={12} />
+            Shared case loaded — review results below. Edit the form and re-screen to update.
+          </div>
+        </div>
+      )}
 
       {/* MAIN LAYOUT */}
       <div className="layout">
@@ -1224,6 +1312,15 @@ export default function App() {
       {/* PDF EXPORT BAR — shown after screening */}
       {ran && (
         <div className="export-bar">
+          {/* Share link button — always visible */}
+          <button
+            className={`share-btn${shareCopied ? " copied" : ""}`}
+            onClick={copyShareLink}
+          >
+            {shareCopied ? <Check size={13} /> : <Link2 size={13} />}
+            {shareCopied ? "Link copied!" : "Copy shareable link"}
+          </button>
+
           {isSignedIn ? (
             <button
               className="export-btn"
