@@ -2,7 +2,10 @@
 // 6 FDA-approved products: Yescarta, Kymriah, Breyanzi, Tecartus, Abecma, Carvykti
 
 import { useState } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X } from "lucide-react";
+
+// Replace with your Formspree endpoint after signing up at formspree.io
+const FORMSPREE_URL = "https://formspree.io/f/xyzzeroo";
 
 // ── Product database ───────────────────────────────────────────────────────
 const PRODUCTS = [
@@ -524,6 +527,91 @@ const CSS = `
   }
   @media (max-width: 860px) { .disclaimer { padding: 0 20px 40px; } }
 
+  /* CTA BANNER */
+  .cta-banner {
+    max-width: 1200px; margin: 0 auto; padding: 0 40px 32px;
+  }
+  .cta-inner {
+    background: #1a1815; color: #f4f1ea;
+    padding: 28px 32px; display: flex; align-items: center;
+    justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  }
+  .cta-text {}
+  .cta-title {
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400;
+    line-height: 1.2; margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .cta-title em { font-style: italic; color: #c4a661; }
+  .cta-sub {
+    font-family: 'Inter Tight', sans-serif; font-size: 13px;
+    color: #f4f1ea99; line-height: 1.5;
+  }
+  .cta-btn {
+    padding: 12px 24px; background: #b54a2c; color: #f4f1ea; border: none;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em; cursor: pointer;
+    transition: background 0.12s; white-space: nowrap; flex-shrink: 0;
+  }
+  .cta-btn:hover { background: #c4a661; color: #1a1815; }
+  @media (max-width: 860px) { .cta-banner { padding: 0 20px 28px; } }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(26,24,21,0.7);
+    display: grid; place-items: center; z-index: 100; padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal {
+    background: #f4f1ea; border: 1px solid #1a1815;
+    width: 100%; max-width: 480px; position: relative;
+  }
+  .modal-rule { height: 4px; background: #1a1815; position: relative; }
+  .modal-rule::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 40%; background: #b54a2c;
+  }
+  .modal-body { padding: 28px 28px 24px; }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px; background: none;
+    border: none; cursor: pointer; color: #6b645a; padding: 4px;
+  }
+  .modal-close:hover { color: #1a1815; }
+  .modal-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400;
+    letter-spacing: -0.015em; margin: 0 0 6px; color: #1a1815;
+  }
+  .modal-sub {
+    font-size: 13px; color: #6b645a; line-height: 1.55; margin-bottom: 22px;
+  }
+  .modal-field { margin-bottom: 14px; }
+  .modal-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    display: block; margin-bottom: 5px;
+  }
+  .modal-inp {
+    width: 100%; padding: 9px 12px; background: #ebe6dc;
+    border: 1px solid #1a181540; font-family: 'Inter Tight', sans-serif;
+    font-size: 13px; color: #1a1815; border-radius: 0; box-sizing: border-box;
+  }
+  .modal-inp:focus { outline: none; border-color: #1a1815; }
+  .modal-submit {
+    width: 100%; padding: 12px; margin-top: 6px;
+    background: #1a1815; color: #f4f1ea; border: none; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em; transition: background 0.12s;
+  }
+  .modal-submit:hover { background: #b54a2c; }
+  .modal-submit:disabled { background: #98908380; cursor: default; }
+  .modal-success {
+    padding: 28px; text-align: center;
+  }
+  .modal-success-icon { font-size: 36px; margin-bottom: 14px; }
+  .modal-success-title {
+    font-family: 'Fraunces', serif; font-size: 20px; color: #1a1815; margin-bottom: 8px;
+  }
+  .modal-success-text { font-size: 13px; color: #6b645a; line-height: 1.6; }
+
   /* FOOTER */
   .footer {
     border-top: 1px solid #1a181820; padding: 20px 40px;
@@ -683,10 +771,94 @@ const INIT = {
   priorImid: false, priorPi: false, priorAntiCd38: false,
 };
 
+// ── Waitlist modal ─────────────────────────────────────────────────────────
+function WaitlistModal({ onClose }) {
+  const [form, setForm] = useState({ name: "", email: "", institution: "", role: "" });
+  const [status, setStatus] = useState("idle"); // idle | sending | done | error
+
+  const setF = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const canSubmit = form.name && form.email && form.institution && status === "idle";
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) setStatus("done");
+      else setStatus("error");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-rule" />
+        <button className="modal-close" onClick={onClose}><X size={16} /></button>
+
+        {status === "done" ? (
+          <div className="modal-success">
+            <div className="modal-success-icon">✓</div>
+            <div className="modal-success-title">You're on the list</div>
+            <p className="modal-success-text">
+              We'll be in touch when institutional access opens.<br />
+              In the meantime, the screener is fully free to use.
+            </p>
+          </div>
+        ) : (
+          <div className="modal-body">
+            <div className="modal-title">Request institutional access</div>
+            <p className="modal-sub">
+              Early access for cancer centers and oncology practices.
+              Includes multi-user accounts, PDF report export, and ClinicalTrials.gov integration.
+            </p>
+            <form onSubmit={submit}>
+              <div className="modal-field">
+                <label className="modal-lbl">Full name *</label>
+                <input className="modal-inp" type="text" placeholder="Dr. Jane Smith"
+                  value={form.name} onChange={e => setF("name", e.target.value)} required />
+              </div>
+              <div className="modal-field">
+                <label className="modal-lbl">Work email *</label>
+                <input className="modal-inp" type="email" placeholder="jsmith@cancercenter.org"
+                  value={form.email} onChange={e => setF("email", e.target.value)} required />
+              </div>
+              <div className="modal-field">
+                <label className="modal-lbl">Institution *</label>
+                <input className="modal-inp" type="text" placeholder="Memorial Sloan Kettering"
+                  value={form.institution} onChange={e => setF("institution", e.target.value)} required />
+              </div>
+              <div className="modal-field">
+                <label className="modal-lbl">Role</label>
+                <input className="modal-inp" type="text" placeholder="Oncologist / Pharmacist / APP"
+                  value={form.role} onChange={e => setF("role", e.target.value)} />
+              </div>
+              {status === "error" && (
+                <p style={{ fontSize: 12, color: "#b54a2c", marginBottom: 8 }}>
+                  Something went wrong — email sri.ramya003@gmail.com directly.
+                </p>
+              )}
+              <button className="modal-submit" type="submit" disabled={!canSubmit}>
+                {status === "sending" ? "Sending…" : "Request access →"}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [pt, setPt] = useState(INIT);
   const [results, setResults] = useState(null);
   const [ran, setRan] = useState(false);
+  const [showWaitlist, setShowWaitlist] = useState(false);
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
   const tog = k => setPt(p => ({ ...p, [k]: !p[k] }));
@@ -855,6 +1027,21 @@ export default function App() {
         </div>
       </div>
 
+      {/* CTA BANNER */}
+      <div className="cta-banner">
+        <div className="cta-inner">
+          <div className="cta-text">
+            <div className="cta-title">Want this for your <em>tumor board?</em></div>
+            <div className="cta-sub">
+              Institutional access includes multi-user accounts, PDF eligibility reports, and live trial integration.
+            </div>
+          </div>
+          <button className="cta-btn" onClick={() => setShowWaitlist(true)}>
+            Request access →
+          </button>
+        </div>
+      </div>
+
       {/* DISCLAIMER */}
       <div className="disclaimer">
         <div className="disclaimer-inner">
@@ -864,6 +1051,9 @@ export default function App() {
           approved labeling as of May 2026 and may not capture the most recent updates or off-label use.
         </div>
       </div>
+
+      {/* WAITLIST MODAL */}
+      {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
 
       {/* FOOTER */}
       <footer className="footer">
