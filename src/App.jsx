@@ -5,7 +5,7 @@ import { useState } from "react";
 import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X } from "lucide-react";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
-const FORMSPREE_URL = "https://formspree.io/f/xyzzeroo";
+const FORMSPREE_URL = "https://formspree.io/f/xwvydwjb";
 
 // ── Product database ───────────────────────────────────────────────────────
 const PRODUCTS = [
