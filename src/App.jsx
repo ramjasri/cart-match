@@ -15,6 +15,7 @@ function useAuth() {
   }
 }
 import { generatePdf } from "./utils/generatePdf.js";
+import { generateBoardPdf } from "./utils/generateBoardPdf.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
@@ -1088,6 +1089,125 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* HEADER NAV TABS */
+  .hdr-nav { display: flex; gap: 2px; }
+  .hdr-nav-btn {
+    padding: 6px 14px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    border: 1px solid #1a181530; background: transparent; color: #6b645a;
+    transition: all 0.12s;
+  }
+  .hdr-nav-btn:hover { color: #1a1815; background: #1a181508; }
+  .hdr-nav-btn.active { background: #1a1815; color: #f4f1ea; border-color: #1a1815; }
+  .hdr-nav-count { margin-left: 5px; font-size: 9px; opacity: 0.75; }
+
+  /* BOARD VIEW */
+  .board-view {
+    max-width: 1200px; margin: 0 auto; padding: 36px 40px 80px;
+  }
+  @media (max-width: 860px) { .board-view { padding: 24px 20px 60px; } }
+  .board-hdr {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 20px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .board-title-block {}
+  .board-title {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 400;
+    color: #1a1815; letter-spacing: -0.02em; margin: 0 0 5px;
+  }
+  .board-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+  }
+  .board-hdr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .board-empty {
+    background: #ebe6dc; border: 1px solid #1a181520;
+    padding: 52px 32px; text-align: center;
+  }
+  .board-empty-glyph {
+    font-family: 'Fraunces', serif; font-size: 48px; color: #1a181530;
+    margin-bottom: 16px; line-height: 1;
+  }
+  .board-empty-text { font-size: 14px; color: #6b645a; line-height: 1.65; }
+  .board-empty-cta {
+    display: inline-block; margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    padding: 9px 20px; background: #1a1815; color: #f4f1ea;
+    border: none; cursor: pointer;
+  }
+
+  /* BOARD CASE CARD */
+  .board-case {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .board-case-hdr {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    background: #ebe6dc; border-bottom: 1px solid #1a181518;
+  }
+  .board-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .board-case-label-input {
+    font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500;
+    color: #1a1815; flex: 1; min-width: 0; background: none; border: none;
+    border-bottom: 1px dashed transparent; padding: 0; cursor: text;
+  }
+  .board-case-label-input:hover { border-bottom-color: #1a181540; }
+  .board-case-label-input:focus { outline: none; border-bottom-color: #1a1815; }
+  .board-case-summary {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b645a; flex-shrink: 0;
+  }
+  .board-case-body { padding: 14px 16px; }
+  .board-elig-row {
+    display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px;
+  }
+  .board-elig-chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 8px; border: 1px solid;
+  }
+  .board-elig-chip.elig { color: #5a7a4a; border-color: #5a7a4a45; background: #5a7a4a10; }
+  .board-elig-chip.none { color: #b54a2c; border-color: #b54a2c30; background: #b54a2c07; }
+  .board-controls {
+    display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
+  }
+  .board-status-sel {
+    padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; border: 1px solid #1a181540;
+    background: #ebe6dc; color: #1a1815; border-radius: 0; cursor: pointer;
+    appearance: none; min-width: 168px; flex-shrink: 0;
+  }
+  .board-status-sel:focus { outline: none; border-color: #1a1815; }
+  .board-notes-inp {
+    flex: 1; min-width: 180px; padding: 8px 12px; resize: vertical; min-height: 38px;
+    font-family: 'Inter Tight', sans-serif; font-size: 12.5px; color: #1a1815;
+    border: 1px solid #1a181535; background: #f4f1ea; border-radius: 0; line-height: 1.4;
+  }
+  .board-notes-inp:focus { outline: none; border-color: #1a1815; }
+  .board-notes-inp::placeholder { color: #98908360; }
+  .board-btn-row { display: flex; gap: 6px; flex-shrink: 0; }
+  .board-btn {
+    padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; border: 1px solid #1a181535;
+    background: transparent; color: #1a1815; cursor: pointer; transition: all 0.1s; white-space: nowrap;
+  }
+  .board-btn:hover { background: #1a181510; }
+  .board-btn.danger { color: #b54a2c; border-color: #b54a2c35; }
+  .board-btn.danger:hover { background: #b54a2c0d; }
+  .board-btn.primary { background: #1a1815; color: #f4f1ea; border-color: #1a1815; }
+  .board-btn.primary:hover { background: #b54a2c; border-color: #b54a2c; }
+
+  /* ADD TO BOARD BUTTON */
+  .add-board-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: transparent; color: #1a1815;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    border: 1px solid #1a181540; cursor: pointer; transition: all 0.12s;
+  }
+  .add-board-btn:hover { background: #1a181510; }
+  .add-board-btn.added { color: #5a7a4a; border-color: #5a7a4a50; background: #5a7a4a0a; }
+
   /* FOOTER */
   .footer {
     border-top: 1px solid #1a181820; padding: 20px 40px;
@@ -1269,6 +1389,134 @@ const INIT = {
   labBil: "", labLvef: "", labSpo2: "",
 };
 
+// ── Tumor board status config ──────────────────────────────────────────────
+const STATUS_OPTIONS = [
+  { value: "pending",       label: "Pending",              dot: "#6b645a" },
+  { value: "discussed",     label: "Discussed",            dot: "#4c6b8c" },
+  { value: "approved",      label: "Approved for referral", dot: "#5a7a4a" },
+  { value: "deferred",      label: "Deferred",             dot: "#c4a661" },
+  { value: "not-indicated", label: "Not indicated",        dot: "#b54a2c" },
+];
+
+function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport }) {
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+  const approvedCount = board.filter(c => c.status === "approved").length;
+
+  return (
+    <div className="board-view">
+      <div className="board-hdr">
+        <div className="board-title-block">
+          <div className="board-title">Tumor Board</div>
+          <div className="board-meta">
+            {dateStr} · {board.length} case{board.length !== 1 ? "s" : ""}
+            {approvedCount > 0 && ` · ${approvedCount} approved for referral`}
+          </div>
+        </div>
+        <div className="board-hdr-actions">
+          {board.length > 0 && (
+            <button className="board-btn primary" onClick={onExport}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                <Download size={12} />
+                Export Board Packet (PDF)
+              </span>
+            </button>
+          )}
+          <button className="board-btn" onClick={onGoToScreener}>
+            ← Back to screener
+          </button>
+        </div>
+      </div>
+
+      {board.length === 0 ? (
+        <div className="board-empty">
+          <div className="board-empty-glyph">⊞</div>
+          <p className="board-empty-text">
+            No cases in the tumor board yet.<br />
+            Screen a patient and click <strong>Add to tumor board</strong> to queue them here.
+          </p>
+          <button className="board-empty-cta" onClick={onGoToScreener}>
+            Start screening →
+          </button>
+        </div>
+      ) : (
+        board.map(c => {
+          const eligible = c.results ? Object.values(c.results).filter(r => r.eligible) : [];
+          const blocked  = c.results ? Object.values(c.results).filter(r => r.blocks.length > 0) : [];
+          const statusMeta = STATUS_OPTIONS.find(s => s.value === c.status) || STATUS_OPTIONS[0];
+
+          return (
+            <div key={c.id} className="board-case">
+              <div className="board-case-hdr">
+                <div className="board-status-dot" style={{ background: statusMeta.dot }} />
+                <input
+                  className="board-case-label-input"
+                  value={c.patientLabel}
+                  onChange={e => onUpdateCase(c.id, { patientLabel: e.target.value })}
+                />
+                <div className="board-case-summary">
+                  {[
+                    c.patient.cancerType ? c.patient.cancerType.split("(")[0].trim() : null,
+                    c.patient.priorLines ? `${c.patient.priorLines}L` : null,
+                    c.patient.ecog !== "" ? `ECOG ${c.patient.ecog}` : null,
+                  ].filter(Boolean).join(" · ")}
+                </div>
+              </div>
+
+              <div className="board-case-body">
+                {/* Eligible product chips */}
+                <div className="board-elig-row">
+                  {eligible.length === 0 ? (
+                    <span className="board-elig-chip none">No eligible products</span>
+                  ) : (
+                    eligible.map((r, i) => {
+                      const prod = ALL_PRODUCTS.find(p => c.results && c.results[p.id] === r);
+                      return (
+                        <span key={i} className="board-elig-chip elig">
+                          {prod ? prod.name : "—"}
+                        </span>
+                      );
+                    })
+                  )}
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#6b645a", alignSelf: "center" }}>
+                    {eligible.length}/{Object.keys(c.results || {}).length} eligible
+                  </span>
+                </div>
+
+                {/* Controls */}
+                <div className="board-controls">
+                  <select
+                    className="board-status-sel"
+                    value={c.status}
+                    onChange={e => onUpdateCase(c.id, { status: e.target.value })}
+                    style={{ borderLeft: `3px solid ${statusMeta.dot}` }}
+                  >
+                    {STATUS_OPTIONS.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                  <textarea
+                    className="board-notes-inp"
+                    placeholder="Add notes (attending comments, referral details, pending labs…)"
+                    value={c.notes}
+                    onChange={e => onUpdateCase(c.id, { notes: e.target.value })}
+                    rows={2}
+                  />
+                  <div className="board-btn-row">
+                    <button className="board-btn" onClick={() => onLoadCase(c)}>Re-screen</button>
+                    <button className="board-btn danger" onClick={() => onRemoveCase(c.id)}>Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 // ── Waitlist modal ─────────────────────────────────────────────────────────
 function WaitlistModal({ onClose }) {
   const [form, setForm] = useState({ name: "", email: "", institution: "", role: "" });
@@ -1361,6 +1609,19 @@ export default function App() {
   const [shareCopied, setShareCopied] = useState(false);
   const [caseLoaded, setCaseLoaded] = useState(false);
   const [viewMode, setViewMode] = useState("all"); // "all" | "cart" | "bispecific"
+  const [view, setView] = useState("screener"); // "screener" | "board"
+  const [boardAdded, setBoardAdded] = useState(false);
+
+  // Tumor board — persisted to localStorage
+  const [board, setBoard] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("celltx-board") || "[]"); }
+    catch { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("celltx-board", JSON.stringify(board)); }
+    catch { /* storage full — ignore */ }
+  }, [board]);
+
   const { isSignedIn, isLoaded } = useAuth();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
@@ -1387,6 +1648,40 @@ export default function App() {
       }
     }
   }, []);
+
+  // ── Tumor board helpers ───────────────────────────────────────────────────
+  const addToBoard = () => {
+    const labels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"];
+    const patientLabel = `Patient ${labels[board.length] ?? board.length + 1}`;
+    const newCase = {
+      id: Date.now().toString(),
+      addedAt: new Date().toISOString(),
+      patientLabel,
+      patient: { ...pt },
+      results: { ...results },
+      status: "pending",
+      notes: "",
+    };
+    setBoard(b => [...b, newCase]);
+    setBoardAdded(true);
+    setTimeout(() => setBoardAdded(false), 2500);
+  };
+
+  const updateBoardCase = (id, patch) =>
+    setBoard(b => b.map(c => c.id === id ? { ...c, ...patch } : c));
+
+  const removeBoardCase = (id) =>
+    setBoard(b => b.filter(c => c.id !== id));
+
+  const loadBoardCase = (c) => {
+    setPt({ ...INIT, ...c.patient });
+    const res = {};
+    ALL_PRODUCTS.forEach(p => { res[p.id] = score(p, { ...INIT, ...c.patient }); });
+    setResults(res);
+    setRan(true);
+    setView("screener");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const isMM = pt.cancerType.toLowerCase().includes("myeloma");
   const isLymphoma = !isMM && pt.cancerType !== "" && !pt.cancerType.toLowerCase().includes("not in scope");
@@ -1453,6 +1748,24 @@ export default function App() {
               <div className="hdr-badge-dot" />
               6 CAR-T · 6 Bispecific
             </div>
+            {/* Nav tabs — only shown when signed in */}
+            {isSignedIn && (
+              <nav className="hdr-nav">
+                <button
+                  className={`hdr-nav-btn${view === "screener" ? " active" : ""}`}
+                  onClick={() => setView("screener")}
+                >
+                  Screener
+                </button>
+                <button
+                  className={`hdr-nav-btn${view === "board" ? " active" : ""}`}
+                  onClick={() => setView("board")}
+                >
+                  Tumor Board
+                  {board.length > 0 && <span className="hdr-nav-count">({board.length})</span>}
+                </button>
+              </nav>
+            )}
             <div className="hdr-auth">
               {isLoaded && (
                 isSignedIn
@@ -1485,6 +1798,20 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      {/* TUMOR BOARD VIEW */}
+      {view === "board" && (
+        <TumorBoardView
+          board={board}
+          onUpdateCase={updateBoardCase}
+          onRemoveCase={removeBoardCase}
+          onLoadCase={loadBoardCase}
+          onGoToScreener={() => setView("screener")}
+          onExport={() => generateBoardPdf(board)}
+        />
+      )}
+
+      {view !== "board" && <>
 
       {/* CASE LOADED BANNER */}
       {caseLoaded && (
@@ -1731,6 +2058,17 @@ export default function App() {
             {shareCopied ? "Link copied!" : "Copy shareable link"}
           </button>
 
+          {/* Add to tumor board — only when signed in */}
+          {isSignedIn && (
+            <button
+              className={`add-board-btn${boardAdded ? " added" : ""}`}
+              onClick={boardAdded ? undefined : addToBoard}
+            >
+              {boardAdded ? <Check size={13} /> : <BarChart3 size={13} />}
+              {boardAdded ? "Added to board!" : "Add to tumor board"}
+            </button>
+          )}
+
           {isSignedIn ? (
             <button
               className="export-btn"
@@ -1780,6 +2118,8 @@ export default function App() {
 
       {/* WAITLIST MODAL */}
       {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
+
+      </> /* end screener view */}
 
       {/* FOOTER */}
       <footer className="footer">
