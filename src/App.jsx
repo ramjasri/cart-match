@@ -2,7 +2,7 @@
 // 6 FDA-approved products: Yescarta, Kymriah, Breyanzi, Tecartus, Abecma, Carvykti
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText, Link2, Check } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText, Link2, Check, Zap, BarChart3 } from "lucide-react";
 import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 
 // Safe hook — returns sensible defaults if Clerk isn't configured
@@ -242,6 +242,229 @@ const PRODUCTS = [
   },
 ];
 
+// ── Bispecific antibody database ───────────────────────────────────────────
+const BISPECIFICS = [
+  {
+    id: "tecvayli",
+    name: "Tecvayli",
+    generic: "teclistamab",
+    target: "BCMA×CD3",
+    targetMarker: "BCMA",
+    type: "bispecific",
+    sponsor: "J&J / Janssen",
+    color: "#c4a661",
+    indications: ["Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"],
+    cancerKeys: ["myeloma", "mm", "multiple myeloma"],
+    minPriorLines: 4,
+    ecogMax: 2,
+    targetMarker: "BCMA",
+    mmReqs: true,
+    requiresObinutuzumab: false,
+    nctSearch: "teclistamab",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 3.0, crclMin: 30, bilMax: 1.5, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+      "No specific LVEF or SpO₂ requirement",
+    ],
+    exclusions: [
+      "Active CNS myeloma",
+      "Active autoimmune disease requiring systemic treatment",
+      "Active uncontrolled infection",
+      "Hospitalization required for step-up dosing (first 2 doses)",
+    ],
+    advantages: [
+      "Off-the-shelf — no manufacturing wait",
+      "No leukapheresis required",
+      "Subcutaneous weekly dosing (then Q2W)",
+    ],
+    notes: ["Step-up dosing: 0.06 → 0.3 → 1.5 mg/kg SC", "CRS monitoring required for first doses"],
+  },
+  {
+    id: "talvey",
+    name: "Talvey",
+    generic: "talquetamab",
+    target: "GPRC5D×CD3",
+    targetMarker: "GPRC5D",
+    type: "bispecific",
+    sponsor: "J&J / Janssen",
+    color: "#8a4a7a",
+    indications: ["Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"],
+    cancerKeys: ["myeloma", "mm", "multiple myeloma"],
+    minPriorLines: 4,
+    ecogMax: 2,
+    mmReqs: true,
+    requiresObinutuzumab: false,
+    nctSearch: "talquetamab",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 3.0, crclMin: 30, bilMax: 1.5, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+    ],
+    exclusions: [
+      "Active CNS myeloma",
+      "Active autoimmune disease",
+      "Active uncontrolled infection",
+      "Hospitalization for step-up dosing required",
+    ],
+    advantages: [
+      "Targets GPRC5D — usable after BCMA-directed therapy failure",
+      "No leukapheresis required",
+      "Two dosing schedules: QW or Q2W",
+    ],
+    notes: ["Step-up dosing required", "Unique SEs: dysgeusia, nail/skin changes, weight loss"],
+  },
+  {
+    id: "elrexfio",
+    name: "Elrexfio",
+    generic: "elranatamab",
+    target: "BCMA×CD3",
+    targetMarker: "BCMA",
+    type: "bispecific",
+    sponsor: "Pfizer",
+    color: "#4c6b8c",
+    indications: ["Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"],
+    cancerKeys: ["myeloma", "mm", "multiple myeloma"],
+    minPriorLines: 4,
+    ecogMax: 2,
+    mmReqs: true,
+    requiresObinutuzumab: false,
+    nctSearch: "elranatamab",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 3.0, crclMin: 30, bilMax: 1.5, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+    ],
+    exclusions: [
+      "Active CNS myeloma",
+      "Active autoimmune disease",
+      "Active uncontrolled infection",
+      "Step-up dosing hospitalization required",
+    ],
+    advantages: [
+      "Off-the-shelf — immediate availability",
+      "No leukapheresis required",
+      "Sequential use after GPRC5D-targeted therapy possible",
+    ],
+    notes: ["Step-up dosing: 12 → 32 → 76 mg SC", "Q2W after confirmed response"],
+  },
+  {
+    id: "epkinly",
+    name: "Epkinly",
+    generic: "epcoritamab",
+    target: "CD20×CD3",
+    targetMarker: "CD20",
+    type: "bispecific",
+    sponsor: "AbbVie / Genmab",
+    color: "#5a7a4a",
+    indications: [
+      "R/R DLBCL — 3L+ (after ≥2 prior lines incl. CD20 + alkylator)",
+      "R/R Follicular lymphoma (FL grade 1–3A) — 3L+",
+    ],
+    cancerKeys: ["dlbcl", "lbcl", "lymphoma", "fl", "follicular", "b-cell", "large b"],
+    minPriorLines: 2,
+    ecogMax: 2,
+    mmReqs: false,
+    requiresObinutuzumab: false,
+    nctSearch: "epcoritamab",
+    organThresholds: { altMax: 200, astMax: 200, creatMax: 2.0, crclMin: 30, bilMax: 2.0, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+      "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
+    ],
+    exclusions: [
+      "Active CNS lymphoma",
+      "Active autoimmune disease requiring systemic treatment",
+      "Active uncontrolled infection",
+      "Hospitalization for step-up dosing required",
+    ],
+    advantages: [
+      "Off-the-shelf subcutaneous injection",
+      "No leukapheresis required",
+      "Can bridge to or follow CAR-T",
+    ],
+    notes: ["Step-up dosing: 0.16 → 0.8 → 48 mg SC", "CRS prophylaxis required for first doses"],
+  },
+  {
+    id: "columvi",
+    name: "Columvi",
+    generic: "glofitamab",
+    target: "CD20×CD3",
+    targetMarker: "CD20",
+    type: "bispecific",
+    sponsor: "Roche / Genentech",
+    color: "#b54a2c",
+    indications: [
+      "R/R DLBCL — 2L+",
+      "R/R Follicular lymphoma (FL) — 2L+",
+    ],
+    cancerKeys: ["dlbcl", "lbcl", "lymphoma", "fl", "follicular", "b-cell", "large b"],
+    minPriorLines: 2,
+    ecogMax: 2,
+    mmReqs: false,
+    requiresObinutuzumab: true,
+    nctSearch: "glofitamab",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 2.0, crclMin: 30, bilMax: 2.0, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 2× ULN",
+    ],
+    exclusions: [
+      "Requires obinutuzumab (Gazyva) pretreatment 7 days before cycle 1",
+      "Active CNS lymphoma",
+      "Active autoimmune disease",
+      "Active uncontrolled infection",
+    ],
+    advantages: [
+      "Fixed duration — 12 cycles total (not lifelong)",
+      "Off-the-shelf IV infusion",
+      "Durable complete responses documented",
+    ],
+    notes: ["Obinutuzumab pretreatment mandatory — plan 7 days ahead", "Step-up dosing cycles 1–2"],
+  },
+  {
+    id: "lunsumio",
+    name: "Lunsumio",
+    generic: "mosunetuzumab",
+    target: "CD20×CD3",
+    targetMarker: "CD20",
+    type: "bispecific",
+    sponsor: "Roche / Genentech",
+    color: "#6b5a8c",
+    indications: ["R/R Follicular lymphoma (FL grade 1–3A) — 2L+"],
+    cancerKeys: ["fl", "follicular", "lymphoma"],
+    minPriorLines: 2,
+    ecogMax: 2,
+    mmReqs: false,
+    requiresObinutuzumab: false,
+    nctSearch: "mosunetuzumab",
+    organThresholds: { altMax: 120, astMax: 120, creatMax: 2.0, crclMin: 30, bilMax: 2.0, lvefMin: 0, spo2Min: 0 },
+    organ: [
+      "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+      "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+      "Bilirubin ≤ 2× ULN",
+    ],
+    exclusions: [
+      "Active CNS lymphoma",
+      "Active autoimmune disease requiring systemic treatment",
+      "Active uncontrolled infection",
+    ],
+    advantages: [
+      "Fixed duration — 8 cycles (not lifelong)",
+      "Off-the-shelf IV then subcutaneous",
+      "Established durable remissions in FL",
+    ],
+    notes: ["Step-up dosing cycle 1", "Fixed-duration therapy — re-treatment possible at relapse"],
+  },
+];
+
+const ALL_PRODUCTS = [...PRODUCTS, ...BISPECIFICS];
+
 // ── Eligibility engine ─────────────────────────────────────────────────────
 function score(product, pt) {
   const blocks = [], warnings = [], passes = [];
@@ -254,10 +477,16 @@ function score(product, pt) {
 
   // Target marker
   if (indicationMatch) {
-    const markerVal = product.targetMarker === "CD19" ? pt.cd19 : pt.bcma;
+    const markerMap = { CD19: pt.cd19, BCMA: pt.bcma, CD20: pt.cd20, GPRC5D: pt.gprc5d };
+    const markerVal = markerMap[product.targetMarker] ?? "unknown";
     if (markerVal === "negative") blocks.push(`${product.targetMarker}-negative — product requires ${product.targetMarker} expression`);
     else if (markerVal === "positive") passes.push(`${product.targetMarker} expression: confirmed positive`);
     else warnings.push(`${product.targetMarker} status unknown — confirm before proceeding`);
+  }
+
+  // Obinutuzumab pretreatment requirement (glofitamab)
+  if (product.requiresObinutuzumab) {
+    warnings.push("Requires obinutuzumab (Gazyva) pretreatment 7 days before cycle 1 — schedule accordingly");
   }
 
   // Prior lines
@@ -329,11 +558,11 @@ function score(product, pt) {
     if (bil > t.bilMax) blocks.push(`Bilirubin ${bil} mg/dL exceeds limit of ${t.bilMax} mg/dL for this product`);
     else passes.push(`Bilirubin ${bil} mg/dL: within range (≤ ${t.bilMax} mg/dL)`);
   }
-  if (lvef !== null) {
+  if (lvef !== null && t.lvefMin > 0) {
     if (lvef < t.lvefMin) blocks.push(`LVEF ${lvef}% is below minimum of ${t.lvefMin}% for this product`);
     else passes.push(`LVEF ${lvef}%: meets threshold (≥ ${t.lvefMin}%)`);
   }
-  if (spo2 !== null) {
+  if (spo2 !== null && t.spo2Min > 0) {
     if (spo2 < t.spo2Min) blocks.push(`SpO₂ ${spo2}% is below minimum of ${t.spo2Min}%`);
     else passes.push(`SpO₂ ${spo2}%: meets threshold (≥ ${t.spo2Min}%)`);
   }
@@ -756,6 +985,86 @@ const CSS = `
   }
   .hdr-signin-btn:hover { background: #f4f1ea15; }
 
+  /* TAB BAR */
+  .tab-bar {
+    display: flex; gap: 2px; margin-bottom: 16px;
+  }
+  .tab-btn {
+    padding: 7px 16px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    border: 1px solid #1a181530; background: #f4f1ea; color: #6b645a;
+    transition: all 0.12s;
+  }
+  .tab-btn:hover { background: #ebe6dc; color: #1a1815; }
+  .tab-btn.active { background: #1a1815; color: #f4f1ea; border-color: #1a1815; }
+  .tab-count {
+    display: inline-block; margin-left: 5px;
+    font-size: 9px; color: inherit; opacity: 0.7;
+  }
+
+  /* COMPARISON PANEL */
+  .compare-panel {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    border: 1px solid #1a181525; background: #ebe6dc; margin-bottom: 20px;
+  }
+  .compare-col { padding: 18px 20px; }
+  .compare-vs {
+    display: grid; place-items: center; padding: 0 18px;
+    font-family: 'Fraunces', serif; font-size: 16px; font-style: italic; color: #6b645a;
+    border-left: 1px solid #1a181518; border-right: 1px solid #1a181518;
+  }
+  .compare-type {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .compare-count {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400;
+    margin-bottom: 10px; line-height: 1;
+  }
+  .compare-count em { font-style: normal; color: #5a7a4a; }
+  .compare-count span { font-size: 13px; color: #6b645a; font-family: 'Inter Tight', sans-serif; }
+  .compare-pro {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 11.5px; color: #3a352e; padding: 2px 0; line-height: 1.4;
+  }
+  .compare-pro::before { content: '✓'; color: #5a7a4a; flex-shrink: 0; font-size: 10px; margin-top: 1px; }
+  .compare-con {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 11.5px; color: #6b645a; padding: 2px 0; line-height: 1.4; font-style: italic;
+  }
+  .compare-con::before { content: '⚠'; flex-shrink: 0; font-size: 9px; margin-top: 1px; }
+  @media (max-width: 700px) {
+    .compare-panel { grid-template-columns: 1fr; }
+    .compare-vs { border: none; border-top: 1px solid #1a181518; border-bottom: 1px solid #1a181518; padding: 10px 20px; }
+  }
+
+  /* PRODUCT TYPE TAG */
+  .product-type-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    border: 1px solid #1a181525; padding: 2px 6px; flex-shrink: 0; color: #6b645a;
+  }
+  .product-type-tag.bispecific {
+    color: #4c6b8c; border-color: #4c6b8c40; background: #4c6b8c08;
+  }
+  .product-type-tag.cart {
+    color: #b54a2c; border-color: #b54a2c40; background: #b54a2c06;
+  }
+
+  /* ADVANTAGES SECTION */
+  .adv-item {
+    display: flex; align-items: flex-start; gap: 7px;
+    font-size: 12px; color: #3a352e; margin-bottom: 5px; line-height: 1.45;
+  }
+  .adv-item::before { content: '→'; color: #5a7a4a; flex-shrink: 0; font-size: 11px; }
+  .note-item {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; padding: 2px 0; line-height: 1.5;
+  }
+  .note-item::before { content: '· '; }
+
   /* SHARE BUTTON */
   .share-btn {
     display: inline-flex; align-items: center; gap: 8px;
@@ -832,6 +1141,7 @@ function RadioGroup({ value, options, onChange }) {
 function ProductCard({ product, result }) {
   const [open, setOpen] = useState(false);
   const trialsUrl = `https://clinicaltrials.gov/search?term=${product.nctSearch}&recrs=a`;
+  const isBispecific = product.type === "bispecific";
 
   const badgeClass = !result ? "" : result.blocks.length > 0 ? "blocked" : result.hasWarning ? "review" : "eligible";
   const badgeLabel = !result ? "" : result.blocks.length > 0 ? "Ineligible" : result.hasWarning ? "Review" : "Eligible";
@@ -844,6 +1154,9 @@ function ProductCard({ product, result }) {
           <div className="card-name">{product.name}</div>
           <div className="card-generic">{product.generic} · {product.sponsor}</div>
         </div>
+        <span className={`product-type-tag ${isBispecific ? "bispecific" : "cart"}`}>
+          {isBispecific ? "Bispecific" : "CAR-T"}
+        </span>
         <span className="card-target" style={{ color: product.color }}>{product.target}</span>
         {result && (
           <div className={`badge ${badgeClass}`}>
@@ -906,6 +1219,24 @@ function ProductCard({ product, result }) {
             </div>
           </div>
 
+          {/* Advantages + notes for bispecifics */}
+          {isBispecific && product.advantages && (
+            <div style={{ borderTop: "1px solid #1a181515", paddingTop: 14, marginTop: 4 }}>
+              <div className="body-section-head" style={{ color: "#5a7a4a", marginBottom: 8 }}>
+                vs CAR-T — key advantages
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                {product.advantages.map((a, i) => <div key={i} className="adv-item">{a}</div>)}
+              </div>
+              {product.notes && (
+                <>
+                  <div className="body-section-head" style={{ marginBottom: 6 }}>Administration notes</div>
+                  {product.notes.map((n, i) => <div key={i} className="note-item">{n}</div>)}
+                </>
+              )}
+            </div>
+          )}
+
           <TrialsPanel genericName={product.generic} nctSearch={product.nctSearch} />
         </div>
       )}
@@ -929,7 +1260,7 @@ const CANCER_OPTIONS = [
 
 const INIT = {
   cancerType: "", priorLines: "", ecog: "",
-  cd19: "unknown", bcma: "unknown",
+  cd19: "unknown", bcma: "unknown", cd20: "unknown", gprc5d: "unknown",
   activeCns: false, activeAutoimmune: false,
   alloSct: false, alloSctMonths: "",
   priorImid: false, priorPi: false, priorAntiCd38: false,
@@ -1029,6 +1360,7 @@ export default function App() {
   const [showLab, setShowLab] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [caseLoaded, setCaseLoaded] = useState(false);
+  const [viewMode, setViewMode] = useState("all"); // "all" | "cart" | "bispecific"
   const { isSignedIn, isLoaded } = useAuth();
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
@@ -1044,7 +1376,7 @@ export default function App() {
         setPt(merged);
         // Compute results immediately with the decoded state
         const res = {};
-        PRODUCTS.forEach(p => { res[p.id] = score(p, merged); });
+        ALL_PRODUCTS.forEach(p => { res[p.id] = score(p, merged); });
         setResults(res);
         setRan(true);
         setCaseLoaded(true);
@@ -1057,13 +1389,15 @@ export default function App() {
   }, []);
 
   const isMM = pt.cancerType.toLowerCase().includes("myeloma");
+  const isLymphoma = !isMM && pt.cancerType !== "" && !pt.cancerType.toLowerCase().includes("not in scope");
   const canRun = pt.cancerType && pt.priorLines !== "" && pt.ecog !== "";
 
   const run = () => {
     const res = {};
-    PRODUCTS.forEach(p => { res[p.id] = score(p, pt); });
+    ALL_PRODUCTS.forEach(p => { res[p.id] = score(p, pt); });
     setResults(res);
     setRan(true);
+    setViewMode("all");
     setCaseLoaded(false);
     // Write case to URL hash so it's shareable immediately
     const encoded = encodeCase(pt);
@@ -1084,14 +1418,20 @@ export default function App() {
     });
   };
 
-  const eligible = results ? Object.values(results).filter(r => r.eligible).length : 0;
+  const cartEligible  = results ? PRODUCTS.filter(p => results[p.id]?.eligible).length : 0;
+  const bispEligible  = results ? BISPECIFICS.filter(p => results[p.id]?.eligible).length : 0;
+  const eligible = cartEligible + bispEligible;
+
+  const displayProducts = viewMode === "cart" ? PRODUCTS
+    : viewMode === "bispecific" ? BISPECIFICS
+    : ALL_PRODUCTS;
 
   const sorted = results
-    ? [...PRODUCTS].sort((a, b) => {
+    ? [...displayProducts].sort((a, b) => {
         const rank = r => r.blocks.length > 0 ? 2 : r.hasWarning ? 1 : 0;
         return rank(results[a.id]) - rank(results[b.id]);
       })
-    : PRODUCTS;
+    : displayProducts;
 
   return (
     <div className="app">
@@ -1104,14 +1444,14 @@ export default function App() {
           <div className="brand">
             <div className="brand-glyph"><Dna size={18} strokeWidth={1.4} /></div>
             <div>
-              <div className="brand-name">CAR-T MATCH</div>
-              <div className="brand-sub">Cell Therapy Eligibility Screener</div>
+              <div className="brand-name">CELLTX MATCH</div>
+              <div className="brand-sub">CAR-T &amp; Bispecific Antibody Screener</div>
             </div>
           </div>
           <div className="hdr-meta">
             <div className="hdr-badge">
               <div className="hdr-badge-dot" />
-              6 FDA-approved products
+              6 CAR-T · 6 Bispecific
             </div>
             <div className="hdr-auth">
               {isLoaded && (
@@ -1128,17 +1468,17 @@ export default function App() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-tag">CAR-T &amp; Cell Therapy Screener · May 2026</div>
+        <div className="hero-tag">CAR-T &amp; Bispecific Antibody Screener · May 2026</div>
         <h1 className="hero-h1">
-          Match patients to <em>eligible</em><br />cell therapy products
+          Match patients to <em>eligible</em><br />cell &amp; bispecific therapies
         </h1>
         <p className="hero-sub">
-          Enter a patient profile to screen eligibility across all FDA-approved CAR-T
-          products simultaneously. See blocking criteria, organ function requirements,
-          and recruiting trials in one view.
+          Enter a patient profile to screen eligibility across all 12 FDA-approved CAR-T and
+          bispecific antibody products simultaneously. Compare treatment pathways, see blocking
+          criteria, organ function requirements, and recruiting trials in one view.
         </p>
         <div className="hero-pills">
-          {PRODUCTS.map(p => (
+          {ALL_PRODUCTS.map(p => (
             <span key={p.id} className="hero-pill" style={{ borderColor: p.color + "60", color: p.color }}>
               {p.name}
             </span>
@@ -1185,19 +1525,45 @@ export default function App() {
 
           <div className="sec-head">Biomarker expression</div>
 
-          <div className="field">
-            <label className="lbl">CD19 status</label>
-            <RadioGroup value={pt.cd19}
-              options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
-              onChange={v => set("cd19", v)} />
-          </div>
+          {/* CD19 — CAR-T for B-cell lymphomas */}
+          {!isMM && (
+            <div className="field">
+              <label className="lbl">CD19 status <span style={{ fontSize: 9, color: "#6b645a", fontStyle: "italic" }}>CAR-T</span></label>
+              <RadioGroup value={pt.cd19}
+                options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
+                onChange={v => set("cd19", v)} />
+            </div>
+          )}
 
-          <div className="field">
-            <label className="lbl">BCMA status</label>
-            <RadioGroup value={pt.bcma}
-              options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
-              onChange={v => set("bcma", v)} />
-          </div>
+          {/* CD20 — bispecifics for B-cell lymphomas */}
+          {isLymphoma && (
+            <div className="field">
+              <label className="lbl">CD20 status <span style={{ fontSize: 9, color: "#4c6b8c", fontStyle: "italic" }}>Bispecific</span></label>
+              <RadioGroup value={pt.cd20}
+                options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
+                onChange={v => set("cd20", v)} />
+            </div>
+          )}
+
+          {/* BCMA — CAR-T + bispecifics for MM */}
+          {(isMM || !pt.cancerType) && (
+            <div className="field">
+              <label className="lbl">BCMA status <span style={{ fontSize: 9, color: "#6b645a", fontStyle: "italic" }}>CAR-T + Bispecific</span></label>
+              <RadioGroup value={pt.bcma}
+                options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
+                onChange={v => set("bcma", v)} />
+            </div>
+          )}
+
+          {/* GPRC5D — talquetamab only */}
+          {isMM && (
+            <div className="field">
+              <label className="lbl">GPRC5D status <span style={{ fontSize: 9, color: "#8a4a7a", fontStyle: "italic" }}>Talvey</span></label>
+              <RadioGroup value={pt.gprc5d}
+                options={[{ value:"positive", label:"+" }, { value:"negative", label:"−" }, { value:"unknown", label:"?" }]}
+                onChange={v => set("gprc5d", v)} />
+            </div>
+          )}
 
           <div className="sec-head">Clinical flags</div>
 
@@ -1297,9 +1663,53 @@ export default function App() {
             </div>
           ) : (
             <>
+              {/* Comparison summary */}
+              <div className="compare-panel">
+                <div className="compare-col">
+                  <div className="compare-type">
+                    <Dna size={11} /> CAR-T therapy
+                  </div>
+                  <div className="compare-count">
+                    <em>{cartEligible}</em> <span>/ {PRODUCTS.length} eligible</span>
+                  </div>
+                  <div className="compare-pro">One-time infusion — potentially curative</div>
+                  <div className="compare-pro">Deepest, most durable responses</div>
+                  <div className="compare-con">4–6 week manufacturing wait</div>
+                  <div className="compare-con">Leukapheresis + specialized center required</div>
+                </div>
+                <div className="compare-vs">vs</div>
+                <div className="compare-col">
+                  <div className="compare-type">
+                    <Zap size={11} /> Bispecific antibody
+                  </div>
+                  <div className="compare-count">
+                    <em>{bispEligible}</em> <span>/ {BISPECIFICS.length} eligible</span>
+                  </div>
+                  <div className="compare-pro">Off-the-shelf — no manufacturing wait</div>
+                  <div className="compare-pro">No leukapheresis · bridge to CAR-T possible</div>
+                  <div className="compare-con">Ongoing dosing (not one-time)</div>
+                  <div className="compare-con">Step-up hospitalization required</div>
+                </div>
+              </div>
+
+              {/* Tab bar */}
+              <div className="tab-bar">
+                <button className={`tab-btn${viewMode === "all" ? " active" : ""}`} onClick={() => setViewMode("all")}>
+                  All <span className="tab-count">({eligible}/{ALL_PRODUCTS.length})</span>
+                </button>
+                <button className={`tab-btn${viewMode === "cart" ? " active" : ""}`} onClick={() => setViewMode("cart")}>
+                  CAR-T <span className="tab-count">({cartEligible}/{PRODUCTS.length})</span>
+                </button>
+                <button className={`tab-btn${viewMode === "bispecific" ? " active" : ""}`} onClick={() => setViewMode("bispecific")}>
+                  Bispecific <span className="tab-count">({bispEligible}/{BISPECIFICS.length})</span>
+                </button>
+              </div>
+
               <div className="results-hdr">
-                <div className="results-title">Eligibility results</div>
-                <div className="results-count">{eligible} of {PRODUCTS.length} eligible</div>
+                <div className="results-title">
+                  {viewMode === "cart" ? "CAR-T Products" : viewMode === "bispecific" ? "Bispecific Antibodies" : "All Products"}
+                </div>
+                <div className="results-count">{eligible} of {ALL_PRODUCTS.length} eligible</div>
               </div>
               {sorted.map(p => (
                 <ProductCard key={p.id} product={p} result={results[p.id]} />
@@ -1349,7 +1759,7 @@ export default function App() {
           <div className="cta-text">
             <div className="cta-title">Want this for your <em>tumor board?</em></div>
             <div className="cta-sub">
-              Institutional access includes multi-user accounts, PDF eligibility reports, and live trial integration.
+              Institutional access includes multi-user accounts, PDF eligibility reports, live trial integration, and CAR-T vs bispecific comparison reports.
             </div>
           </div>
           <button className="cta-btn" onClick={() => setShowWaitlist(true)}>
@@ -1373,7 +1783,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer className="footer">
-        <div className="footer-brand">CAR-T Match</div>
+        <div className="footer-brand">CellTx Match</div>
         <div className="footer-links">
           <a href="https://biomarker-database.vercel.app" target="_blank" rel="noopener noreferrer" className="footer-link">
             OncoMarker →
