@@ -231,6 +231,53 @@ export function computePendingItems(board) {
       }
     }
 
+    // Tasks — overdue / due today / due this week
+    (c.tasks || []).forEach(task => {
+      if (task.status === "complete") return;
+      if (!task.dueDate) return;
+      const due = new Date(task.dueDate + "T00:00:00");
+      const todayD = new Date(); todayD.setHours(0, 0, 0, 0);
+      const d = Math.round((due - todayD) / 86400000);
+      const prioIcon = task.priority === "high" ? "🔥" : "✓";
+      if (d < 0) {
+        items.push({
+          ...base, id: mkId(), type: "task_overdue", urgency: "overdue",
+          icon: prioIcon,
+          label: `Task overdue ${Math.abs(d)}d: ${task.title}`,
+          assignedTo: task.assignedTo || base.assignedTo,
+          payload: { taskId: task.id, daysSince: Math.abs(d), priority: task.priority },
+        });
+      } else if (d === 0) {
+        items.push({
+          ...base, id: mkId(), type: "task_today", urgency: "due_today",
+          icon: prioIcon,
+          label: `Task due today: ${task.title}`,
+          assignedTo: task.assignedTo || base.assignedTo,
+          payload: { taskId: task.id, priority: task.priority },
+        });
+      } else if (d <= 7) {
+        items.push({
+          ...base, id: mkId(), type: "task_week", urgency: "due_this_week",
+          icon: prioIcon,
+          label: `Task due in ${d}d: ${task.title}`,
+          assignedTo: task.assignedTo || base.assignedTo,
+          payload: { taskId: task.id, daysUntil: d, priority: task.priority },
+        });
+      }
+    });
+
+    // Blocked tasks always surface (even without due date)
+    (c.tasks || []).forEach(task => {
+      if (task.status !== "blocked") return;
+      items.push({
+        ...base, id: mkId(), type: "task_blocked", urgency: "due_this_week",
+        icon: "▲",
+        label: `Task blocked: ${task.title}`,
+        assignedTo: task.assignedTo || base.assignedTo,
+        payload: { taskId: task.id },
+      });
+    });
+
     // Cases in pending_review for too long (>5 days)
     if (stage === "pending_review") {
       const days = daysSinceISO(c.addedAt?.slice(0, 10));

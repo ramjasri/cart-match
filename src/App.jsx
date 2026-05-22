@@ -52,6 +52,12 @@ import {
   EVENT_TYPES, createEvent, diffEvents, diffLabEvents,
   formatEventTime, sortEventsDescending,
 } from "./utils/events.js";
+import {
+  newTask, TASK_PRIORITIES, TASK_STATUSES, TASK_CATEGORIES,
+  isTaskOverdue, isTaskDueSoon, taskDaysOverdue, summarizeTasks,
+  taskStatusMeta, taskPriorityMeta, taskCategoryMeta,
+  suggestStarterTasks,
+} from "./utils/tasks.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -2813,6 +2819,135 @@ const CSS = `
   }
   .board-stat.active .board-stat-label { color: #c4a661; }
 
+  /* TASKS PANEL — per-case task list */
+  .tasks-panel {
+    border: 1px solid #1a181530; background: #f4f1ea;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .tasks-hdr {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: #1a1815; color: #f4f1ea; cursor: pointer; user-select: none;
+  }
+  .tasks-hdr:hover { background: #2a2520; }
+  .tasks-hdr-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700;
+  }
+  .tasks-hdr-summary {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #c4a661; letter-spacing: 0.08em; flex: 1;
+  }
+  .tasks-hdr-overdue {
+    background: #b54a2c; color: #f4f1ea; padding: 2px 8px;
+    font-size: 9px; letter-spacing: 0.14em;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+  }
+  .tasks-body { padding: 12px 14px; }
+
+  .tasks-add-row {
+    display: flex; gap: 6px; margin-bottom: 12px;
+    padding-bottom: 12px; border-bottom: 1px solid #1a181520;
+    flex-wrap: wrap;
+  }
+  .tasks-add-input {
+    flex: 1; min-width: 220px; padding: 7px 10px;
+    border: 1px solid #1a181530; background: #f4f1ea;
+    font-family: 'Inter Tight', sans-serif; font-size: 12.5px; color: #1a1815;
+    border-radius: 0;
+  }
+  .tasks-add-input:focus { outline: none; border-color: #1a1815; }
+  .tasks-add-btn {
+    padding: 7px 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    background: #1a1815; color: #f4f1ea; border: none; cursor: pointer;
+    white-space: nowrap;
+  }
+  .tasks-add-btn:hover { background: #5a7a4a; }
+  .tasks-add-btn:disabled { background: #98908380; cursor: default; }
+  .tasks-starter-btn {
+    padding: 7px 12px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: transparent; color: #4c6b8c; border: 1px dashed #4c6b8c60;
+    cursor: pointer;
+  }
+  .tasks-starter-btn:hover { background: #4c6b8c10; }
+
+  /* Filter chips */
+  .tasks-filter-row {
+    display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap;
+    padding-bottom: 8px; border-bottom: 1px solid #1a181515;
+  }
+  .tasks-filter-chip {
+    padding: 4px 9px; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #1a181530; background: transparent; color: #6b645a;
+    cursor: pointer;
+  }
+  .tasks-filter-chip.active { background: #1a1815; color: #f4f1ea; border-color: #1a1815; }
+  .tasks-filter-chip:hover:not(.active) { background: #1a181508; color: #1a1815; }
+
+  /* Task row */
+  .task-row {
+    display: grid; grid-template-columns: 22px 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 8px 10px; background: #ebe6dc;
+    border-left: 3px solid #6b645a;
+    margin-bottom: 4px;
+  }
+  .task-row.priority-high { border-left-color: #b54a2c; }
+  .task-row.priority-low { border-left-color: #98908380; }
+  .task-row.complete { opacity: 0.55; background: #5a7a4a08; border-left-color: #5a7a4a; }
+  .task-row.complete .task-title { text-decoration: line-through; color: #6b645a; }
+  .task-row.overdue { background: #b54a2c08; border-left-color: #b54a2c; }
+  .task-row.blocked { background: #b54a2c08; border-left-color: #b54a2c; opacity: 0.85; }
+
+  .task-checkbox {
+    width: 18px; height: 18px; cursor: pointer;
+    accent-color: #5a7a4a;
+  }
+  .task-body {
+    min-width: 0;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .task-title {
+    font-size: 13px; color: #1a1815; line-height: 1.4; font-weight: 500;
+  }
+  .task-meta {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a;
+  }
+  .task-meta-assignee {
+    color: #4c6b8c;
+    background: #4c6b8c10; padding: 1px 6px;
+  }
+  .task-meta-due {
+    background: #ebe6dc; padding: 1px 6px; border: 1px solid #1a181520;
+  }
+  .task-meta-due.overdue { color: #b54a2c; border-color: #b54a2c50; font-weight: 700; }
+  .task-meta-due.soon { color: #7a5e10; font-weight: 600; }
+  .task-meta-category {
+    color: #98908380; font-size: 9px;
+  }
+  .task-status-select {
+    padding: 3px 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #1a181530; background: transparent; color: #1a1815;
+    cursor: pointer; appearance: none; min-width: 100px;
+  }
+  .task-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .task-btn-x {
+    background: transparent; border: none; cursor: pointer;
+    color: #98908380; font-size: 16px; padding: 0 4px;
+  }
+  .task-btn-x:hover { color: #b54a2c; }
+
+  .tasks-empty {
+    font-size: 12px; color: #6b645a; font-style: italic;
+    padding: 12px 0;
+    text-align: center;
+  }
+
   /* ACTIVITY LOG — per-case event stream */
   .activity-log {
     border: 1px solid #1a181530; background: #f4f1ea;
@@ -3825,7 +3960,7 @@ function todayPlusDays(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onAddNote, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onAddNote, onAddTask, onUpdateTask, onRemoveTask, onAddStarterTasks, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
 
@@ -4176,6 +4311,17 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline,
                   />
                 )}
 
+                {/* Tasks — per-case work queue */}
+                {!isTerminal && (
+                  <TasksPanel
+                    caseData={c}
+                    onAdd={onAddTask}
+                    onUpdate={onUpdateTask}
+                    onRemove={onRemoveTask}
+                    onAddStarters={onAddStarterTasks}
+                  />
+                )}
+
                 {/* Activity log — event stream / audit trail */}
                 <ActivityLog
                   caseData={c}
@@ -4378,6 +4524,209 @@ function getBridgingKey(cancerType) {
   if (c.includes("follicular") || c.includes(" fl")) return "fl";
   if (c.includes("lymphoma") || c.includes("lbcl") || c.includes("dlbcl")) return "dlbcl";
   return null;
+}
+
+// Tasks panel — per-case task list (the CRM operational layer)
+function TasksPanel({ caseData, onAdd, onUpdate, onRemove, onAddStarters }) {
+  const [open, setOpen] = useState(true);
+  const [draft, setDraft] = useState("");
+  const [draftDue, setDraftDue] = useState("");
+  const [draftPriority, setDraftPriority] = useState("normal");
+  const [draftCategory, setDraftCategory] = useState("admin");
+  const [filter, setFilter] = useState("active"); // active | all | overdue | complete
+
+  const tasks = caseData.tasks || [];
+  const summary = summarizeTasks(tasks);
+
+  const filtered = filter === "all"      ? tasks
+    : filter === "overdue"  ? tasks.filter(isTaskOverdue)
+    : filter === "complete" ? tasks.filter(t => t.status === "complete")
+    : tasks.filter(t => t.status !== "complete");
+
+  // Sort: overdue first, then by due date, then by priority
+  const sorted = [...filtered].sort((a, b) => {
+    const aOver = isTaskOverdue(a) ? 0 : 1;
+    const bOver = isTaskOverdue(b) ? 0 : 1;
+    if (aOver !== bOver) return aOver - bOver;
+    const aDue = a.dueDate || "9999-12-31";
+    const bDue = b.dueDate || "9999-12-31";
+    if (aDue !== bDue) return aDue.localeCompare(bDue);
+    const prio = { high: 0, normal: 1, low: 2 };
+    return (prio[a.priority] || 1) - (prio[b.priority] || 1);
+  });
+
+  const submit = () => {
+    if (!draft.trim()) return;
+    onAdd(caseData.id, {
+      title: draft,
+      dueDate: draftDue || null,
+      priority: draftPriority,
+      category: draftCategory,
+      status: "open",
+    });
+    setDraft("");
+    setDraftDue("");
+    setDraftPriority("normal");
+    setDraftCategory("admin");
+  };
+
+  return (
+    <div className="tasks-panel">
+      <div className="tasks-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="tasks-hdr-title">📋 Tasks</div>
+        <div className="tasks-hdr-summary">
+          {summary.total === 0 ? "no tasks yet" :
+            `${summary.open + summary.inProgress} open · ${summary.complete} done${summary.blocked > 0 ? ` · ${summary.blocked} blocked` : ""}`}
+        </div>
+        {summary.overdue > 0 && (
+          <div className="tasks-hdr-overdue">⚠ {summary.overdue} overdue</div>
+        )}
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={14} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="tasks-body">
+          {/* Add a task */}
+          <div className="tasks-add-row">
+            <input
+              type="text"
+              className="tasks-add-input"
+              placeholder="Add a task (e.g., 'Call PCP for outside records')…"
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") submit(); }}
+            />
+            <input
+              type="date"
+              className="tasks-add-input"
+              style={{ flex: "0 0 140px", minWidth: 0 }}
+              value={draftDue}
+              onChange={e => setDraftDue(e.target.value)}
+            />
+            <select
+              className="task-status-select"
+              value={draftPriority}
+              onChange={e => setDraftPriority(e.target.value)}
+              style={{ minWidth: 90 }}
+              title="Priority"
+            >
+              {TASK_PRIORITIES.map(p => (
+                <option key={p.id} value={p.id}>{p.label}</option>
+              ))}
+            </select>
+            <select
+              className="task-status-select"
+              value={draftCategory}
+              onChange={e => setDraftCategory(e.target.value)}
+              style={{ minWidth: 140 }}
+              title="Category"
+            >
+              {TASK_CATEGORIES.map(c => (
+                <option key={c.id} value={c.id}>{c.label}</option>
+              ))}
+            </select>
+            <button
+              className="tasks-add-btn"
+              onClick={submit}
+              disabled={!draft.trim()}
+            >
+              Add task
+            </button>
+          </div>
+
+          {/* Filter chips + starter tasks helper */}
+          <div className="tasks-filter-row">
+            <button className={`tasks-filter-chip${filter === "active" ? " active" : ""}`} onClick={() => setFilter("active")}>
+              Active ({summary.open + summary.inProgress + summary.blocked})
+            </button>
+            <button className={`tasks-filter-chip${filter === "overdue" ? " active" : ""}`} onClick={() => setFilter("overdue")}>
+              Overdue ({summary.overdue})
+            </button>
+            <button className={`tasks-filter-chip${filter === "complete" ? " active" : ""}`} onClick={() => setFilter("complete")}>
+              Complete ({summary.complete})
+            </button>
+            <button className={`tasks-filter-chip${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>
+              All ({summary.total})
+            </button>
+            <button
+              className="tasks-starter-btn"
+              onClick={() => onAddStarters(caseData.id)}
+              title="Add the typical starter tasks for this case's current stage"
+              style={{ marginLeft: "auto" }}
+            >
+              + Suggest starters
+            </button>
+          </div>
+
+          {/* Task list */}
+          {sorted.length === 0 ? (
+            <div className="tasks-empty">
+              {filter === "active"   ? "No active tasks. " :
+               filter === "overdue"  ? "No overdue tasks." :
+               filter === "complete" ? "No completed tasks yet." :
+                                       "No tasks yet."}
+              {filter === "active" && tasks.length === 0 && (
+                <span> Add one above, or click <strong>+ Suggest starters</strong> for typical tasks at this stage.</span>
+              )}
+            </div>
+          ) : (
+            <div>
+              {sorted.map(t => {
+                const overdue = isTaskOverdue(t);
+                const dueSoon = isTaskDueSoon(t);
+                const days = taskDaysOverdue(t);
+                const catMeta = taskCategoryMeta(t.category);
+                const isComplete = t.status === "complete";
+                const isBlocked = t.status === "blocked";
+                return (
+                  <div
+                    key={t.id}
+                    className={`task-row priority-${t.priority || "normal"}${isComplete ? " complete" : ""}${overdue ? " overdue" : ""}${isBlocked ? " blocked" : ""}`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="task-checkbox"
+                      checked={isComplete}
+                      onChange={() => onUpdate(caseData.id, t.id, { status: isComplete ? "open" : "complete" })}
+                      title="Toggle complete"
+                    />
+                    <div className="task-body">
+                      <div className="task-title">{t.title}</div>
+                      <div className="task-meta">
+                        {t.assignedTo && <span className="task-meta-assignee">{t.assignedTo}</span>}
+                        {t.dueDate && (
+                          <span className={`task-meta-due${overdue ? " overdue" : dueSoon ? " soon" : ""}`}>
+                            {overdue ? `OVERDUE ${days}d` : `Due ${new Date(t.dueDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                          </span>
+                        )}
+                        <span className="task-meta-category">{catMeta.icon} {catMeta.label}</span>
+                        {!isComplete && (
+                          <select
+                            className="task-status-select"
+                            value={t.status}
+                            onChange={e => onUpdate(caseData.id, t.id, { status: e.target.value })}
+                          >
+                            {TASK_STATUSES.map(s => (
+                              <option key={s.id} value={s.id}>{s.label}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                    <div className="task-actions">
+                      <button className="task-btn-x" onClick={() => onRemove(caseData.id, t.id)} title="Remove task">×</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Activity log — vertical event stream per case
@@ -5035,7 +5384,7 @@ function AccuracyModal({ onClose }) {
 }
 
 // ── Operations dashboard (/today) ──────────────────────────────────────────
-function OperationsView({ board, onGoToBoard, onAssignCase, onEscalateCase, onUpdateTimeline, onSetPendingLabs, onSetCaseStage, currentUserName }) {
+function OperationsView({ board, onGoToBoard, onAssignCase, onEscalateCase, onUpdateTimeline, onSetPendingLabs, onSetCaseStage, onUpdateTask, currentUserName }) {
   const [assigneeFilter, setAssigneeFilter] = useState("__all__");
 
   const allItems = computePendingItems(board);
@@ -5078,6 +5427,15 @@ function OperationsView({ board, onGoToBoard, onAssignCase, onEscalateCase, onUp
       case "lab_overdue":
         quickAction = (
           <button className="ops-item-btn" onClick={() => handleMarkLabComplete(it.caseId, it.payload.labId)}>
+            Mark complete
+          </button>
+        );
+        break;
+      case "task_overdue":
+      case "task_today":
+      case "task_week":
+        quickAction = (
+          <button className="ops-item-btn" onClick={() => onUpdateTask(it.caseId, it.payload.taskId, { status: "complete" })}>
             Mark complete
           </button>
         );
@@ -7330,6 +7688,7 @@ export default function App() {
       stageHistory: [{ stage: "pending_review", at: now }],
       timeline: emptyTimeline(),
       events: [initialEvent],
+      tasks: [],
     };
     setBoard(b => [...b, newCase]);
     setBoardAdded(true);
@@ -7463,6 +7822,88 @@ export default function App() {
       const evs = diffEvents(c, next, userName || "you");
       if (evs.length > 0) next.events = [...(c.events || []), ...evs];
       return next;
+    }));
+
+  // ─── Task helpers ─────────────────────────────────────────────────────
+  const addCaseTask = (caseId, taskData) => {
+    const task = newTask({ ...taskData, createdBy: userName || "you" });
+    setBoard(b => b.map(c => {
+      if (c.id !== caseId) return c;
+      const taskEvent = createEvent({
+        type: "note.added",
+        by: userName || "you",
+        title: `Task added: ${task.title}`,
+        detail: [task.assignedTo && `Assigned to ${task.assignedTo}`, task.dueDate && `Due ${task.dueDate}`].filter(Boolean).join(" · "),
+      });
+      return {
+        ...c,
+        tasks: [...(c.tasks || []), task],
+        events: [...(c.events || []), taskEvent],
+      };
+    }));
+  };
+
+  const updateCaseTask = (caseId, taskId, patch) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== caseId) return c;
+      const oldTask = (c.tasks || []).find(t => t.id === taskId);
+      if (!oldTask) return c;
+      const nextTask = { ...oldTask, ...patch };
+      // If marking complete, stamp the completion fields
+      if (patch.status === "complete" && oldTask.status !== "complete") {
+        nextTask.completedAt = new Date().toISOString();
+        nextTask.completedBy = userName || "you";
+      }
+      // If un-completing, clear those fields
+      if (patch.status && patch.status !== "complete" && oldTask.status === "complete") {
+        nextTask.completedAt = null;
+        nextTask.completedBy = null;
+      }
+      const events = [...(c.events || [])];
+      if (patch.status === "complete" && oldTask.status !== "complete") {
+        events.push(createEvent({
+          type: "note.added",
+          by: userName || "you",
+          title: `Task completed: ${nextTask.title}`,
+        }));
+      }
+      return {
+        ...c,
+        tasks: (c.tasks || []).map(t => t.id === taskId ? nextTask : t),
+        events,
+      };
+    }));
+
+  const removeCaseTask = (caseId, taskId) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== caseId) return c;
+      const removed = (c.tasks || []).find(t => t.id === taskId);
+      const events = [...(c.events || [])];
+      if (removed) {
+        events.push(createEvent({
+          type: "note.added",
+          by: userName || "you",
+          title: `Task removed: ${removed.title}`,
+        }));
+      }
+      return { ...c, tasks: (c.tasks || []).filter(t => t.id !== taskId), events };
+    }));
+
+  const addStarterTasks = (caseId) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== caseId) return c;
+      const starters = suggestStarterTasks(c.stage);
+      if (starters.length === 0) return c;
+      const event = createEvent({
+        type: "note.added",
+        by: userName || "you",
+        title: `Added ${starters.length} starter tasks for "${c.stage}" stage`,
+      });
+      return {
+        ...c,
+        tasks: [...(c.tasks || []), ...starters],
+        events: [...(c.events || []), event],
+      };
     }));
 
   // Append a manual note (free-form) as a note.added event
@@ -7728,6 +8169,10 @@ export default function App() {
           onAssignCase={assignBoardCase}
           onEscalateCase={escalateBoardCase}
           onAddNote={addCaseNote}
+          onAddTask={addCaseTask}
+          onUpdateTask={updateCaseTask}
+          onRemoveTask={removeCaseTask}
+          onAddStarterTasks={addStarterTasks}
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
@@ -7750,6 +8195,7 @@ export default function App() {
           onUpdateTimeline={updateBoardCaseTimeline}
           onSetPendingLabs={setPendingLabs}
           onSetCaseStage={setBoardCaseStage}
+          onUpdateTask={updateCaseTask}
           currentUserName={userName}
         />
       )}
