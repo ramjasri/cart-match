@@ -1,0 +1,54 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "description": "Example FHIR R4 Bundle exported by CellTx Match per case",
+  "fhirVersion": "4.0.1",
+  "resourceTypes": [
+    {
+      "type": "Patient",
+      "purpose": "De-identified subject identifier (no PHI by default)"
+    },
+    {
+      "type": "Condition",
+      "purpose": "Underlying cancer diagnosis with ICD-10-CM coding"
+    },
+    {
+      "type": "Observation",
+      "purpose": "ECOG, biomarker expression (CD19/BCMA/CD20/GPRC5D), lab values with LOINC codes"
+    },
+    {
+      "type": "ServiceRequest",
+      "purpose": "Cell therapy referral with SNOMED-coded lifecycle stage"
+    },
+    {
+      "type": "Task",
+      "purpose": "Coordinator tasks with priority, due date, assignee"
+    },
+    {
+      "type": "CarePlan",
+      "purpose": "Apheresis → manufacturing → infusion workflow with scheduled periods"
+    },
+    {
+      "type": "Provenance",
+      "purpose": "Per-event audit trail (every activity log entry maps to one Provenance)"
+    }
+  ],
+  "codeSystems": [
+    {
+      "name": "ICD-10-CM",
+      "use": "Cancer diagnoses"
+    },
+    {
+      "name": "LOINC",
+      "use": "Lab values, biomarker assays, ECOG"
+    },
+    {
+      "name": "SNOMED CT",
+      "use": "Lifecycle stages, procedures, condition status"
+    },
+    {
+      "name": "UCUM",
+      "use": "Lab value units"
+    }
+  ]
+}

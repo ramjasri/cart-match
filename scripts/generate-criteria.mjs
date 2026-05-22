@@ -108,3 +108,58 @@ const bytes = (await readFile(outFile)).length;
 console.log(`✓ Criteria JSON written to public/api/criteria/v1.json`);
 console.log(`  ${dump.meta.productCount} products · ${dump.meta.pathwayCount} pathways · ${dump.meta.blockActionCount + dump.meta.warningActionCount} actions · ${dump.meta.urgencyFactorCount} urgency factors`);
 console.log(`  ${(bytes / 1024).toFixed(1)} kB`);
+
+// ─── FHIR example endpoint ─────────────────────────────────────────────
+const { EXAMPLE_BUNDLE_SCHEMA, caseToFhirBundle } = await import(pathToFileURL(resolve(root, "src/utils/fhir.js")).href);
+
+// Synthetic example case — no PHI, illustrates every resource type
+const exampleCase = {
+  id: "demo-case-001",
+  addedAt: "2026-03-15T10:00:00Z",
+  patientLabel: "Patient (de-identified)",
+  patient: {
+    cancerType: "DLBCL (Large B-cell lymphoma)",
+    priorLines: "3",
+    ecog: "1",
+    cd19: "positive",
+    cd20: "positive",
+    bcma: "unknown",
+    gprc5d: "unknown",
+    primaryRefractory: true,
+    labCreat: "1.1",
+    labLvef: "58",
+    labAlt: "32",
+  },
+  stage: "manufacturing",
+  assignedTo: "Coordinator (example)",
+  results: {},
+  timeline: {
+    referralCreatedAt: "2026-03-22",
+    referralCenter:    "Example Cell Therapy Center",
+    pendingLabs: [
+      { id: "lab-1", name: "CD19 IHC", status: "complete", orderedAt: "2026-03-18", completedAt: "2026-03-22" },
+    ],
+    insurance: { status: "approved", submittedAt: "2026-03-23", decisionAt: "2026-03-30", policy: "Example PPO", authNumber: "EX-0001" },
+    apheresis: { scheduledAt: "2026-04-05", performedAt: "2026-04-05" },
+    manufacturing: { productStartedAt: "2026-04-06", expectedDeliveryAt: "2026-05-04", receivedAt: null },
+    infusion: { scheduledAt: "2026-05-08", conditioningStartAt: "2026-05-05", performedAt: null },
+  },
+  tasks: [
+    { id: "task-1", title: "Confirm infusion bed availability", status: "open", priority: "high", category: "coordination", assignedTo: "Coordinator", dueDate: "2026-05-01", createdAt: "2026-04-20T14:00:00Z" },
+  ],
+  events: [
+    { id: "ev-1", at: "2026-03-15T10:00:00Z", type: "case.created", by: "Coordinator", title: "Case created — Patient (de-identified)", detail: "DLBCL" },
+    { id: "ev-2", at: "2026-03-22T09:30:00Z", type: "referral.initiated", by: "Coordinator", title: "Referral initiated", detail: "→ Example Cell Therapy Center" },
+    { id: "ev-3", at: "2026-03-30T16:00:00Z", type: "insurance.approved", by: "Coordinator", title: "Insurance approved", detail: "Example PPO · auth EX-0001" },
+    { id: "ev-4", at: "2026-04-05T12:00:00Z", type: "apheresis.performed", by: "Coordinator", title: "Apheresis performed", detail: "Date: 2026-04-05" },
+    { id: "ev-5", at: "2026-04-06T08:00:00Z", type: "mfg.started", by: "Coordinator", title: "Manufacturing started", detail: "Expected delivery 2026-05-04" },
+  ],
+};
+
+const exampleBundle = caseToFhirBundle(exampleCase);
+const fhirDir = resolve(root, "public/api/fhir");
+await mkdir(fhirDir, { recursive: true });
+await writeFile(resolve(fhirDir, "example.json"), JSON.stringify(exampleBundle, null, 2));
+await writeFile(resolve(fhirDir, "schema.json"), JSON.stringify(EXAMPLE_BUNDLE_SCHEMA, null, 2));
+console.log(`✓ FHIR example written to public/api/fhir/example.json`);
+console.log(`  ${exampleBundle.entry.length} resources · Bundle type "collection"`);

@@ -1,0 +1,645 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-demo-case-001",
+  "meta": {
+    "lastUpdated": "2026-05-22T15:57:26.449Z",
+    "tag": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "PUBHLTH",
+        "display": "Public health reporting"
+      }
+    ],
+    "profile": [
+      "http://hl7.org/fhir/StructureDefinition/Bundle"
+    ]
+  },
+  "type": "collection",
+  "timestamp": "2026-05-22T15:57:26.449Z",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "demo-case-001-patient",
+        "identifier": [
+          {
+            "system": "https://cart-match.vercel.app/fhir/case-id",
+            "value": "demo-case-001",
+            "use": "usual"
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
+              "code": "DEIDENTIFIED",
+              "display": "De-identified patient record"
+            }
+          ]
+        },
+        "extension": [
+          {
+            "url": "https://cart-match.vercel.app/fhir/StructureDefinition/internal-label",
+            "valueString": "Patient (de-identified)"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "demo-case-001-condition-cancer",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "C83.3",
+              "display": "DLBCL"
+            }
+          ],
+          "text": "DLBCL (Large B-cell lymphoma)"
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "extension": [
+          {
+            "url": "https://cart-match.vercel.app/fhir/StructureDefinition/prior-lines",
+            "valueInteger": 3
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-ecog",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "survey"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89247-1",
+              "display": "ECOG Performance Status score"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueInteger": 1
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-cd19",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84219-2",
+              "display": "CD19 expression"
+            }
+          ],
+          "text": "CD19 expression"
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "10828004",
+              "display": "Positive"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-cd20",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "33747-0",
+              "display": "CD20 expression"
+            }
+          ],
+          "text": "CD20 expression"
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "10828004",
+              "display": "Positive"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-labalt",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "1742-6",
+              "display": "Alanine aminotransferase (ALT)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueQuantity": {
+          "value": 32,
+          "unit": "U/L",
+          "system": "http://unitsofmeasure.org"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-labcreat",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2160-0",
+              "display": "Creatinine"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueQuantity": {
+          "value": 1.1,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "demo-case-001-obs-lablvef",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "10230-1",
+              "display": "Left ventricular ejection fraction"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "valueQuantity": {
+          "value": 58,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "demo-case-001-service-referral",
+        "status": "active",
+        "intent": "order",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "3457005",
+                "display": "Patient referral"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "419964006",
+              "display": "Cell therapy referral"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "reasonReference": [
+          {
+            "reference": "Condition/demo-case-001-condition-cancer"
+          }
+        ],
+        "authoredOn": "2026-03-22",
+        "performer": [
+          {
+            "display": "Example Cell Therapy Center"
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://cart-match.vercel.app/fhir/StructureDefinition/lifecycle-stage",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "415163004",
+              "display": "Cell therapy product manufacturing"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Task",
+        "id": "demo-case-001-task-task-1",
+        "status": "ready",
+        "intent": "order",
+        "priority": "urgent",
+        "description": "Confirm infusion bed availability",
+        "for": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "authoredOn": "2026-04-20T14:00:00Z",
+        "lastModified": "2026-04-20T14:00:00Z",
+        "owner": {
+          "display": "Coordinator"
+        },
+        "restriction": {
+          "period": {
+            "end": "2026-05-01"
+          }
+        },
+        "businessStatus": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/task-category",
+              "code": "coordination",
+              "display": "coordination"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "CarePlan",
+        "id": "demo-case-001-careplan",
+        "status": "active",
+        "intent": "plan",
+        "subject": {
+          "reference": "Patient/demo-case-001-patient"
+        },
+        "period": {
+          "start": "2026-03-15T10:00:00Z"
+        },
+        "addresses": [
+          {
+            "reference": "Condition/demo-case-001-condition-cancer"
+          }
+        ],
+        "activity": [
+          {
+            "detail": {
+              "kind": "Appointment",
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "11800006",
+                    "display": "Leukapheresis"
+                  }
+                ]
+              },
+              "status": "completed",
+              "scheduledPeriod": {
+                "start": "2026-04-05"
+              }
+            }
+          },
+          {
+            "detail": {
+              "kind": "Task",
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "415163004",
+                    "display": "Cell therapy manufacturing"
+                  }
+                ]
+              },
+              "status": "in-progress",
+              "scheduledPeriod": {
+                "start": "2026-04-06",
+                "end": "2026-05-04"
+              }
+            }
+          },
+          {
+            "detail": {
+              "kind": "Appointment",
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "419964006",
+                    "display": "Cell therapy infusion"
+                  }
+                ]
+              },
+              "status": "scheduled",
+              "scheduledPeriod": {
+                "start": "2026-05-08"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "demo-case-001-prov-ev-1",
+        "target": [
+          {
+            "reference": "Patient/demo-case-001-patient"
+          }
+        ],
+        "recorded": "2026-03-15T10:00:00Z",
+        "agent": [
+          {
+            "who": {
+              "display": "Coordinator"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "author"
+                }
+              ]
+            }
+          }
+        ],
+        "activity": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/event-type",
+              "code": "case.created",
+              "display": "Case created — Patient (de-identified)"
+            }
+          ],
+          "text": "Case created — Patient (de-identified) — DLBCL"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "demo-case-001-prov-ev-2",
+        "target": [
+          {
+            "reference": "Patient/demo-case-001-patient"
+          }
+        ],
+        "recorded": "2026-03-22T09:30:00Z",
+        "agent": [
+          {
+            "who": {
+              "display": "Coordinator"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "author"
+                }
+              ]
+            }
+          }
+        ],
+        "activity": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/event-type",
+              "code": "referral.initiated",
+              "display": "Referral initiated"
+            }
+          ],
+          "text": "Referral initiated — → Example Cell Therapy Center"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "demo-case-001-prov-ev-3",
+        "target": [
+          {
+            "reference": "Patient/demo-case-001-patient"
+          }
+        ],
+        "recorded": "2026-03-30T16:00:00Z",
+        "agent": [
+          {
+            "who": {
+              "display": "Coordinator"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "author"
+                }
+              ]
+            }
+          }
+        ],
+        "activity": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/event-type",
+              "code": "insurance.approved",
+              "display": "Insurance approved"
+            }
+          ],
+          "text": "Insurance approved — Example PPO · auth EX-0001"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "demo-case-001-prov-ev-4",
+        "target": [
+          {
+            "reference": "Patient/demo-case-001-patient"
+          }
+        ],
+        "recorded": "2026-04-05T12:00:00Z",
+        "agent": [
+          {
+            "who": {
+              "display": "Coordinator"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "author"
+                }
+              ]
+            }
+          }
+        ],
+        "activity": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/event-type",
+              "code": "apheresis.performed",
+              "display": "Apheresis performed"
+            }
+          ],
+          "text": "Apheresis performed — Date: 2026-04-05"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "demo-case-001-prov-ev-5",
+        "target": [
+          {
+            "reference": "Patient/demo-case-001-patient"
+          }
+        ],
+        "recorded": "2026-04-06T08:00:00Z",
+        "agent": [
+          {
+            "who": {
+              "display": "Coordinator"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "author"
+                }
+              ]
+            }
+          }
+        ],
+        "activity": {
+          "coding": [
+            {
+              "system": "https://cart-match.vercel.app/fhir/CodeSystem/event-type",
+              "code": "mfg.started",
+              "display": "Manufacturing started"
+            }
+          ],
+          "text": "Manufacturing started — Expected delivery 2026-05-04"
+        }
+      }
+    }
+  ]
+}

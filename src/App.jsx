@@ -17,6 +17,7 @@ function useAuth() {
 import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
 import { generateReferralPacket } from "./utils/generateReferralPacket.js";
+import { downloadCaseAsFhir } from "./utils/fhir.js";
 import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
 import { calculateUrgency } from "./utils/urgency.js";
 import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS, PATHWAY_CATALOG } from "./utils/pathways.js";
@@ -3039,6 +3040,123 @@ const CSS = `
     padding: 12px 0;
   }
 
+  /* RESEARCH / PARTNERSHIPS — /research */
+  .research-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .research-view { padding: 36px 20px 60px; } }
+
+  .research-hero { margin-bottom: 40px; }
+  .research-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #4c6b8c;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .research-tag::before { content: ''; width: 24px; height: 1px; background: #4c6b8c; }
+  .research-h1 {
+    font-family: 'Fraunces', serif; font-size: 42px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .research-h1 em { font-style: italic; color: #4c6b8c; }
+  .research-sub {
+    font-size: 15px; color: #6b645a; max-width: 700px;
+    margin: 16px 0 0; line-height: 1.65;
+  }
+
+  .research-card-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 860px) { .research-card-grid { grid-template-columns: 1fr; } }
+
+  .research-card {
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 26px 28px;
+  }
+  .research-card.dark { background: #1a1815; color: #f4f1ea; }
+  .research-card-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 12px;
+  }
+  .research-card.dark .research-card-tag { color: #c4a661; }
+  .research-card-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; line-height: 1.2; letter-spacing: -0.015em;
+    margin: 0 0 12px;
+  }
+  .research-card.dark .research-card-title { color: #f4f1ea; }
+  .research-card-body {
+    font-size: 14px; color: #3a352e; line-height: 1.65; margin-bottom: 16px;
+  }
+  .research-card.dark .research-card-body { color: #f4f1eacc; }
+  .research-card-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #1a1815; text-decoration: none; border-bottom: 1px dotted #1a181580;
+    padding-bottom: 2px;
+  }
+  .research-card.dark .research-card-link { color: #c4a661; border-bottom-color: #c4a66180; }
+  .research-card-link:hover { color: #4c6b8c; }
+
+  .research-section { margin-bottom: 32px; }
+  .research-section-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid #1a181530;
+  }
+  .research-section-body p {
+    font-size: 14.5px; color: #1a1815; line-height: 1.7;
+    margin: 0 0 12px;
+  }
+  .research-spec-table {
+    background: #ebe6dc; padding: 18px 22px;
+    border-left: 3px solid #4c6b8c;
+  }
+  .research-spec-row {
+    display: grid; grid-template-columns: 200px 1fr; gap: 14px;
+    padding: 6px 0; border-bottom: 1px solid #1a181515;
+    font-size: 13px;
+  }
+  @media (max-width: 700px) { .research-spec-row { grid-template-columns: 1fr; } }
+  .research-spec-row:last-child { border-bottom: none; }
+  .research-spec-key {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #6b645a;
+  }
+  .research-spec-val { color: #1a1815; line-height: 1.55; }
+  .research-spec-val code {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    background: #f4f1ea; padding: 1px 5px; color: #4c6b8c;
+  }
+
+  .research-cta-band {
+    background: #1a1815; color: #f4f1ea;
+    padding: 32px 36px; margin-top: 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+  }
+  .research-cta-text {
+    flex: 1; min-width: 280px;
+  }
+  .research-cta-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    margin: 0 0 6px; letter-spacing: -0.012em;
+  }
+  .research-cta-title em { font-style: italic; color: #c4a661; }
+  .research-cta-sub {
+    font-size: 13.5px; color: #f4f1eaaa; line-height: 1.6;
+  }
+  .research-cta-btn {
+    padding: 13px 22px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    background: #b54a2c; color: #f4f1ea; border: none; cursor: pointer;
+    transition: background 0.12s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .research-cta-btn:hover { background: #c4a661; color: #1a1815; }
+
   /* RETROSPECTIVE ANALYSIS — /retrospective */
   .retro-view {
     max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
@@ -4579,6 +4697,13 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline,
                     >
                       📨 Referral packet
                     </button>
+                    <button
+                      className="board-btn"
+                      onClick={() => downloadCaseAsFhir(c)}
+                      title="Export this case as a FHIR R4 Bundle (for EHR integration / research)"
+                    >
+                      ↧ FHIR
+                    </button>
                     <button className="board-btn" onClick={() => onLoadCase(c)}>Re-screen</button>
                     <button className="board-btn danger" onClick={() => onRemoveCase(c.id)}>Remove</button>
                   </div>
@@ -5544,6 +5669,236 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── Research & Partnerships page (/research) ──────────────────────────────
+function ResearchView({ onGoToCriteria, onGoToRetro, onGoToAnalytics }) {
+  return (
+    <div className="research-view">
+      <div className="research-hero">
+        <div className="research-tag">Research · Partnerships · Integration</div>
+        <h1 className="research-h1">
+          The <em>operational ontology</em> for<br />
+          cell therapy referrals
+        </h1>
+        <p className="research-sub">
+          CellTx Match isn't just a screener — it's a structured ontology and longitudinal
+          dataset of cell therapy referral decisions. We work with academic researchers,
+          oncology data partners, EHR vendors, and pharma medical affairs teams to integrate
+          this infrastructure into existing clinical and research workflows.
+        </p>
+      </div>
+
+      {/* Four collaboration types */}
+      <div className="research-card-grid">
+        <div className="research-card">
+          <div className="research-card-tag">Academic research</div>
+          <h3 className="research-card-title">Co-author a retrospective referral-timing study</h3>
+          <p className="research-card-body">
+            Bring de-identified historical referral data; we provide the analysis engine,
+            sample size calculations, and a drafted methodology section. Suitable for
+            single-center or multi-center retrospective studies on referral delays, eligibility
+            erosion during workup, and end-to-end pipeline conversion.
+          </p>
+          <button
+            className="research-card-link"
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", letterSpacing: "inherit", textTransform: "inherit", color: "inherit", borderBottom: "1px dotted #1a181580" }}
+            onClick={onGoToRetro}
+          >
+            Try the retrospective tool →
+          </button>
+        </div>
+
+        <div className="research-card">
+          <div className="research-card-tag">EHR / FHIR integration</div>
+          <h3 className="research-card-title">SMART-on-FHIR ready data model</h3>
+          <p className="research-card-body">
+            Every case exports as a FHIR R4 Bundle (Patient · Condition · Observation ·
+            ServiceRequest · Task · CarePlan · Provenance). LOINC for labs, ICD-10-CM for
+            conditions, SNOMED CT for procedures, UCUM for units. Designed to slot into
+            Epic, Oracle Health, Athenahealth, and other major EHRs.
+          </p>
+          <a className="research-card-link" href="/api/fhir/example.json" target="_blank" rel="noopener noreferrer">
+            View example FHIR Bundle →
+          </a>
+        </div>
+
+        <div className="research-card">
+          <div className="research-card-tag">Real-world evidence</div>
+          <h3 className="research-card-title">Structured pipeline data, pre-treatment</h3>
+          <p className="research-card-body">
+            CellTx captures the operational decision point that current RWD platforms miss:
+            who was referred, when, why they were eligible (or weren't), how long the workup
+            took, and what the outcome was. De-identified outcomes CSV available on every
+            program's analytics dashboard.
+          </p>
+          <button
+            className="research-card-link"
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", letterSpacing: "inherit", textTransform: "inherit", color: "inherit", borderBottom: "1px dotted #1a181580" }}
+            onClick={onGoToAnalytics}
+          >
+            See analytics dashboard →
+          </button>
+        </div>
+
+        <div className="research-card dark">
+          <div className="research-card-tag">Pharma medical affairs</div>
+          <h3 className="research-card-title">Pre-referral decision intelligence</h3>
+          <p className="research-card-body">
+            The platform surfaces FDA-approved products in clinical context at the point of
+            referral. Pharma medical affairs teams interested in workflow-level visibility
+            into how products are selected — pivotal trial citations, indication match,
+            sequencing logic — can engage through sponsored content or aggregate analytics.
+            All sponsored placement is transparent to the clinician and disclosed in the criteria library.
+          </p>
+          <a className="research-card-link" href="mailto:sri.ramya003@gmail.com?subject=Pharma%20Medical%20Affairs%20Partnership">
+            Contact for partnership →
+          </a>
+        </div>
+      </div>
+
+      {/* Technical specifications */}
+      <div className="research-section">
+        <h2 className="research-section-title">Data model &amp; integration specifications</h2>
+        <div className="research-section-body">
+          <p>
+            CellTx Match is built on a structured data model designed for interoperability
+            with major EHR and RWD platforms. Every case carries a complete clinical timeline,
+            audit trail, and outcome record — all exportable as standards-aligned data.
+          </p>
+        </div>
+
+        <div className="research-spec-table">
+          <div className="research-spec-row">
+            <div className="research-spec-key">Clinical data model</div>
+            <div className="research-spec-val">
+              FHIR R4 (HL7 v4.0.1) · Bundle export per case via{" "}
+              <code>downloadCaseAsFhir()</code> client-side helper.
+              No PHI transmitted server-side on Free / Pilot / Institutional tiers.
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Code systems</div>
+            <div className="research-spec-val">
+              ICD-10-CM (conditions) · LOINC (labs, biomarkers, ECOG) ·
+              SNOMED CT (procedures, lifecycle stages) · UCUM (lab units)
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Resource types exported</div>
+            <div className="research-spec-val">
+              <code>Patient</code> (de-identified) · <code>Condition</code> ·{" "}
+              <code>Observation</code> · <code>ServiceRequest</code> ·{" "}
+              <code>Task</code> · <code>CarePlan</code> · <code>Provenance</code>
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Rule library</div>
+            <div className="research-spec-val">
+              Public JSON catalog of every FDA label rule, NCCN-aligned pathway, urgency
+              factor, and trial-scoring weight.{" "}
+              <a href="/api/criteria/v1.json" target="_blank" rel="noopener noreferrer" style={{ color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80" }}>
+                /api/criteria/v1.json
+              </a>
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Outcomes export</div>
+            <div className="research-spec-val">
+              De-identified per-program CSV: case ID hash, cancer type, lines, ECOG, lifecycle
+              stage, outcome, time-to-each-stage, biomarker status, high-risk modifiers.
+              Available on every institution's analytics dashboard.
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Privacy architecture</div>
+            <div className="research-spec-val">
+              Patient data lives entirely in browser <code>localStorage</code>. Shareable case
+              URLs encode state as base64 in the URL hash (never transmitted). HIPAA BAA
+              available on Enterprise tier for server-side sync requirements.
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Update cadence</div>
+            <div className="research-spec-val">
+              Rule library reviewed within 30 days of FDA approvals or NCCN guideline updates.
+              Quarterly clinical content briefings to Institutional and Enterprise customers.
+            </div>
+          </div>
+          <div className="research-spec-row">
+            <div className="research-spec-key">Regulatory positioning</div>
+            <div className="research-spec-val">
+              Not a medical device. Qualifies as clinical decision support exempt from
+              premarket review under 21st Century Cures Act §3060(a).{" "}
+              <button
+                onClick={() => onGoToCriteria()}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80", font: "inherit" }}
+              >
+                View criteria library →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* What we're looking for */}
+      <div className="research-section">
+        <h2 className="research-section-title">Active collaboration interests</h2>
+        <div className="research-section-body">
+          <p style={{ marginBottom: 18 }}>
+            We're currently engaged or actively seeking partnerships in the following areas:
+          </p>
+          <ul style={{ paddingLeft: 22, margin: 0, fontSize: 14.5, lineHeight: 1.85, color: "#1a1815" }}>
+            <li>
+              <strong>Charter pilot institutions</strong> — first 5 CAR-T programs to deploy
+              receive free 3-month pilot in exchange for co-authored case study.
+            </li>
+            <li>
+              <strong>Retrospective study collaborators</strong> — academic centers with
+              de-identified historical referral data interested in publishing referral-timing
+              analyses.
+            </li>
+            <li>
+              <strong>EHR vendor partnerships</strong> — SMART-on-FHIR launch integration with
+              Epic, Oracle Health, or Athenahealth specialty modules.
+            </li>
+            <li>
+              <strong>RWD aggregation partners</strong> — oncology data platforms interested in
+              the longitudinal pre-treatment pipeline data CellTx captures.
+            </li>
+            <li>
+              <strong>Pharma medical affairs</strong> — sponsored content and aggregate analytics
+              for CAR-T and bispecific antibody manufacturers, with full clinician-facing
+              disclosure.
+            </li>
+            <li>
+              <strong>Trial sponsor matching</strong> — biotech sponsors of recruiting cell
+              therapy trials interested in patient-level matching infrastructure.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {/* CTA band */}
+      <div className="research-cta-band">
+        <div className="research-cta-text">
+          <h3 className="research-cta-title">
+            Interested in a <em>partnership</em>, integration, or research collaboration?
+          </h3>
+          <p className="research-cta-sub">
+            Reply directly to Ramja Sritharan, founder · Tumor immunology PhD · Translational
+            oncology workflows. Replies within 1 business day.
+          </p>
+        </div>
+        <a
+          href="mailto:sri.ramya003@gmail.com?subject=CellTx%20Match%20-%20Partnership%20Inquiry"
+          className="research-cta-btn"
+        >
+          Reach out →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ── Retrospective Validation Tool (/retrospective) ────────────────────────
 function RetrospectiveView({ onGoToScreener }) {
   const [csvText, setCsvText] = useState("");
@@ -6245,6 +6600,96 @@ function AnalyticsView({ board, onGoToBoard, onGoToScreener }) {
       <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
         <button className="board-btn primary" onClick={onGoToBoard}>← Back to tumor board</button>
         <button className="board-btn" onClick={() => window.print()}>Print / save as PDF</button>
+        <button
+          className="board-btn"
+          onClick={() => {
+            // De-identified outcomes CSV — RWD-grade aggregate export.
+            // Strips patient labels (uses case_id hash), notes, and any free text.
+            const stageOf = c => c.stage || "pending_review";
+            const cols = [
+              "case_id", "added_date", "cancer_type", "prior_lines", "ecog",
+              "current_stage", "outcome",
+              "days_screen_to_referral", "days_referral_to_apheresis",
+              "days_apheresis_to_infusion", "days_screen_to_infusion",
+              "cd19", "bcma", "cd20", "gprc5d",
+              "primary_refractory", "pod24", "double_hit", "blastoid_variant",
+              "tp53_mutated", "lenalidomide_refractory",
+              "high_risk_cytogenetics", "extramedullary_disease",
+            ];
+            const escape = v => {
+              if (v === null || v === undefined) return "";
+              const s = String(v);
+              if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+                return `"${s.replace(/"/g, '""')}"`;
+              }
+              return s;
+            };
+            const daysBetween = (a, b) => {
+              if (!a || !b) return "";
+              try {
+                return Math.round((new Date(b) - new Date(a)) / 86400000);
+              } catch { return ""; }
+            };
+            const hashId = (id) => {
+              // Short non-reversible hash for case_id de-identification
+              let h = 0;
+              for (let i = 0; i < id.length; i++) {
+                h = ((h << 5) - h) + id.charCodeAt(i);
+                h |= 0;
+              }
+              return `C${Math.abs(h).toString(36).slice(0, 8)}`;
+            };
+            const lines = [cols.join(",")];
+            board.forEach(c => {
+              const p = c.patient || {};
+              const t = c.timeline || {};
+              const stage = stageOf(c);
+              const hist = c.stageHistory || [];
+              const firstStageAt = hist[0]?.at;
+              const refAt = hist.find(h => h.stage === "referred")?.at || t.referralCreatedAt;
+              const aphAt = t.apheresis?.performedAt;
+              const infAt = t.infusion?.performedAt;
+              const cancerKey = (p.cancerType || "").split("(")[0].trim();
+              const row = [
+                hashId(c.id),
+                (c.addedAt || "").slice(0, 10),
+                cancerKey,
+                p.priorLines || "",
+                p.ecog || "",
+                stage,
+                c.outcome || "",
+                daysBetween(firstStageAt, refAt),
+                daysBetween(refAt, aphAt),
+                daysBetween(aphAt, infAt),
+                daysBetween(firstStageAt, infAt),
+                p.cd19 || "unknown",
+                p.bcma || "unknown",
+                p.cd20 || "unknown",
+                p.gprc5d || "unknown",
+                p.primaryRefractory ? "1" : "0",
+                p.pod24 ? "1" : "0",
+                p.doubleHit ? "1" : "0",
+                p.blastoidVariant ? "1" : "0",
+                p.tp53Mutated ? "1" : "0",
+                p.lenalidomideRefractory ? "1" : "0",
+                p.highRiskCytogenetics ? "1" : "0",
+                p.extramedullaryDisease ? "1" : "0",
+              ];
+              lines.push(row.map(escape).join(","));
+            });
+            const csv = lines.join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `celltx-outcomes-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          title="De-identified outcomes export · suitable for RWD analysis"
+        >
+          ↧ Outcomes CSV (de-identified)
+        </button>
       </div>
     </div>
   );
@@ -7950,8 +8395,9 @@ export default function App() {
     if (p === "/analytics") return "analytics";
     if (p === "/today") return "today";
     if (p === "/retrospective") return "retrospective";
+    if (p === "/research") return "research";
     return "screener";
-  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics" | "retrospective"
+  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics" | "retrospective" | "research"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -7988,6 +8434,7 @@ export default function App() {
       : view === "analytics" ? "/analytics"
       : view === "today" ? "/today"
       : view === "retrospective" ? "/retrospective"
+      : view === "research" ? "/research"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -8034,6 +8481,7 @@ export default function App() {
       else if (p === "/analytics") setView("analytics");
       else if (p === "/today") setView("today");
       else if (p === "/retrospective") setView("retrospective");
+      else if (p === "/research") setView("research");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -8599,6 +9047,15 @@ export default function App() {
       {/* RETROSPECTIVE VALIDATION TOOL (public — research/credibility surface) */}
       {view === "retrospective" && (
         <RetrospectiveView onGoToScreener={() => setView("screener")} />
+      )}
+
+      {/* RESEARCH & PARTNERSHIPS (public — acquirer/investor/BD surface) */}
+      {view === "research" && (
+        <ResearchView
+          onGoToCriteria={() => setView("criteria")}
+          onGoToRetro={() => setView("retrospective")}
+          onGoToAnalytics={() => setView("analytics")}
+        />
       )}
 
       {/* TODAY / OPERATIONS DASHBOARD (signed-in only) */}
@@ -9187,6 +9644,13 @@ export default function App() {
             onClick={() => setView("retrospective")}
           >
             Retrospective Tool →
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("research")}
+          >
+            Research &amp; Partnerships →
           </button>
           <button
             className="footer-link"
