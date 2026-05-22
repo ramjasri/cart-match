@@ -6,6 +6,33 @@
 
 import { evaluatePathway } from "./pathways.js";
 
+// ─── Static rubric (for criteria browser) ─────────────────────────────────
+export const URGENCY_RUBRIC = {
+  factors: [
+    { factor: "Rapidly progressive disease",        weight: 4 },
+    { factor: "Primary refractory (no 1L response)", weight: 3 },
+    { factor: "ECOG ≥ 3 (declining)",                weight: 3 },
+    { factor: "≥4 prior lines",                      weight: 3 },
+    { factor: "B symptoms present",                  weight: 2 },
+    { factor: "3 prior lines",                       weight: 2 },
+    { factor: "Triple-class exposed MM",             weight: 2 },
+    { factor: "Pathway high-risk modifier (per disease)", weight: 2 },
+    { factor: "Stable disease tempo",                weight: 1 },
+    { factor: "Elevated LDH",                        weight: 1 },
+    { factor: "ECOG 2 (borderline)",                 weight: 1 },
+    { factor: "2 prior lines",                       weight: 1 },
+    { factor: "Creatinine > 1.5 mg/dL",              weight: 1 },
+    { factor: "LVEF < 50%",                          weight: 1 },
+  ],
+  thresholds: [
+    { level: "HIGH",     score: "≥ 8", timeline: "Apheresis evaluation within 7 days · expedite prior auth · bridging in parallel" },
+    { level: "MODERATE", score: "4–7", timeline: "Initiate referral within 1–2 weeks · complete missing biomarker/labs" },
+    { level: "LOW",      score: "1–3", timeline: "Schedule referral at next routine visit · monitor for tempo changes" },
+  ],
+  source: "Internal rubric · derived from NCCN risk stratification and pivotal trial entry criteria",
+};
+
+
 export function calculateUrgency(pt) {
   let score = 0;
   const factors = [];

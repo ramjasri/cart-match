@@ -18,7 +18,10 @@ import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
 import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
 import { calculateUrgency } from "./utils/urgency.js";
-import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS } from "./utils/pathways.js";
+import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS, PATHWAY_CATALOG } from "./utils/pathways.js";
+import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
+import { URGENCY_RUBRIC } from "./utils/urgency.js";
+import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -1290,6 +1293,234 @@ const CSS = `
   }
   .pass-item svg { flex-shrink: 0; margin-top: 1px; }
 
+  /* CRITERIA CATALOG */
+  .crit-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .crit-view { padding: 36px 20px 60px; } }
+
+  .crit-hero { margin-bottom: 36px; }
+  .crit-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 12px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .crit-tag::before { content: ''; width: 24px; height: 1px; background: #6b645a; }
+  .crit-h1 {
+    font-family: 'Fraunces', serif; font-size: 38px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .crit-h1 em { font-style: italic; color: #b54a2c; }
+  .crit-sub {
+    font-size: 14.5px; color: #6b645a; max-width: 680px;
+    margin: 14px 0 0; line-height: 1.65;
+  }
+
+  .crit-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid #1a1815; margin: 30px 0 0;
+  }
+  @media (max-width: 700px) { .crit-stats { grid-template-columns: repeat(2, 1fr); } }
+  .crit-stat {
+    padding: 16px 18px;
+    border-right: 1px solid #1a181520;
+  }
+  .crit-stat:last-child { border-right: none; }
+  @media (max-width: 700px) {
+    .crit-stat:nth-child(2n) { border-right: none; }
+    .crit-stat:nth-child(-n+2) { border-bottom: 1px solid #1a181520; }
+  }
+  .crit-stat-num {
+    font-family: 'Fraunces', serif; font-size: 30px; font-weight: 400;
+    color: #1a1815; line-height: 1;
+  }
+  .crit-stat-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #6b645a;
+    margin-top: 6px;
+  }
+
+  /* Sticky section nav */
+  .crit-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: #f4f1ea; border-bottom: 1px solid #1a181530;
+    padding: 14px 0; margin: 36px 0 0;
+    display: flex; gap: 2px; flex-wrap: wrap;
+  }
+  .crit-nav-btn {
+    padding: 7px 14px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.13em;
+    border: 1px solid #1a181530; background: transparent; color: #6b645a;
+    text-decoration: none; transition: all 0.12s;
+  }
+  .crit-nav-btn:hover { color: #1a1815; background: #1a181508; }
+
+  .crit-section { margin-top: 40px; scroll-margin-top: 80px; }
+  .crit-section-hdr {
+    border-top: 1px solid #1a1815; padding-top: 22px; margin-bottom: 22px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  }
+  .crit-section-title {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400;
+    color: #1a1815; letter-spacing: -0.018em; margin: 0;
+  }
+  .crit-section-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; text-transform: uppercase; letter-spacing: 0.15em;
+  }
+
+  /* Rule card (used for products + pathways) */
+  .rule-card {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .rule-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #ebe6dc;
+    border-bottom: 1px solid #1a181520;
+  }
+  .rule-hdr-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .rule-hdr-name {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    color: #1a1815; line-height: 1;
+  }
+  .rule-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; margin-top: 4px;
+  }
+  .rule-hdr-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 3px 8px; border: 1px solid currentColor; flex-shrink: 0;
+  }
+  .rule-body { padding: 18px 20px; }
+  .rule-sub-section { margin-bottom: 18px; }
+  .rule-sub-section:last-child { margin-bottom: 0; }
+  .rule-sub-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+
+  /* Rule table */
+  .rule-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  .rule-table tr { border-bottom: 1px solid #1a181515; }
+  .rule-table tr:last-child { border-bottom: none; }
+  .rule-table td {
+    padding: 8px 10px; color: #1a1815; line-height: 1.5;
+    vertical-align: top;
+  }
+  .rule-table td:first-child {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; text-transform: uppercase; letter-spacing: 0.12em;
+    width: 38%; padding-left: 0;
+  }
+  .rule-table td:last-child {
+    font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  }
+
+  /* Rule list */
+  .rule-list {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .rule-list li {
+    font-size: 12.5px; color: #3a352e; line-height: 1.55;
+    padding: 5px 0 5px 14px; border-bottom: 1px solid #1a181510;
+    position: relative;
+  }
+  .rule-list li:last-child { border-bottom: none; }
+  .rule-list li::before {
+    content: '·'; position: absolute; left: 0; font-weight: 700; color: #1a1815;
+  }
+  .rule-list.nccn li::before { content: ''; }
+  .rule-list.nccn li {
+    padding-left: 50px;
+  }
+  .rule-list.nccn li::after {
+    content: 'NCCN'; position: absolute; left: 0; top: 5px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    font-weight: 700; letter-spacing: 0.1em; color: #4c6b8c;
+    padding: 1px 5px; border: 1px solid #4c6b8c45;
+  }
+
+  /* Product preference row */
+  .pref-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #1a181510;
+    font-size: 12.5px; line-height: 1.5; color: #3a352e;
+  }
+  .pref-row:last-child { border-bottom: none; }
+  .pref-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    min-width: 84px; flex-shrink: 0;
+  }
+  .pref-trial {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; flex-shrink: 0; min-width: 110px;
+  }
+
+  /* Action rule row */
+  .action-row {
+    border-bottom: 1px solid #1a181515;
+    padding: 10px 0;
+  }
+  .action-row:last-child { border-bottom: none; }
+  .action-trigger {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    font-weight: 700; color: #1a1815;
+    background: #ebe6dc; padding: 3px 8px; display: inline-block;
+    margin-bottom: 6px;
+  }
+  .action-text {
+    font-size: 12.5px; color: #3a352e; line-height: 1.55;
+    padding-left: 18px; position: relative;
+  }
+  .action-text::before {
+    content: '→'; position: absolute; left: 0; color: #c4a661; font-weight: 600;
+  }
+
+  /* Source citation */
+  .rule-source {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid #1a181520;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; flex-wrap: wrap;
+  }
+  .rule-source-label {
+    text-transform: uppercase; letter-spacing: 0.16em;
+  }
+  .rule-source a {
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+  }
+  .rule-source a:hover { color: #1a1815; }
+
+  /* Score factor table */
+  .score-table {
+    width: 100%; border-collapse: collapse;
+    background: #f4f1ea; border: 1px solid #1a181530;
+  }
+  .score-table th, .score-table td {
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid #1a181515; font-size: 12px;
+  }
+  .score-table th {
+    background: #1a1815; color: #f4f1ea;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 600;
+  }
+  .score-table td.weight {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    text-align: right; width: 80px;
+  }
+  .score-table td.weight.neg { color: #b54a2c; }
+  .score-table td.weight.pos { color: #5a7a4a; }
+
   /* PRICING PAGE */
   .pricing-view {
     max-width: 1200px; margin: 0 auto; padding: 60px 40px 80px;
@@ -2266,6 +2497,365 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── Criteria catalog page ──────────────────────────────────────────────────
+function CriteriaView({ products, bispecifics, onBackToScreener }) {
+  // Counts for stat header
+  const totalProducts = products.length + bispecifics.length;
+  const pathwayCount  = PATHWAY_CATALOG.length;
+  const actionCount   = BLOCK_ACTIONS.length + WARNING_ACTIONS.length;
+  const urgencyCount  = URGENCY_RUBRIC.factors.length;
+
+  // Helper: format organ thresholds
+  const fmtOrgan = (t) => [
+    { label: "ALT / AST",  val: t.altMax === t.astMax ? `≤ ${t.altMax} U/L` : `ALT ≤ ${t.altMax} · AST ≤ ${t.astMax} U/L` },
+    { label: "Creatinine", val: `≤ ${t.creatMax} mg/dL` + (t.crclMin ? `  OR  CrCl ≥ ${t.crclMin} mL/min` : "") },
+    { label: "Bilirubin",  val: `≤ ${t.bilMax} mg/dL` },
+    t.lvefMin > 0 ? { label: "LVEF", val: `≥ ${t.lvefMin}%` } : null,
+    t.spo2Min > 0 ? { label: "SpO₂", val: `≥ ${t.spo2Min}% on room air` } : null,
+  ].filter(Boolean);
+
+  // PI URL lookup
+  const piUrl = (name) => PI_LINKS.find(p => p.name === name)?.url;
+
+  // Find product by id (for pathway preference rows)
+  const findProd = (id) => [...products, ...bispecifics].find(p => p.id === id);
+
+  return (
+    <div className="crit-view">
+      {/* Hero */}
+      <div className="crit-hero">
+        <div className="crit-tag">Criteria Library · May 2026</div>
+        <h1 className="crit-h1">
+          The <em>structured rule library</em><br />
+          that powers every analysis
+        </h1>
+        <p className="crit-sub">
+          Every eligibility rule in CellTx Match — derived directly from FDA prescribing information,
+          NCCN guidelines, and pivotal trial entry criteria. Browse, audit, and verify the logic
+          before it ever runs on a patient.
+        </p>
+
+        <div className="crit-stats">
+          <div className="crit-stat">
+            <div className="crit-stat-num">{totalProducts}</div>
+            <div className="crit-stat-label">Approved products</div>
+          </div>
+          <div className="crit-stat">
+            <div className="crit-stat-num">{pathwayCount}</div>
+            <div className="crit-stat-label">Disease pathways</div>
+          </div>
+          <div className="crit-stat">
+            <div className="crit-stat-num">{actionCount}</div>
+            <div className="crit-stat-label">Action rules</div>
+          </div>
+          <div className="crit-stat">
+            <div className="crit-stat-num">{urgencyCount}</div>
+            <div className="crit-stat-label">Urgency factors</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky section nav */}
+      <div className="crit-nav">
+        <a href="#products" className="crit-nav-btn">Products</a>
+        <a href="#pathways" className="crit-nav-btn">Disease Pathways</a>
+        <a href="#actions" className="crit-nav-btn">Action Engine</a>
+        <a href="#urgency" className="crit-nav-btn">Urgency Rubric</a>
+        <a href="#trials" className="crit-nav-btn">Trial Matching</a>
+        <button className="crit-nav-btn" onClick={onBackToScreener}>← Screener</button>
+      </div>
+
+      {/* ── Products ────────────────────────────────────────────────────── */}
+      <section id="products" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">FDA-Approved Products</h2>
+          <span className="crit-section-meta">{totalProducts} products · sourced from FDA prescribing information</span>
+        </div>
+
+        {[...products, ...bispecifics].map(p => {
+          const isBispecific = p.type === "bispecific";
+          return (
+            <div key={p.id} className="rule-card">
+              <div className="rule-hdr">
+                <div className="rule-hdr-dot" style={{ background: p.color }} />
+                <div style={{ flex: 1 }}>
+                  <div className="rule-hdr-name">{p.name}</div>
+                  <div className="rule-hdr-sub">{p.generic} · {p.sponsor}</div>
+                </div>
+                <span className="rule-hdr-tag" style={{ color: isBispecific ? "#4c6b8c" : "#b54a2c" }}>
+                  {isBispecific ? "Bispecific" : "CAR-T"}
+                </span>
+                <span className="rule-hdr-tag" style={{ color: p.color }}>{p.target}</span>
+              </div>
+
+              <div className="rule-body">
+                <div className="rule-sub-section">
+                  <div className="rule-sub-head">Approved indications</div>
+                  <ul className="rule-list">
+                    {p.indications.map((ind, i) => <li key={i}>{ind}</li>)}
+                  </ul>
+                </div>
+
+                <div className="rule-sub-section">
+                  <div className="rule-sub-head">Computable eligibility rules</div>
+                  <table className="rule-table">
+                    <tbody>
+                      <tr>
+                        <td>Required marker</td>
+                        <td>{p.targetMarker} expression</td>
+                      </tr>
+                      <tr>
+                        <td>Minimum prior lines</td>
+                        <td>≥ {p.minPriorLines}</td>
+                      </tr>
+                      <tr>
+                        <td>Maximum ECOG</td>
+                        <td>≤ {p.ecogMax}</td>
+                      </tr>
+                      {fmtOrgan(p.organThresholds).map((row, i) => (
+                        <tr key={i}>
+                          <td>{row.label}</td>
+                          <td>{row.val}</td>
+                        </tr>
+                      ))}
+                      {p.mmReqs && (
+                        <tr>
+                          <td>MM prior therapy</td>
+                          <td>Prior IMiD + PI + anti-CD38 required</td>
+                        </tr>
+                      )}
+                      {p.requiresObinutuzumab && (
+                        <tr>
+                          <td>Pretreatment</td>
+                          <td>Obinutuzumab 1000 mg IV 7 days before cycle 1 — required</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="rule-sub-section">
+                  <div className="rule-sub-head">Key exclusions</div>
+                  <ul className="rule-list">
+                    {p.exclusions.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                </div>
+
+                <div className="rule-source">
+                  <span className="rule-source-label">Source:</span>
+                  {piUrl(p.name) ? (
+                    <a href={piUrl(p.name)} target="_blank" rel="noopener noreferrer">
+                      FDA {p.name} Prescribing Information →
+                    </a>
+                  ) : (
+                    <span>FDA {p.name} Prescribing Information</span>
+                  )}
+                  <span>· Reviewed May 2026</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      {/* ── Disease Pathways ────────────────────────────────────────────── */}
+      <section id="pathways" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">Disease Pathways (NCCN-aware)</h2>
+          <span className="crit-section-meta">{pathwayCount} pathways · NCCN + pivotal trial citations</span>
+        </div>
+
+        {PATHWAY_CATALOG.map(pw => (
+          <div key={pw.id} className="rule-card">
+            <div className="rule-hdr">
+              <div style={{ flex: 1 }}>
+                <div className="rule-hdr-name">{pw.name}</div>
+                <div className="rule-hdr-sub">Computable pathway · {pw.preferredProducts.length} preferred products</div>
+              </div>
+              <span className="rule-hdr-tag" style={{ color: "#4c6b8c" }}>NCCN-aware</span>
+            </div>
+
+            <div className="rule-body">
+              <div className="rule-sub-section">
+                <div className="rule-sub-head">High-risk modifiers (boost urgency score by +2 each)</div>
+                <ul className="rule-list">
+                  {pw.highRiskModifiers.map((m, i) => <li key={i}>{m}</li>)}
+                </ul>
+              </div>
+
+              <div className="rule-sub-section">
+                <div className="rule-sub-head">NCCN-aligned clinical context</div>
+                <ul className="rule-list nccn">
+                  {pw.nccnRules.map((r, i) => <li key={i}>{r}</li>)}
+                </ul>
+              </div>
+
+              <div className="rule-sub-section">
+                <div className="rule-sub-head">Preferred products with pivotal trial citations</div>
+                {pw.preferredProducts.map((p, i) => {
+                  const prod = findProd(p.id);
+                  return (
+                    <div key={i} className="pref-row">
+                      <span className="pref-name" style={{ color: prod?.color || "#1a1815" }}>
+                        {prod?.name || p.id}
+                      </span>
+                      <span className="pref-trial">{p.trial}</span>
+                      <span>{p.line}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rule-source">
+                <span className="rule-source-label">Source:</span>
+                <a href={pw.sourceUrl} target="_blank" rel="noopener noreferrer">{pw.source} →</a>
+                <span>· Reviewed May 2026</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* ── Action Engine ───────────────────────────────────────────────── */}
+      <section id="actions" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">Clinical Action Engine</h2>
+          <span className="crit-section-meta">{actionCount} pattern → action rules · pattern-matched against engine output</span>
+        </div>
+
+        <div className="rule-card">
+          <div className="rule-hdr">
+            <div style={{ flex: 1 }}>
+              <div className="rule-hdr-name">Blocking criteria → recommended actions</div>
+              <div className="rule-hdr-sub">{BLOCK_ACTIONS.length} rules · matched against block text returned by the eligibility engine</div>
+            </div>
+            <span className="rule-hdr-tag" style={{ color: "#b54a2c" }}>Block patterns</span>
+          </div>
+          <div className="rule-body">
+            {BLOCK_ACTIONS.map((r, i) => (
+              <div key={i} className="action-row">
+                <span className="action-trigger">{String(r.match).replace(/^\/|\/i$/g, "")}</span>
+                <div className="action-text">{r.action}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rule-card">
+          <div className="rule-hdr">
+            <div style={{ flex: 1 }}>
+              <div className="rule-hdr-name">Warning / missing-data → recommended actions</div>
+              <div className="rule-hdr-sub">{WARNING_ACTIONS.length} rules · matched against warning text from the engine</div>
+            </div>
+            <span className="rule-hdr-tag" style={{ color: "#7a5e10" }}>Warning patterns</span>
+          </div>
+          <div className="rule-body">
+            {WARNING_ACTIONS.map((r, i) => (
+              <div key={i} className="action-row">
+                <span className="action-trigger">{String(r.match).replace(/^\/|\/i$/g, "")}</span>
+                <div className="action-text">{r.action}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Urgency Rubric ─────────────────────────────────────────────── */}
+      <section id="urgency" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">Urgency Scoring Rubric</h2>
+          <span className="crit-section-meta">{URGENCY_RUBRIC.factors.length} weighted factors · 3-tier triage thresholds</span>
+        </div>
+
+        <div className="rule-card">
+          <div className="rule-body">
+            <div className="rule-sub-section">
+              <div className="rule-sub-head">Weighted factors</div>
+              <table className="score-table">
+                <thead>
+                  <tr><th>Clinical factor</th><th style={{ textAlign: "right" }}>Weight</th></tr>
+                </thead>
+                <tbody>
+                  {URGENCY_RUBRIC.factors.map((f, i) => (
+                    <tr key={i}>
+                      <td>{f.factor}</td>
+                      <td className="weight pos">+{f.weight}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="rule-sub-section">
+              <div className="rule-sub-head">Triage thresholds</div>
+              <table className="score-table">
+                <thead>
+                  <tr><th>Level</th><th>Score</th><th>Recommended timeline</th></tr>
+                </thead>
+                <tbody>
+                  {URGENCY_RUBRIC.thresholds.map((t, i) => (
+                    <tr key={i}>
+                      <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{t.level}</td>
+                      <td>{t.score}</td>
+                      <td>{t.timeline}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="rule-source">
+              <span className="rule-source-label">Source:</span>
+              <span>{URGENCY_RUBRIC.source}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Trial Matching ─────────────────────────────────────────────── */}
+      <section id="trials" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">Trial Match Scoring</h2>
+          <span className="crit-section-meta">ClinicalTrials.gov v2 · client-side relevance ranking</span>
+        </div>
+
+        <div className="rule-card">
+          <div className="rule-body">
+            {[
+              ["Modality matches",   TRIAL_SCORING_RULES.modality],
+              ["Target marker matches", TRIAL_SCORING_RULES.targetMarkers],
+              ["Setting + phase",    TRIAL_SCORING_RULES.setting],
+              ["Penalties (off-topic)", TRIAL_SCORING_RULES.penalties],
+            ].map(([title, rows], idx) => (
+              <div key={idx} className="rule-sub-section">
+                <div className="rule-sub-head">{title}</div>
+                <table className="score-table">
+                  <tbody>
+                    {rows.map((r, i) => (
+                      <tr key={i}>
+                        <td>{r.pattern}{r.note ? <span style={{ color: "#6b645a", fontStyle: "italic" }}> — {r.note}</span> : ""}</td>
+                        <td className={`weight ${r.weight < 0 ? "neg" : "pos"}`}>
+                          {r.weight > 0 ? "+" : ""}{r.weight}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+
+            <div className="rule-source">
+              <span className="rule-source-label">Source:</span>
+              <span>{TRIAL_SCORING_RULES.source}</span>
+              <a href="https://clinicaltrials.gov/data-api/api" target="_blank" rel="noopener noreferrer">CT.gov API v2 →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 // ── Pricing page ───────────────────────────────────────────────────────────
 const TIERS = [
   {
@@ -2505,8 +3095,9 @@ export default function App() {
     const p = window.location.pathname;
     if (p === "/pricing") return "pricing";
     if (p === "/board") return "board";
+    if (p === "/criteria") return "criteria";
     return "screener";
-  }); // "screener" | "board" | "pricing"
+  }); // "screener" | "board" | "pricing" | "criteria"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -2530,7 +3121,10 @@ export default function App() {
 
   // Sync view → URL path (preserves hash for shared cases)
   useEffect(() => {
-    const target = view === "pricing" ? "/pricing" : view === "board" ? "/board" : "/";
+    const target = view === "pricing" ? "/pricing"
+      : view === "board" ? "/board"
+      : view === "criteria" ? "/criteria"
+      : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
     }
@@ -2542,6 +3136,7 @@ export default function App() {
       const p = window.location.pathname;
       if (p === "/pricing") setView("pricing");
       else if (p === "/board") setView("board");
+      else if (p === "/criteria") setView("criteria");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -2702,6 +3297,12 @@ export default function App() {
                 </button>
               )}
               <button
+                className={`hdr-nav-btn${view === "criteria" ? " active" : ""}`}
+                onClick={() => setView("criteria")}
+              >
+                Criteria
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "pricing" ? " active" : ""}`}
                 onClick={() => setView("pricing")}
               >
@@ -2758,6 +3359,15 @@ export default function App() {
         <PricingView
           onBackToScreener={() => setView("screener")}
           onRequestAccess={() => setShowWaitlist(true)}
+        />
+      )}
+
+      {/* CRITERIA CATALOG VIEW */}
+      {view === "criteria" && (
+        <CriteriaView
+          products={PRODUCTS}
+          bispecifics={BISPECIFICS}
+          onBackToScreener={() => setView("screener")}
         />
       )}
 
@@ -3240,6 +3850,13 @@ export default function App() {
       <footer className="footer">
         <div className="footer-brand">CellTx Match</div>
         <div className="footer-links">
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("criteria")}
+          >
+            Criteria Library →
+          </button>
           <button
             className="footer-link"
             style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}

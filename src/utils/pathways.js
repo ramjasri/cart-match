@@ -269,6 +269,137 @@ export function getDiseaseFields(cancerType) {
   }
 }
 
+// ─── Static catalog of pathway rules (for criteria browser) ────────────────
+export const PATHWAY_CATALOG = [
+  {
+    id: "dlbcl",
+    name: "DLBCL / Large B-cell lymphoma",
+    highRiskModifiers: [
+      "Primary refractory disease (no response to 1L)",
+      "Early relapse (<12 months from 1L immunochemo)",
+      "Double/triple-hit lymphoma (MYC + BCL2 ± BCL6)",
+      "Histologic transformation from indolent lymphoma",
+    ],
+    nccnRules: [
+      "Primary refractory or relapse <12 mo from 1L → CAR-T preferred over auto-SCT (NCCN Category 1)",
+      "Late relapse (>12 mo) with transplant eligibility → consider auto-SCT vs CAR-T at 2L (shared decision)",
+      "Double-hit lymphoma → CAR-T preferred at 2L due to poor auto-SCT outcomes",
+      "Histologic transformation → prior indolent-directed lines don't count toward DLBCL line threshold",
+    ],
+    preferredProducts: [
+      { id: "yescarta", trial: "ZUMA-7",          line: "2L+ for primary refractory / early relapse" },
+      { id: "breyanzi", trial: "TRANSFORM",       line: "2L+ approved" },
+      { id: "kymriah",  trial: "JULIET",          line: "2L+ approved" },
+      { id: "epkinly",  trial: "EPCORE-NHL-1",    line: "3L+ approved (bispecific, off-the-shelf SC)" },
+      { id: "columvi",  trial: "NP30179",         line: "2L+ approved (fixed-duration bispecific)" },
+    ],
+    source: "NCCN B-Cell Lymphomas Guidelines v3.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480",
+  },
+  {
+    id: "fl",
+    name: "Follicular lymphoma",
+    highRiskModifiers: [
+      "POD24 — progression <24 months from 1L immunochemo",
+      "Grade 3B (biologically aggressive — treat per DLBCL)",
+      "Transformed to DLBCL",
+    ],
+    nccnRules: [
+      "POD24 portends inferior survival — consider CAR-T or bispecific at 3L+ rather than re-treatment",
+      "Grade 3B FL → treat per DLBCL pathway, not FL pathway",
+      "Histologic transformation → DLBCL-style approach (Yescarta, Breyanzi at 2L+)",
+    ],
+    preferredProducts: [
+      { id: "yescarta", trial: "ZUMA-5",          line: "3L+ approved" },
+      { id: "breyanzi", trial: "TRANSCEND-FL",    line: "3L+ approved" },
+      { id: "kymriah",  trial: "ELARA",           line: "3L+ approved" },
+      { id: "lunsumio", trial: "GO29781",         line: "2L+ approved (no leukapheresis, fixed-duration)" },
+      { id: "epkinly",  trial: "EPCORE-NHL-1",    line: "3L+ approved" },
+    ],
+    source: "NCCN B-Cell Lymphomas Guidelines v3.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480",
+  },
+  {
+    id: "mcl",
+    name: "Mantle cell lymphoma",
+    highRiskModifiers: [
+      "BTK inhibitor–refractory",
+      "Blastoid / pleomorphic variant",
+      "TP53 mutation",
+    ],
+    nccnRules: [
+      "Post-BTKi failure → short survival without CAR-T; refer urgently",
+      "Blastoid MCL → high MIPI, short PFS to standard therapy; prioritize CAR-T",
+      "TP53 mutation predicts BTKi failure and chemoresistance — CAR-T is preferred consolidative approach",
+    ],
+    preferredProducts: [
+      { id: "tecartus", trial: "ZUMA-2", line: "R/R MCL after BTKi exposure" },
+    ],
+    source: "NCCN B-Cell Lymphomas Guidelines v3.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480",
+  },
+  {
+    id: "cll",
+    name: "CLL / SLL",
+    highRiskModifiers: [
+      "Richter's transformation (treat per DLBCL pathway)",
+    ],
+    nccnRules: [
+      "Breyanzi for CLL/SLL requires prior BTKi AND venetoclax exposure",
+      "Richter's transformation → DLBCL-style CAR-T (Yescarta, Breyanzi)",
+    ],
+    preferredProducts: [
+      { id: "breyanzi", trial: "TRANSCEND CLL 004", line: "R/R CLL/SLL after BTKi + venetoclax" },
+    ],
+    source: "NCCN CLL/SLL Guidelines v3.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1478",
+  },
+  {
+    id: "all",
+    name: "Acute lymphoblastic leukemia (B-ALL)",
+    highRiskModifiers: [
+      "R/R B-ALL — inherently rapid disease tempo",
+      "Philadelphia chromosome–positive (Ph+)",
+    ],
+    nccnRules: [
+      "Pediatric/AYA (≤25 yo) R/R B-ALL → Kymriah (ELIANA — only product approved in this age group)",
+      "Adult R/R B-ALL → Tecartus (ZUMA-3)",
+      "Ph+ B-ALL: continue TKI through bridging and resume after CAR-T",
+      "Blinatumomab bridging: CD19-directed — may impact subsequent CAR-T target antigen",
+    ],
+    preferredProducts: [
+      { id: "kymriah",  trial: "ELIANA",  line: "≤25 years, R/R B-ALL" },
+      { id: "tecartus", trial: "ZUMA-3",  line: "Adult R/R B-ALL" },
+    ],
+    source: "NCCN ALL Guidelines v1.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1410",
+  },
+  {
+    id: "mm",
+    name: "Multiple myeloma",
+    highRiskModifiers: [
+      "Extramedullary disease (EMD)",
+      "High-risk cytogenetics (del17p, t(4;14), t(14;16), 1q+)",
+      "Triple-class exposed (IMiD + PI + anti-CD38)",
+    ],
+    nccnRules: [
+      "CARTITUDE-4: Carvykti approved at 1L+ for lenalidomide-refractory MM (broader than 4L+ indication)",
+      "Triple-class exposed with ≥4 lines → full CAR-T and bispecific access",
+      "EMD portends shorter PFS to BCMA-directed therapies — consider sequencing GPRC5D (Talvey)",
+      "High-risk cytogenetics → prioritize deep response with CAR-T or bispecific sequencing",
+    ],
+    preferredProducts: [
+      { id: "carvykti", trial: "CARTITUDE-1/4", line: "4L+ standard · 1L+ for len-refractory" },
+      { id: "abecma",   trial: "KarMMa",        line: "4L+ approved" },
+      { id: "tecvayli", trial: "MajesTEC-1",    line: "4L+ BCMA bispecific" },
+      { id: "talvey",   trial: "MonumenTAL-1",  line: "4L+ GPRC5D — alt after BCMA failure" },
+      { id: "elrexfio", trial: "MagnetisMM-3",  line: "4L+ BCMA bispecific" },
+    ],
+    source: "NCCN Multiple Myeloma Guidelines v3.2024",
+    sourceUrl: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1445",
+  },
+];
+
 export const DISEASE_FIELD_LABELS = {
   earlyRelapse:            "Early relapse (<12 months from 1L immunochemo)",
   doubleHit:               "Double/triple-hit (MYC + BCL2 ± BCL6 rearrangement)",

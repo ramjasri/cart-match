@@ -4,6 +4,36 @@
 
 const CT_BASE = "https://clinicaltrials.gov/api/v2/studies";
 
+// ─── Static scoring rubric (for criteria browser) ──────────────────────────
+export const TRIAL_SCORING_RULES = {
+  modality: [
+    { pattern: "CAR-T / chimeric antigen receptor",  weight: 6 },
+    { pattern: "Bispecific / BiTE / T-cell engager", weight: 6 },
+    { pattern: "Antibody-drug conjugate (ADC)",      weight: 4 },
+    { pattern: "Allogeneic / off-the-shelf",         weight: 3 },
+  ],
+  targetMarkers: [
+    { pattern: "GPRC5D",       weight: 4, note: "Alternative after BCMA failure" },
+    { pattern: "CD19",         weight: 3, note: "Patient-aware: green tag when CD19+" },
+    { pattern: "BCMA",         weight: 3, note: "Patient-aware: green tag when BCMA+" },
+    { pattern: "CD22",         weight: 3, note: "Alternative after CD19 failure" },
+    { pattern: "CD20",         weight: 2, note: "Patient-aware: green tag when CD20+" },
+    { pattern: "CD79b · FcRH5", weight: 2 },
+  ],
+  setting: [
+    { pattern: "Refractory / relapsed",   weight: 2 },
+    { pattern: "Phase 3 (mature)",         weight: 2 },
+    { pattern: "Phase 2",                  weight: 1 },
+  ],
+  penalties: [
+    { pattern: "Healthy volunteer",        weight: -20 },
+    { pattern: "Prevention",               weight: -8  },
+    { pattern: "First-line / frontline",   weight: -2  },
+  ],
+  source: "Internal scoring · derived from ClinicalTrials.gov v2 intervention/condition metadata",
+};
+
+
 const CANCER_TERMS = {
   dlbcl: "diffuse large B-cell lymphoma",
   fl:    "follicular lymphoma",

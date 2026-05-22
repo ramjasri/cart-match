@@ -3,7 +3,7 @@
 // generates a consolidated "path to eligibility" or "referral steps" list.
 
 // ─── Action rules for blocking criteria ─────────────────────────────────────
-const BLOCK_ACTIONS = [
+export const BLOCK_ACTIONS = [
   { match: /ECOG/i,                        action: "Optimize performance status (PT/OT, palliative care, supportive care) and reassess ECOG in 4 weeks" },
   { match: /ALT|AST/i,                     action: "Repeat LFTs in 1–2 weeks · review hepatotoxic medications · hepatology consult if persistent" },
   { match: /Renal function|Creatinine|CrCl/i, action: "Recheck creatinine + 24-hr CrCl · ensure adequate hydration · nephrology consult if persistent" },
@@ -21,7 +21,7 @@ const BLOCK_ACTIONS = [
 ];
 
 // ─── Action rules for warnings (missing data / soft issues) ─────────────────
-const WARNING_ACTIONS = [
+export const WARNING_ACTIONS = [
   { match: /CD19 status unknown/i,    action: "Order CD19 IHC on most recent biopsy specimen (typically positive in B-cell malignancies)" },
   { match: /BCMA status unknown/i,    action: "Order BCMA IHC or flow cytometry on bone marrow biopsy" },
   { match: /CD20 status unknown/i,    action: "Order CD20 IHC on biopsy specimen (typically positive in B-cell lymphomas)" },
