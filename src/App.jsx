@@ -2567,6 +2567,118 @@ const CSS = `
     border: none; cursor: pointer;
   }
 
+  /* BOARD AGGREGATE STATS */
+  .board-stats {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    border: 1px solid #1a1815; background: #ebe6dc; margin-bottom: 20px;
+  }
+  @media (max-width: 700px) { .board-stats { grid-template-columns: repeat(2, 1fr); } }
+  .board-stat {
+    padding: 14px 18px; border-right: 1px solid #1a181520;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .board-stat:last-child { border-right: none; }
+  .board-stat:hover { background: #1a181508; }
+  .board-stat.active { background: #1a1815; color: #f4f1ea; }
+  @media (max-width: 700px) {
+    .board-stat:nth-child(2n) { border-right: none; }
+    .board-stat:nth-child(-n+4) { border-bottom: 1px solid #1a181520; }
+  }
+  .board-stat-num {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500;
+    color: inherit; line-height: 1; margin-bottom: 6px;
+  }
+  .board-stat-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    line-height: 1.4;
+  }
+  .board-stat.active .board-stat-label { color: #c4a661; }
+
+  /* PIPELINE STEPPER (per case) */
+  .stage-row {
+    background: #ebe6dc; border: 1px solid #1a181530;
+    padding: 12px 14px; margin-bottom: 14px;
+  }
+  .stage-row-top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .stage-label-block {
+    display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+  }
+  .stage-label-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .stage-label-text {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #1a1815;
+    font-weight: 700;
+  }
+  .stage-label-phase {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    color: #6b645a; letter-spacing: 0.1em;
+  }
+  .stage-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .stage-btn {
+    padding: 7px 12px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.12em; border: 1px solid #1a181540;
+    background: #f4f1ea; color: #1a1815; cursor: pointer; transition: all 0.1s;
+  }
+  .stage-btn:hover { background: #1a1815; color: #f4f1ea; }
+  .stage-btn.primary {
+    background: #1a1815; color: #f4f1ea; border-color: #1a1815;
+  }
+  .stage-btn.primary:hover { background: #5a7a4a; border-color: #5a7a4a; }
+  .stage-btn.danger {
+    color: #b54a2c; border-color: #b54a2c40; background: transparent;
+  }
+  .stage-btn.danger:hover { background: #b54a2c; color: #f4f1ea; border-color: #b54a2c; }
+
+  /* Phase indicator — 5 chips showing progress */
+  .phase-strip {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+  }
+  .phase-chip {
+    padding: 5px 6px; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: #f4f1ea; color: #98908399; border: 1px solid #1a181520;
+  }
+  .phase-chip.past {
+    background: #5a7a4a25; color: #4a6a3a; border-color: #5a7a4a40;
+  }
+  .phase-chip.current {
+    background: #1a1815; color: #c4a661; border-color: #1a1815;
+    font-weight: 700;
+  }
+  .phase-chip.terminal {
+    background: #b54a2c20; color: #b54a2c; border-color: #b54a2c40;
+  }
+
+  /* Stage selector dropdown */
+  .stage-select {
+    padding: 7px 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid #1a181540;
+    background: #f4f1ea; color: #1a1815; border-radius: 0; cursor: pointer;
+    appearance: none; min-width: 180px;
+  }
+  .stage-select:focus { outline: none; border-color: #1a1815; }
+
+  /* Outcome row (visible when terminal) */
+  .outcome-row {
+    background: #b54a2c08; border: 1px solid #b54a2c30; border-left: 3px solid #b54a2c;
+    padding: 10px 14px; margin-bottom: 12px;
+  }
+  .outcome-row-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #b54a2c;
+    margin-bottom: 6px; font-weight: 700;
+  }
+  .outcome-select {
+    width: 100%; padding: 8px 10px; font-family: 'Inter Tight', sans-serif;
+    font-size: 13px; border: 1px solid #1a181540; background: #f4f1ea;
+    color: #1a1815; border-radius: 0; appearance: none;
+  }
+
   /* BOARD CASE CARD */
   .board-case {
     border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 10px;
@@ -2896,20 +3008,118 @@ const INIT = {
   labBil: "", labLvef: "", labSpo2: "",
 };
 
-// ── Tumor board status config ──────────────────────────────────────────────
-const STATUS_OPTIONS = [
-  { value: "pending",       label: "Pending",              dot: "#6b645a" },
-  { value: "discussed",     label: "Discussed",            dot: "#4c6b8c" },
-  { value: "approved",      label: "Approved for referral", dot: "#5a7a4a" },
-  { value: "deferred",      label: "Deferred",             dot: "#c4a661" },
-  { value: "not-indicated", label: "Not indicated",        dot: "#b54a2c" },
+// ── Case lifecycle pipeline ────────────────────────────────────────────────
+// Each case progresses through stages. Linear "happy path" is:
+//   pending_review → discussed → approved → referred → apheresis →
+//   manufacturing → infused → follow_up_30 → follow_up_90 → closed
+// Two terminal branches off the decision phase: deferred, not_indicated.
+
+const PIPELINE_STAGES = [
+  // Decision phase
+  { id: "pending_review", label: "Pending review",        short: "Pending",   dot: "#6b645a", phase: "decision" },
+  { id: "discussed",      label: "Discussed",             short: "Discussed", dot: "#4c6b8c", phase: "decision" },
+  { id: "approved",       label: "Approved for referral", short: "Approved",  dot: "#5a7a4a", phase: "decision" },
+  // Decision terminal branches
+  { id: "deferred",       label: "Deferred",              short: "Deferred",  dot: "#c4a661", phase: "decision", terminal: true },
+  { id: "not_indicated",  label: "Not indicated",         short: "Not ind.",  dot: "#b54a2c", phase: "decision", terminal: true },
+  // Referral & treatment phase
+  { id: "referred",       label: "Referred to CAR-T center", short: "Referred", dot: "#5a7a4a", phase: "referral" },
+  { id: "apheresis",      label: "Apheresis scheduled",   short: "Apheresis", dot: "#5a7a4a", phase: "referral" },
+  { id: "manufacturing",  label: "In manufacturing",      short: "Mfg",       dot: "#c4a661", phase: "referral" },
+  { id: "infused",        label: "Infused",               short: "Infused",   dot: "#5a7a4a", phase: "treatment" },
+  // Follow-up phase
+  { id: "follow_up_30",   label: "Day 30 follow-up",      short: "D30",       dot: "#4c6b8c", phase: "followup" },
+  { id: "follow_up_90",   label: "Day 90 follow-up",      short: "D90",       dot: "#4c6b8c", phase: "followup" },
+  // Closed
+  { id: "closed",         label: "Closed",                short: "Closed",    dot: "#1a1815", phase: "closed", terminal: true },
 ];
 
-function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo }) {
+// Linear progression — used by "Advance →" button
+const LINEAR_PIPELINE = [
+  "pending_review", "discussed", "approved", "referred", "apheresis",
+  "manufacturing", "infused", "follow_up_30", "follow_up_90", "closed",
+];
+
+// Phase grouping for visual indicator (5 phase chips)
+const PHASES = [
+  { id: "decision",  label: "Decision",   stages: ["pending_review", "discussed", "approved", "deferred", "not_indicated"] },
+  { id: "referral",  label: "Referral",   stages: ["referred", "apheresis", "manufacturing"] },
+  { id: "treatment", label: "Infusion",   stages: ["infused"] },
+  { id: "followup",  label: "Follow-up",  stages: ["follow_up_30", "follow_up_90"] },
+  { id: "closed",    label: "Closed",     stages: ["closed"] },
+];
+
+// Outcomes (only set on closed/deferred/not_indicated)
+const OUTCOME_OPTIONS = [
+  { id: "received_product_well",          label: "Received product · doing well" },
+  { id: "received_product_complications", label: "Received product · with complications" },
+  { id: "progressed",                     label: "Disease progressed before infusion" },
+  { id: "insurance_denied",               label: "Insurance denied coverage" },
+  { id: "manufacturing_failure",          label: "Manufacturing failed" },
+  { id: "patient_declined",               label: "Patient declined" },
+  { id: "death_pre_infusion",             label: "Death before infusion" },
+  { id: "still_indicated",                label: "Still indicated · referred elsewhere" },
+  { id: "other",                          label: "Other (see notes)" },
+];
+
+function getStage(stageId) {
+  return PIPELINE_STAGES.find(s => s.id === stageId) || PIPELINE_STAGES[0];
+}
+
+function getPhaseOf(stageId) {
+  return PHASES.find(p => p.stages.includes(stageId)) || PHASES[0];
+}
+
+// Migrate old case schema (pre-pipeline) to new
+function migrateCase(c) {
+  if (c.stage) return c; // already migrated
+  const map = {
+    "pending":       "pending_review",
+    "discussed":     "discussed",
+    "approved":      "approved",
+    "deferred":      "deferred",
+    "not-indicated": "not_indicated",
+  };
+  const stage = map[c.status] || "pending_review";
+  return {
+    ...c,
+    stage,
+    outcome: null,
+    outcomeNotes: "",
+    nextActionDate: null,
+    stageHistory: [{ stage, at: c.addedAt || new Date().toISOString() }],
+  };
+}
+
+function nextStageAfter(currentStageId) {
+  const idx = LINEAR_PIPELINE.indexOf(currentStageId);
+  if (idx === -1 || idx === LINEAR_PIPELINE.length - 1) return null;
+  return LINEAR_PIPELINE[idx + 1];
+}
+
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo }) {
+  const [filter, setFilter] = useState("all");
   const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
-  const approvedCount = board.filter(c => c.status === "approved").length;
+
+  // Compute aggregate stats by lifecycle phase
+  const phaseCounts = {
+    awaiting:     board.filter(c => ["pending_review", "discussed"].includes(c.stage)).length,
+    active:       board.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(c.stage)).length,
+    infused:      board.filter(c => c.stage === "infused").length,
+    followup:     board.filter(c => ["follow_up_30", "follow_up_90"].includes(c.stage)).length,
+    closed:       board.filter(c => ["closed", "deferred", "not_indicated"].includes(c.stage)).length,
+  };
+
+  // Apply filter
+  const filteredBoard = filter === "all" ? board
+    : filter === "awaiting"  ? board.filter(c => ["pending_review", "discussed"].includes(c.stage))
+    : filter === "active"    ? board.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(c.stage))
+    : filter === "infused"   ? board.filter(c => c.stage === "infused")
+    : filter === "followup"  ? board.filter(c => ["follow_up_30", "follow_up_90"].includes(c.stage))
+    : filter === "closed"    ? board.filter(c => ["closed", "deferred", "not_indicated"].includes(c.stage))
+    : board;
 
   return (
     <div className="board-view">
@@ -2918,7 +3128,7 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
           <div className="board-title">Tumor Board</div>
           <div className="board-meta">
             {dateStr} · {board.length} case{board.length !== 1 ? "s" : ""}
-            {approvedCount > 0 && ` · ${approvedCount} approved for referral`}
+            {phaseCounts.active > 0 && ` · ${phaseCounts.active} active referral${phaseCounts.active !== 1 ? "s" : ""}`}
           </div>
         </div>
         <div className="board-hdr-actions">
@@ -2935,6 +3145,32 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
           </button>
         </div>
       </div>
+
+      {/* Aggregate stats by lifecycle phase (also act as filter chips) */}
+      {board.length > 0 && (
+        <div className="board-stats">
+          <div className={`board-stat${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>
+            <div className="board-stat-num">{board.length}</div>
+            <div className="board-stat-label">All cases</div>
+          </div>
+          <div className={`board-stat${filter === "awaiting" ? " active" : ""}`} onClick={() => setFilter("awaiting")}>
+            <div className="board-stat-num">{phaseCounts.awaiting}</div>
+            <div className="board-stat-label">Awaiting decision</div>
+          </div>
+          <div className={`board-stat${filter === "active" ? " active" : ""}`} onClick={() => setFilter("active")}>
+            <div className="board-stat-num">{phaseCounts.active}</div>
+            <div className="board-stat-label">Active referrals</div>
+          </div>
+          <div className={`board-stat${filter === "followup" ? " active" : ""}`} onClick={() => setFilter("followup")}>
+            <div className="board-stat-num">{phaseCounts.followup + phaseCounts.infused}</div>
+            <div className="board-stat-label">Infused / follow-up</div>
+          </div>
+          <div className={`board-stat${filter === "closed" ? " active" : ""}`} onClick={() => setFilter("closed")}>
+            <div className="board-stat-num">{phaseCounts.closed}</div>
+            <div className="board-stat-label">Closed</div>
+          </div>
+        </div>
+      )}
 
       {board.length === 0 ? (
         <div className="board-empty">
@@ -2959,15 +3195,19 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
           </div>
         </div>
       ) : (
-        board.map(c => {
+        filteredBoard.map(c => {
           const eligible = c.results ? Object.values(c.results).filter(r => r.eligible) : [];
-          const blocked  = c.results ? Object.values(c.results).filter(r => r.blocks.length > 0) : [];
-          const statusMeta = STATUS_OPTIONS.find(s => s.value === c.status) || STATUS_OPTIONS[0];
+          const stageMeta = getStage(c.stage);
+          const currentPhase = getPhaseOf(c.stage);
+          const nextStage = nextStageAfter(c.stage);
+          const nextStageMeta = nextStage ? getStage(nextStage) : null;
+          const isTerminal = stageMeta.terminal;
+          const inDecisionPhase = stageMeta.phase === "decision" && !isTerminal;
 
           return (
             <div key={c.id} className="board-case">
               <div className="board-case-hdr">
-                <div className="board-status-dot" style={{ background: statusMeta.dot }} />
+                <div className="board-status-dot" style={{ background: stageMeta.dot }} />
                 <input
                   className="board-case-label-input"
                   value={c.patientLabel}
@@ -2983,6 +3223,91 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
               </div>
 
               <div className="board-case-body">
+                {/* Pipeline stage indicator + advance controls */}
+                <div className="stage-row">
+                  <div className="stage-row-top">
+                    <div className="stage-label-block">
+                      <div className="stage-label-dot" style={{ background: stageMeta.dot }} />
+                      <span className="stage-label-text">{stageMeta.label}</span>
+                      <span className="stage-label-phase">· {currentPhase.label} phase</span>
+                    </div>
+                    <div className="stage-actions">
+                      <select
+                        className="stage-select"
+                        value={c.stage}
+                        onChange={e => onSetCaseStage(c.id, e.target.value)}
+                      >
+                        {PIPELINE_STAGES.map(s => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </select>
+                      {nextStageMeta && (
+                        <button
+                          className="stage-btn primary"
+                          onClick={() => onSetCaseStage(c.id, nextStage)}
+                          title={`Advance to ${nextStageMeta.label}`}
+                        >
+                          Advance → {nextStageMeta.short}
+                        </button>
+                      )}
+                      {inDecisionPhase && (
+                        <>
+                          <button
+                            className="stage-btn"
+                            onClick={() => onSetCaseStage(c.id, "deferred")}
+                            title="Mark deferred"
+                          >
+                            Defer
+                          </button>
+                          <button
+                            className="stage-btn danger"
+                            onClick={() => onSetCaseStage(c.id, "not_indicated")}
+                            title="Mark not indicated"
+                          >
+                            Not indicated
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Phase strip — 5 phases */}
+                  <div className="phase-strip">
+                    {PHASES.map(p => {
+                      const isCurrent = p.id === currentPhase.id;
+                      const phaseIdx = PHASES.indexOf(p);
+                      const currentIdx = PHASES.indexOf(currentPhase);
+                      const isPast = phaseIdx < currentIdx && !isTerminal;
+                      const isTerm = isCurrent && isTerminal;
+                      return (
+                        <div
+                          key={p.id}
+                          className={`phase-chip${isTerm ? " terminal" : isCurrent ? " current" : isPast ? " past" : ""}`}
+                        >
+                          {p.label}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Outcome row — visible only when terminal */}
+                {isTerminal && (
+                  <div className="outcome-row">
+                    <div className="outcome-row-head">Outcome</div>
+                    <select
+                      className="outcome-select"
+                      value={c.outcome || ""}
+                      onChange={e => onUpdateCase(c.id, { outcome: e.target.value || null })}
+                    >
+                      <option value="">— Select outcome —</option>
+                      {OUTCOME_OPTIONS.map(o => (
+                        <option key={o.id} value={o.id}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {/* Eligible product chips */}
                 <div className="board-elig-row">
                   {eligible.length === 0 ? (
@@ -3002,18 +3327,8 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
                   </span>
                 </div>
 
-                {/* Controls */}
+                {/* Notes + actions */}
                 <div className="board-controls">
-                  <select
-                    className="board-status-sel"
-                    value={c.status}
-                    onChange={e => onUpdateCase(c.id, { status: e.target.value })}
-                    style={{ borderLeft: `3px solid ${statusMeta.dot}` }}
-                  >
-                    {STATUS_OPTIONS.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
                   <textarea
                     className="board-notes-inp"
                     placeholder="Add notes (attending comments, referral details, pending labs…)"
@@ -5029,10 +5344,12 @@ export default function App() {
     catch { return base; }
   });
 
-  // Tumor board — persisted to localStorage
+  // Tumor board — persisted to localStorage (with schema migration)
   const [board, setBoard] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("celltx-board") || "[]"); }
-    catch { return []; }
+    try {
+      const raw = JSON.parse(localStorage.getItem("celltx-board") || "[]");
+      return raw.map(migrateCase);
+    } catch { return []; }
   });
   useEffect(() => {
     try { localStorage.setItem("celltx-board", JSON.stringify(board)); }
@@ -5105,14 +5422,19 @@ export default function App() {
   const addToBoard = () => {
     const labels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"];
     const patientLabel = `Patient ${labels[board.length] ?? board.length + 1}`;
+    const now = new Date().toISOString();
     const newCase = {
       id: Date.now().toString(),
-      addedAt: new Date().toISOString(),
+      addedAt: now,
       patientLabel,
       patient: { ...pt },
       results: { ...results },
-      status: "pending",
+      stage: "pending_review",
+      outcome: null,
+      outcomeNotes: "",
+      nextActionDate: null,
       notes: "",
+      stageHistory: [{ stage: "pending_review", at: now }],
     };
     setBoard(b => [...b, newCase]);
     setBoardAdded(true);
@@ -5122,6 +5444,21 @@ export default function App() {
 
   const updateBoardCase = (id, patch) =>
     setBoard(b => b.map(c => c.id === id ? { ...c, ...patch } : c));
+
+  // Advance to a specific stage, with history tracking
+  const setBoardCaseStage = (id, newStage) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      if (c.stage === newStage) return c;
+      return {
+        ...c,
+        stage: newStage,
+        stageHistory: [
+          ...(c.stageHistory || []),
+          { stage: newStage, at: new Date().toISOString() },
+        ],
+      };
+    }));
 
   const removeBoardCase = (id) =>
     setBoard(b => b.filter(c => c.id !== id));
@@ -5341,6 +5678,7 @@ export default function App() {
         <TumorBoardView
           board={board}
           onUpdateCase={updateBoardCase}
+          onSetCaseStage={setBoardCaseStage}
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}

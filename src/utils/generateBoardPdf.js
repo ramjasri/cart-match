@@ -14,13 +14,27 @@ const COLORS = {
   blue:   [76, 107, 140],
 };
 
-const STATUS_META = {
-  "pending":       { label: "Pending",              color: COLORS.ink3,  hex: "#6b645a" },
-  "discussed":     { label: "Discussed",             color: COLORS.blue,  hex: "#4c6b8c" },
-  "approved":      { label: "Approved for Referral", color: COLORS.green, hex: "#5a7a4a" },
-  "deferred":      { label: "Deferred",              color: COLORS.amber, hex: "#c4a661" },
-  "not-indicated": { label: "Not Indicated",         color: COLORS.red,   hex: "#b54a2c" },
+// Maps the unified pipeline stage to PDF display metadata
+const STAGE_META = {
+  "pending_review": { label: "Pending Review",        color: COLORS.ink3,  hex: "#6b645a" },
+  "discussed":      { label: "Discussed",              color: COLORS.blue,  hex: "#4c6b8c" },
+  "approved":       { label: "Approved for Referral", color: COLORS.green, hex: "#5a7a4a" },
+  "deferred":       { label: "Deferred",               color: COLORS.amber, hex: "#c4a661" },
+  "not_indicated":  { label: "Not Indicated",          color: COLORS.red,   hex: "#b54a2c" },
+  "referred":       { label: "Referred",               color: COLORS.green, hex: "#5a7a4a" },
+  "apheresis":      { label: "Apheresis Scheduled",   color: COLORS.green, hex: "#5a7a4a" },
+  "manufacturing":  { label: "In Manufacturing",       color: COLORS.amber, hex: "#c4a661" },
+  "infused":        { label: "Infused",                color: COLORS.green, hex: "#5a7a4a" },
+  "follow_up_30":   { label: "Day 30 Follow-up",      color: COLORS.blue,  hex: "#4c6b8c" },
+  "follow_up_90":   { label: "Day 90 Follow-up",      color: COLORS.blue,  hex: "#4c6b8c" },
+  "closed":         { label: "Closed",                 color: COLORS.ink,   hex: "#1a1815" },
 };
+
+// Backward compat — get stage metadata, including from legacy `status` field
+function getStageMetadata(c) {
+  const id = c.stage || c.status;
+  return STAGE_META[id] || STAGE_META["pending_review"];
+}
 
 function setColor(doc, rgb) { doc.setTextColor(...rgb); }
 function setFill(doc, rgb)  { doc.setFillColor(...rgb); }
@@ -86,17 +100,19 @@ export function generateBoardPdf(cases) {
   y = 52;
 
   // Summary count boxes
-  const approved   = cases.filter(c => c.status === "approved").length;
-  const discussed  = cases.filter(c => c.status === "discussed").length;
-  const pending    = cases.filter(c => c.status === "pending").length;
-  const deferred   = cases.filter(c => c.status === "deferred").length;
+  // Roll lifecycle stages into 4 summary buckets for the cover page
+  const stageOf = c => c.stage || c.status || "pending_review";
+  const approved   = cases.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(stageOf(c))).length;
+  const discussed  = cases.filter(c => ["infused", "follow_up_30", "follow_up_90"].includes(stageOf(c))).length;
+  const pending    = cases.filter(c => ["pending_review", "discussed"].includes(stageOf(c))).length;
+  const deferred   = cases.filter(c => ["deferred", "not_indicated", "closed"].includes(stageOf(c))).length;
 
   const boxes = [
-    { label: "Total Cases", val: cases.length,  color: COLORS.ink3  },
-    { label: "Approved",    val: approved,       color: COLORS.green },
-    { label: "Discussed",   val: discussed,      color: COLORS.blue  },
-    { label: "Deferred",    val: deferred,       color: COLORS.amber },
-    { label: "Pending",     val: pending,        color: COLORS.ink3  },
+    { label: "Total Cases",       val: cases.length,  color: COLORS.ink3  },
+    { label: "Awaiting Decision", val: pending,        color: COLORS.ink3  },
+    { label: "Active Referrals",  val: approved,       color: COLORS.green },
+    { label: "Infused / F-up",    val: discussed,      color: COLORS.blue  },
+    { label: "Closed",            val: deferred,       color: COLORS.amber },
   ];
   const bw = CW / boxes.length;
   boxes.forEach(({ label, val, color }, i) => {
@@ -142,7 +158,7 @@ export function generateBoardPdf(cases) {
     if (y > 272) { doc.addPage(); y = 20; }
     const eligCount  = c.results ? Object.values(c.results).filter(r => r.eligible).length : 0;
     const totalCount = Object.keys(c.results || {}).length;
-    const sm = STATUS_META[c.status] || STATUS_META["pending"];
+    const sm = getStageMetadata(c);
 
     if (i % 2 === 0) {
       setFill(doc, COLORS.paper);
@@ -174,7 +190,7 @@ export function generateBoardPdf(cases) {
     doc.addPage();
     y = 0;
 
-    const sm = STATUS_META[c.status] || STATUS_META["pending"];
+    const sm = getStageMetadata(c);
     const statusRgb = hexToRgb(sm.hex);
 
     // Patient header bar
