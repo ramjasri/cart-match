@@ -32,6 +32,10 @@ import {
 } from "./utils/analytics.js";
 import { startCheckout } from "./utils/billing.js";
 import { sendDigest, maybeSendAutoDigest, isDigestEnabled, setDigestEnabled } from "./utils/digest.js";
+import {
+  computeBoardAnalytics, OUTCOME_LABELS, OUTCOME_COLORS,
+  formatPercent, formatDays,
+} from "./utils/analytics-board.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -1695,6 +1699,200 @@ const CSS = `
     font-family: 'Inter Tight', sans-serif; font-size: 12.5px;
   }
   .contact-note .link:hover { color: #1a1815; }
+
+  /* ANALYTICS DASHBOARD — /analytics */
+  .analytics-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .analytics-view { padding: 36px 20px 60px; } }
+
+  .analytics-hero { margin-bottom: 32px; }
+  .analytics-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .analytics-tag::before { content: ''; width: 24px; height: 1px; background: #6b645a; }
+  .analytics-h1 {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.022em; margin: 0;
+  }
+  .analytics-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    margin-top: 12px;
+  }
+
+  /* KPI cards */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid #1a1815; margin-bottom: 36px;
+  }
+  @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card {
+    padding: 20px 22px; border-right: 1px solid #1a181530;
+  }
+  .kpi-card:last-child { border-right: none; }
+  @media (max-width: 700px) {
+    .kpi-card:nth-child(2n) { border-right: none; }
+    .kpi-card:nth-child(-n+2) { border-bottom: 1px solid #1a181530; }
+  }
+  .kpi-num {
+    font-family: 'Fraunces', serif; font-size: 38px; font-weight: 400;
+    line-height: 1; color: #1a1815; letter-spacing: -0.018em;
+    margin-bottom: 6px;
+  }
+  .kpi-num em { font-style: normal; color: #5a7a4a; }
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #6b645a;
+    line-height: 1.45;
+  }
+
+  /* Analytics section card */
+  .analytics-section {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    padding: 28px 30px; margin-bottom: 18px;
+  }
+  .analytics-section-hdr {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .analytics-section-title {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em; margin: 0;
+  }
+  .analytics-section-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+  }
+
+  /* Funnel — horizontal bars */
+  .funnel-row {
+    display: grid; grid-template-columns: 180px 1fr 80px 80px; gap: 14px;
+    align-items: center; padding: 10px 0;
+    border-bottom: 1px solid #1a181515;
+  }
+  @media (max-width: 700px) {
+    .funnel-row { grid-template-columns: 120px 1fr 50px; }
+    .funnel-row .funnel-rate { display: none; }
+  }
+  .funnel-row:last-child { border-bottom: none; }
+  .funnel-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #1a1815;
+    font-weight: 600;
+  }
+  .funnel-bar-track {
+    background: #ebe6dc; border: 1px solid #1a181530; height: 22px;
+    position: relative;
+  }
+  .funnel-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #5a7a4a 0%, #4c6b8c 100%);
+    transition: width 0.3s; min-width: 2px;
+  }
+  .funnel-count {
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+    color: #1a1815; text-align: right; line-height: 1;
+  }
+  .funnel-rate {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; text-align: right;
+  }
+  .funnel-rate.good { color: #5a7a4a; }
+  .funnel-rate.warn { color: #7a5e10; }
+  .funnel-rate.poor { color: #b54a2c; }
+
+  /* Time-to-stage */
+  .time-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 700px) { .time-grid { grid-template-columns: 1fr; } }
+  .time-card {
+    background: #ebe6dc; padding: 16px 18px;
+    border-left: 3px solid #4c6b8c;
+  }
+  .time-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+  .time-value {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500;
+    color: #1a1815; line-height: 1;
+  }
+  .time-value.empty { color: #98908380; font-size: 18px; font-style: italic; }
+  .time-context {
+    font-size: 11px; color: #6b645a; margin-top: 6px; line-height: 1.45;
+  }
+
+  /* Outcomes — stacked bar + legend */
+  .outcomes-bar {
+    display: flex; height: 32px; margin-bottom: 16px;
+    border: 1px solid #1a1815; background: #ebe6dc;
+  }
+  .outcomes-segment {
+    height: 100%;
+    transition: opacity 0.15s;
+  }
+  .outcomes-segment:hover { opacity: 0.85; }
+  .outcomes-legend {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  @media (max-width: 700px) { .outcomes-legend { grid-template-columns: 1fr; } }
+  .outcomes-legend-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #1a1815; padding: 6px 0;
+    border-bottom: 1px solid #1a181515;
+  }
+  .outcomes-legend-swatch {
+    width: 12px; height: 12px; flex-shrink: 0;
+  }
+  .outcomes-legend-label { flex: 1; }
+  .outcomes-legend-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: #6b645a; font-weight: 600;
+  }
+
+  /* Cancer type table */
+  .cancer-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .cancer-table th, .cancer-table td {
+    padding: 10px 12px; text-align: left;
+    border-bottom: 1px solid #1a181515; line-height: 1.5;
+  }
+  .cancer-table th {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #6b645a; font-weight: 600;
+    border-bottom: 1px solid #1a181530;
+  }
+  .cancer-table td.num {
+    text-align: right; font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+  .cancer-table td.rate {
+    text-align: right; font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+  .cancer-table td.rate.good { color: #5a7a4a; }
+  .cancer-table td.rate.warn { color: #7a5e10; }
+  .cancer-table td.rate.poor { color: #b54a2c; }
+
+  /* Empty state */
+  .analytics-empty {
+    border: 1px dashed #1a181540; background: #f4f1ea;
+    padding: 64px 32px; text-align: center;
+  }
+  .analytics-empty-glyph {
+    font-family: 'Fraunces', serif; font-size: 56px;
+    color: #1a181530; margin-bottom: 18px; line-height: 1;
+  }
+  .analytics-empty-text {
+    font-size: 14px; color: #6b645a; line-height: 1.65;
+    max-width: 480px; margin: 0 auto;
+  }
 
   /* COMMUNITY EARLY REFERRAL — /refer */
   .refer-view {
@@ -3696,6 +3894,248 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── Analytics dashboard (/analytics) ───────────────────────────────────────
+function AnalyticsView({ board, onGoToBoard, onGoToScreener }) {
+  const analytics = computeBoardAnalytics(board);
+
+  // Empty state
+  if (!analytics) {
+    return (
+      <div className="analytics-view">
+        <div className="analytics-hero">
+          <div className="analytics-tag">Program Analytics</div>
+          <h1 className="analytics-h1">No cases on the tumor board yet</h1>
+          <div className="analytics-sub">Analytics will populate as cases progress through the pipeline</div>
+        </div>
+        <div className="analytics-empty">
+          <div className="analytics-empty-glyph">◔</div>
+          <p className="analytics-empty-text">
+            Screen patients and add them to the tumor board. Once cases start moving through the
+            referral pipeline, this page will show your program's conversion funnel, median
+            time-to-stage, outcomes breakdown, and per-cancer-type metrics.
+          </p>
+          <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="board-empty-cta" onClick={onGoToScreener}>Start screening →</button>
+            <button className="board-empty-cta" style={{ background: "transparent", color: "#1a1815", border: "1px solid #1a181550" }} onClick={onGoToBoard}>Open tumor board →</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    total, funnel, conversionRates, medianDays, outcomes, cancerTypeRows, firstCaseDate,
+  } = analytics;
+
+  // Active = approved through manufacturing (in-flight referrals)
+  const activeCount = funnel.approved - funnel.infused;
+
+  // Bucket conversion rates for color coding
+  const rateColor = (r) => {
+    if (r === null) return "";
+    if (r >= 0.7) return "good";
+    if (r >= 0.4) return "warn";
+    return "poor";
+  };
+
+  // Funnel rows
+  const funnelData = [
+    { label: "Screened",            count: funnel.screened,   rate: null },
+    { label: "Decided",             count: funnel.decided,    rate: conversionRates.decision },
+    { label: "Approved",            count: funnel.approved,   rate: conversionRates.approval },
+    { label: "Referred",            count: funnel.referred,   rate: conversionRates.referral },
+    { label: "Apheresis",           count: funnel.apheresis,  rate: conversionRates.apheresis },
+    { label: "Manufacturing",       count: funnel.inMfg,      rate: conversionRates.manufacturing },
+    { label: "Infused",             count: funnel.infused,    rate: conversionRates.infusion },
+    { label: "Day 30 follow-up",    count: funnel.day30,      rate: null },
+    { label: "Day 90 follow-up",    count: funnel.day90,      rate: null },
+  ];
+
+  const maxCount = funnelData[0].count || 1;
+
+  // Outcomes — sort by count descending
+  const outcomeEntries = Object.entries(outcomes).sort(([, a], [, b]) => b - a);
+  const totalOutcomes = outcomeEntries.reduce((sum, [, n]) => sum + n, 0);
+
+  const firstCaseStr = firstCaseDate
+    ? firstCaseDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  return (
+    <div className="analytics-view">
+      {/* Hero */}
+      <div className="analytics-hero">
+        <div className="analytics-tag">Program Analytics</div>
+        <h1 className="analytics-h1">Your CAR-T program · operational metrics</h1>
+        <div className="analytics-sub">
+          {firstCaseStr ? `Since ${firstCaseStr}` : "All cases on board"} · {total} total case{total !== 1 ? "s" : ""}
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="kpi-grid">
+        <div className="kpi-card">
+          <div className="kpi-num">{total}</div>
+          <div className="kpi-label">Total cases screened</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-num">{activeCount}</div>
+          <div className="kpi-label">Active referrals in flight</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-num"><em>{funnel.infused}</em></div>
+          <div className="kpi-label">Patients infused</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-num">{formatPercent(conversionRates.endToEnd)}</div>
+          <div className="kpi-label">End-to-end conversion</div>
+        </div>
+      </div>
+
+      {/* Funnel */}
+      <div className="analytics-section">
+        <div className="analytics-section-hdr">
+          <h2 className="analytics-section-title">Referral funnel</h2>
+          <span className="analytics-section-meta">Cumulative reach by lifecycle stage</span>
+        </div>
+        {funnelData.map(({ label, count, rate }) => (
+          <div key={label} className="funnel-row">
+            <div className="funnel-label">{label}</div>
+            <div className="funnel-bar-track">
+              <div
+                className="funnel-bar-fill"
+                style={{ width: `${(count / maxCount) * 100}%` }}
+              />
+            </div>
+            <div className="funnel-count">{count}</div>
+            <div className={`funnel-rate ${rateColor(rate)}`}>
+              {rate !== null ? formatPercent(rate) : "—"}
+            </div>
+          </div>
+        ))}
+        {(funnel.deferred + funnel.notIndicated) > 0 && (
+          <div style={{ marginTop: 16, padding: "10px 14px", background: "#ebe6dc", fontSize: 12, color: "#6b645a", lineHeight: 1.55 }}>
+            {funnel.deferred} deferred · {funnel.notIndicated} not indicated · these are excluded from the funnel above (they never entered the referral phase)
+          </div>
+        )}
+      </div>
+
+      {/* Median time-to-stage */}
+      <div className="analytics-section">
+        <div className="analytics-section-hdr">
+          <h2 className="analytics-section-title">Median time-to-stage</h2>
+          <span className="analytics-section-meta">From stage-history timestamps</span>
+        </div>
+        <div className="time-grid">
+          <div className="time-card">
+            <div className="time-label">Decision → Referral</div>
+            <div className={`time-value${medianDays.decisionToReferral === null ? " empty" : ""}`}>
+              {medianDays.decisionToReferral === null ? "Not enough data" : formatDays(medianDays.decisionToReferral)}
+            </div>
+            <div className="time-context">From "Approved for referral" to "Referred to CAR-T center"</div>
+          </div>
+          <div className="time-card">
+            <div className="time-label">Referral → Apheresis</div>
+            <div className={`time-value${medianDays.referralToApheresis === null ? " empty" : ""}`}>
+              {medianDays.referralToApheresis === null ? "Not enough data" : formatDays(medianDays.referralToApheresis)}
+            </div>
+            <div className="time-context">Includes insurance prior auth and scheduling</div>
+          </div>
+          <div className="time-card">
+            <div className="time-label">Apheresis → Infusion</div>
+            <div className={`time-value${medianDays.apheresisToInfusion === null ? " empty" : ""}`}>
+              {medianDays.apheresisToInfusion === null ? "Not enough data" : formatDays(medianDays.apheresisToInfusion)}
+            </div>
+            <div className="time-context">Manufacturing typically 4–6 weeks for autologous CAR-T</div>
+          </div>
+        </div>
+        {medianDays.screenedToInfused !== null && (
+          <div style={{ marginTop: 16, padding: "14px 18px", background: "#1a1815", color: "#f4f1ea" }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.16em", color: "#c4a661", marginBottom: 6 }}>
+              End-to-end journey
+            </div>
+            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 500 }}>
+              Median {formatDays(medianDays.screenedToInfused)} from screening to infusion
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Outcomes */}
+      {totalOutcomes > 0 && (
+        <div className="analytics-section">
+          <div className="analytics-section-hdr">
+            <h2 className="analytics-section-title">Outcomes</h2>
+            <span className="analytics-section-meta">{totalOutcomes} closed case{totalOutcomes !== 1 ? "s" : ""}</span>
+          </div>
+
+          {/* Stacked bar */}
+          <div className="outcomes-bar">
+            {outcomeEntries.map(([key, count]) => {
+              const widthPct = (count / totalOutcomes) * 100;
+              return (
+                <div
+                  key={key}
+                  className="outcomes-segment"
+                  style={{ width: `${widthPct}%`, background: OUTCOME_COLORS[key] || "#6b645a" }}
+                  title={`${OUTCOME_LABELS[key] || key}: ${count}`}
+                />
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="outcomes-legend">
+            {outcomeEntries.map(([key, count]) => (
+              <div key={key} className="outcomes-legend-item">
+                <div className="outcomes-legend-swatch" style={{ background: OUTCOME_COLORS[key] || "#6b645a" }} />
+                <div className="outcomes-legend-label">{OUTCOME_LABELS[key] || key}</div>
+                <div className="outcomes-legend-count">{count} · {formatPercent(count / totalOutcomes)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* By cancer type */}
+      <div className="analytics-section">
+        <div className="analytics-section-hdr">
+          <h2 className="analytics-section-title">By cancer type</h2>
+          <span className="analytics-section-meta">{cancerTypeRows.length} type{cancerTypeRows.length !== 1 ? "s" : ""}</span>
+        </div>
+        <table className="cancer-table">
+          <thead>
+            <tr>
+              <th>Cancer type</th>
+              <th style={{ textAlign: "right" }}>Total</th>
+              <th style={{ textAlign: "right" }}>Active</th>
+              <th style={{ textAlign: "right" }}>Infused</th>
+              <th style={{ textAlign: "right" }}>Conversion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cancerTypeRows.map(row => (
+              <tr key={row.type}>
+                <td><strong>{row.type}</strong></td>
+                <td className="num">{row.total}</td>
+                <td className="num">{row.active}</td>
+                <td className="num">{row.infused}</td>
+                <td className={`rate ${rateColor(row.infusionRate)}`}>{formatPercent(row.infusionRate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer actions */}
+      <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+        <button className="board-btn primary" onClick={onGoToBoard}>← Back to tumor board</button>
+        <button className="board-btn" onClick={() => window.print()}>Print / save as PDF</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Legal pages ────────────────────────────────────────────────────────────
 
 function PrivacyView() {
@@ -5368,8 +5808,9 @@ export default function App() {
     if (p === "/privacy") return "privacy";
     if (p === "/terms") return "terms";
     if (p === "/disclaimer") return "disclaimer";
+    if (p === "/analytics") return "analytics";
     return "screener";
-  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer"
+  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -5403,6 +5844,7 @@ export default function App() {
       : view === "privacy" ? "/privacy"
       : view === "terms" ? "/terms"
       : view === "disclaimer" ? "/disclaimer"
+      : view === "analytics" ? "/analytics"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -5436,6 +5878,7 @@ export default function App() {
       else if (p === "/privacy") setView("privacy");
       else if (p === "/terms") setView("terms");
       else if (p === "/disclaimer") setView("disclaimer");
+      else if (p === "/analytics") setView("analytics");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -5633,13 +6076,22 @@ export default function App() {
                 Screener
               </button>
               {isSignedIn && (
-                <button
-                  className={`hdr-nav-btn${view === "board" ? " active" : ""}`}
-                  onClick={() => setView("board")}
-                >
-                  Tumor Board
-                  {board.length > 0 && <span className="hdr-nav-count">({board.length})</span>}
-                </button>
+                <>
+                  <button
+                    className={`hdr-nav-btn${view === "board" ? " active" : ""}`}
+                    onClick={() => setView("board")}
+                  >
+                    Tumor Board
+                    {board.length > 0 && <span className="hdr-nav-count">({board.length})</span>}
+                  </button>
+                  <button
+                    className={`hdr-nav-btn${view === "analytics" ? " active" : ""}`}
+                    onClick={() => setView("analytics")}
+                    title="Program metrics & outcomes"
+                  >
+                    Analytics
+                  </button>
+                </>
               )}
               <button
                 className={`hdr-nav-btn${view === "criteria" ? " active" : ""}`}
@@ -5753,6 +6205,15 @@ export default function App() {
           digestEnabled={digestEnabled}
           onToggleDigest={toggleDigest}
           userEmail={userEmail}
+        />
+      )}
+
+      {/* ANALYTICS VIEW (signed-in only — depends on local board data) */}
+      {view === "analytics" && (
+        <AnalyticsView
+          board={board}
+          onGoToBoard={() => setView("board")}
+          onGoToScreener={() => setView("screener")}
         />
       )}
 
