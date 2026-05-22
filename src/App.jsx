@@ -1393,6 +1393,119 @@ const CSS = `
   }
   .pass-item svg { flex-shrink: 0; margin-top: 1px; }
 
+  /* ABOUT — /about */
+  .about-view {
+    max-width: 880px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .about-view { padding: 36px 20px 60px; } }
+
+  .about-hero { text-align: center; margin-bottom: 48px; }
+  .about-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .about-tag::before, .about-tag::after {
+    content: ''; width: 24px; height: 1px; background: #6b645a;
+  }
+  .about-h1 {
+    font-family: 'Fraunces', serif; font-size: 38px; font-weight: 400;
+    line-height: 1.15; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .about-h1 em { font-style: italic; color: #b54a2c; }
+
+  .about-mission {
+    font-size: 15.5px; color: #1a1815; line-height: 1.75;
+    border-left: 2px solid #b54a2c; padding: 4px 0 4px 24px;
+    margin-bottom: 56px;
+  }
+  .about-mission p { margin: 0 0 18px; }
+  .about-mission p:last-child { margin-bottom: 0; }
+  .about-mission p:first-child {
+    font-family: 'Fraunces', serif; font-size: 19px;
+    line-height: 1.55; color: #1a1815; font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+
+  .about-section { margin-bottom: 48px; }
+  .about-section-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 10px;
+  }
+  .about-section-title {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 400;
+    letter-spacing: -0.015em; color: #1a1815; margin: 0 0 24px;
+  }
+
+  .team-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media (max-width: 700px) { .team-grid { grid-template-columns: 1fr; } }
+  .team-card {
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 24px 26px;
+  }
+  .team-name {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em; margin-bottom: 4px;
+  }
+  .team-role {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    margin-bottom: 14px; padding-bottom: 12px;
+    border-bottom: 1px solid #1a181520;
+  }
+  .team-bio {
+    font-size: 13.5px; color: #3a352e; line-height: 1.65; margin: 0;
+  }
+
+  .approach-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .approach-item {
+    display: flex; gap: 18px; align-items: flex-start;
+    padding: 16px 20px; background: #f4f1ea; border: 1px solid #1a181522;
+    border-left: 3px solid #b54a2c;
+  }
+  .approach-num {
+    font-family: 'Fraunces', serif; font-size: 26px; color: #b54a2c;
+    font-weight: 400; line-height: 1; flex-shrink: 0; min-width: 28px;
+  }
+  .approach-text {
+    font-size: 13.5px; color: #3a352e; line-height: 1.65; flex: 1;
+  }
+  .approach-text strong { color: #1a1815; font-weight: 600; }
+  .approach-text a {
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+  }
+  .approach-text a:hover { color: #1a1815; }
+
+  .about-contact {
+    border-top: 1px solid #1a181530;
+    padding-top: 28px; margin-top: 16px;
+  }
+  .about-contact-row { margin-bottom: 8px; }
+  .about-contact p {
+    font-size: 14px; color: #1a1815; line-height: 1.7; margin: 0 0 8px;
+  }
+  .contact-email {
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    color: #b54a2c; text-decoration: none;
+    border-bottom: 1px dotted #b54a2c80;
+  }
+  .contact-email:hover { color: #1a1815; border-bottom-color: #1a1815; }
+  .contact-note {
+    font-size: 12.5px; color: #6b645a; font-style: italic; margin-top: 10px;
+  }
+  .contact-note .link {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: #4c6b8c; font-style: normal;
+    border-bottom: 1px dotted #4c6b8c80;
+    font-family: 'Inter Tight', sans-serif; font-size: 12.5px;
+  }
+  .contact-note .link:hover { color: #1a1815; }
+
   /* COMMUNITY EARLY REFERRAL — /refer */
   .refer-view {
     max-width: 1100px; margin: 0 auto; padding: 56px 40px 80px;
@@ -2967,6 +3080,145 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── About page ─────────────────────────────────────────────────────────────
+function AboutView({ onBackToScreener, onGoToPricing, onGoToCriteria }) {
+  return (
+    <div className="about-view">
+      {/* Hero */}
+      <div className="about-hero">
+        <div className="about-tag">About · Why we built this</div>
+        <h1 className="about-h1">
+          Built to fix a <em>recurring operational problem</em><br />
+          in modern oncology.
+        </h1>
+      </div>
+
+      {/* Mission — opening line is the user's exact framing */}
+      <div className="about-mission">
+        <p>
+          CellTx Match was built to address a recurring operational problem in modern oncology:
+          patients becoming ineligible for cell therapy because referrals happen too late, or
+          because incomplete information delays evaluation.
+        </p>
+        <p>
+          Every CAR-T program sees it. A relapsed patient loses eligibility while a community
+          oncologist works through standard salvage chemotherapy — organ function declines,
+          performance status drops, and the clinical window closes before the referral pathway
+          completes. Existing decision support tools handle pieces of this: a prescribing
+          information document here, a guideline page there, a static eligibility list on a
+          vendor's website. Nothing brings the full workflow together at the point of decision.
+        </p>
+        <p>
+          CellTx Match runs a single patient profile through a deterministic rule library
+          sourced from FDA prescribing information, NCCN guidelines, and pivotal trial entry
+          criteria. The output is decision-focused: which approved products fit, what blocks
+          eligibility today, what workup is needed before referral, which trials match, and
+          when the clinical window is closing.
+        </p>
+      </div>
+
+      {/* Team */}
+      <div className="about-section">
+        <div className="about-section-tag">Team</div>
+        <h2 className="about-section-title">Built by clinicians and translational scientists</h2>
+
+        <div className="team-grid">
+          <div className="team-card">
+            <div className="team-name">Ramja Sritharan</div>
+            <div className="team-role">Cancer biologist · Founder</div>
+            <p className="team-bio">
+              Cancer biologist focused on tumor immunology and translational oncology workflows.
+              Built CellTx Match after seeing how operational bottlenecks and delayed referrals
+              impact access to cell therapy.
+            </p>
+          </div>
+
+          <div className="team-card">
+            <div className="team-name">Jananthan Paramsothy</div>
+            <div className="team-role">Physician · Clinical Advisor</div>
+            <p className="team-bio">
+              Physician with clinical experience in oncology workflows and patient care operations.
+              Advises on clinical usability, referral pathways, and real-world implementation
+              considerations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Approach — adds credibility without being hypey */}
+      <div className="about-section">
+        <div className="about-section-tag">Approach</div>
+        <h2 className="about-section-title">Clinical depth before features</h2>
+
+        <div className="approach-grid">
+          <div className="approach-item">
+            <div className="approach-num">1</div>
+            <div className="approach-text">
+              <strong>Sourced rule library.</strong> Every eligibility threshold, exclusion, and
+              urgency factor is derived from FDA prescribing information and NCCN guidelines.
+              The full library is publicly browseable —{" "}
+              <button
+                className="link"
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80", fontFamily: "inherit", fontSize: "inherit" }}
+                onClick={onGoToCriteria}
+              >
+                see the criteria library
+              </button>.
+            </div>
+          </div>
+
+          <div className="approach-item">
+            <div className="approach-num">2</div>
+            <div className="approach-text">
+              <strong>Deterministic, not generative.</strong> The eligibility engine is rule-based.
+              Clinical determinations don't depend on language model "reasoning" — they depend on
+              the published label and the patient's data. This is the right architecture for a
+              tool that informs a $500k–$1M treatment decision.
+            </div>
+          </div>
+
+          <div className="approach-item">
+            <div className="approach-num">3</div>
+            <div className="approach-text">
+              <strong>Privacy by architecture.</strong> Patient data never leaves the browser on
+              Free, Practice, and Institution tiers. Cases live in localStorage and shareable
+              URLs encode patient state as base64 in the URL hash — nothing is transmitted to our
+              servers. Enterprise customers can opt into encrypted server-side sync with a BAA.
+            </div>
+          </div>
+
+          <div className="approach-item">
+            <div className="approach-num">4</div>
+            <div className="approach-text">
+              <strong>Updated on FDA cadence.</strong> When approvals change or NCCN guidelines
+              update, the rule library is reviewed and updated within 30 days. Institution and
+              Enterprise customers receive a written change summary; Enterprise gets a live
+              quarterly briefing.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div className="about-contact">
+        <div className="about-section-tag">Get in touch</div>
+        <div className="about-contact-row">
+          <p>
+            Questions, feedback, or integration discussions — reply directly:{" "}
+            <a href="mailto:sri.ramya003@gmail.com" className="contact-email">
+              sri.ramya003@gmail.com
+            </a>
+          </p>
+        </div>
+        <p className="contact-note">
+          For institutional access, use the request form on the{" "}
+          <button className="link" onClick={onGoToPricing}>pricing page</button>.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Community Early Referral page ──────────────────────────────────────────
 const RESPONSE_OPTIONS = [
   { value: "cr",  label: "Complete response (CR)" },
@@ -3987,8 +4239,9 @@ export default function App() {
     if (p === "/board") return "board";
     if (p === "/criteria") return "criteria";
     if (p === "/refer") return "refer";
+    if (p === "/about") return "about";
     return "screener";
-  }); // "screener" | "board" | "pricing" | "criteria" | "refer"
+  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -4016,6 +4269,7 @@ export default function App() {
       : view === "board" ? "/board"
       : view === "criteria" ? "/criteria"
       : view === "refer" ? "/refer"
+      : view === "about" ? "/about"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -4031,6 +4285,7 @@ export default function App() {
       else if (p === "/board") setView("board");
       else if (p === "/criteria") setView("criteria");
       else if (p === "/refer") setView("refer");
+      else if (p === "/about") setView("about");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -4209,6 +4464,12 @@ export default function App() {
                 Criteria
               </button>
               <button
+                className={`hdr-nav-btn${view === "about" ? " active" : ""}`}
+                onClick={() => setView("about")}
+              >
+                About
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "pricing" ? " active" : ""}`}
                 onClick={() => setView("pricing")}
               >
@@ -4257,6 +4518,15 @@ export default function App() {
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
           onExport={() => { generateBoardPdf(board); trackBoardPacketExport(board.length); }}
+        />
+      )}
+
+      {/* ABOUT VIEW */}
+      {view === "about" && (
+        <AboutView
+          onBackToScreener={() => setView("screener")}
+          onGoToPricing={() => setView("pricing")}
+          onGoToCriteria={() => setView("criteria")}
         />
       )}
 
@@ -4777,6 +5047,13 @@ export default function App() {
       <footer className="footer">
         <div className="footer-brand">CellTx Match</div>
         <div className="footer-links">
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("about")}
+          >
+            About
+          </button>
           <button
             className="footer-link"
             style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
