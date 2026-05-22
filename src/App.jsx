@@ -22,6 +22,7 @@ import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS, PATHWAY_CATALO
 import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
 import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
+import { calculateReferralDecision } from "./utils/earlyReferral.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -1293,6 +1294,158 @@ const CSS = `
   }
   .pass-item svg { flex-shrink: 0; margin-top: 1px; }
 
+  /* COMMUNITY EARLY REFERRAL — /refer */
+  .refer-view {
+    max-width: 1100px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .refer-view { padding: 36px 20px 60px; } }
+
+  .refer-hero { margin-bottom: 36px; text-align: center; }
+  .refer-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #b54a2c;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .refer-tag::before, .refer-tag::after {
+    content: ''; width: 24px; height: 1px; background: #b54a2c;
+  }
+  .refer-h1 {
+    font-family: 'Fraunces', serif; font-size: 40px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .refer-h1 em { font-style: italic; color: #b54a2c; }
+  .refer-sub {
+    font-size: 15px; color: #6b645a; max-width: 620px;
+    margin: 16px auto 0; line-height: 1.65;
+  }
+
+  .refer-grid {
+    display: grid; grid-template-columns: 380px 1fr; gap: 28px;
+    margin-top: 36px; align-items: start;
+  }
+  @media (max-width: 860px) { .refer-grid { grid-template-columns: 1fr; gap: 20px; } }
+
+  .refer-form {
+    background: #ebe6dc; border: 1px solid #1a1815;
+    padding: 24px; position: sticky; top: 24px;
+  }
+  @media (max-width: 860px) { .refer-form { position: static; } }
+  .refer-form-title {
+    font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500;
+    color: #1a1815; margin: 0 0 18px;
+    border-bottom: 1px solid #1a181520; padding-bottom: 12px;
+  }
+
+  .refer-decision {
+    min-height: 320px;
+  }
+  .refer-empty {
+    border: 1px dashed #1a181540; padding: 60px 32px; text-align: center;
+    background: #f4f1ea;
+  }
+  .refer-empty-icon {
+    font-family: 'Fraunces', serif; font-size: 56px; color: #1a181530;
+    margin-bottom: 18px; line-height: 1;
+  }
+  .refer-empty-text {
+    font-size: 14px; color: #6b645a; line-height: 1.65;
+  }
+
+  .verdict {
+    border: 3px solid; padding: 28px 30px;
+  }
+  .verdict.refer-now           { border-color: #b54a2c; background: #b54a2c0a; }
+  .verdict.refer-at-progression { border-color: #c4a661; background: #c4a66110; }
+  .verdict.monitor             { border-color: #4c6b8c; background: #4c6b8c0c; }
+  .verdict.not-indicated       { border-color: #5a7a4a; background: #5a7a4a0c; }
+
+  .verdict-level {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.22em; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .verdict.refer-now            .verdict-level { color: #b54a2c; }
+  .verdict.refer-at-progression .verdict-level { color: #7a5e10; }
+  .verdict.monitor              .verdict-level { color: #4c6b8c; }
+  .verdict.not-indicated        .verdict-level { color: #4a6a3a; }
+
+  .verdict-headline {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .verdict-sub {
+    font-size: 14.5px; color: #1a1815; line-height: 1.55; margin-bottom: 22px;
+  }
+
+  .verdict-block {
+    margin-bottom: 20px; padding-top: 18px; border-top: 1px solid currentColor;
+    border-top-color: #1a181520;
+  }
+  .verdict-block-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 10px;
+  }
+  .verdict-trigger {
+    font-size: 13px; color: #1a1815; padding: 4px 0 4px 16px;
+    line-height: 1.55; position: relative;
+  }
+  .verdict-trigger::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+  }
+  .verdict-trigger.missed {
+    background: #b54a2c10; padding: 8px 12px 8px 28px; margin: 6px 0;
+    border-left: 3px solid #b54a2c;
+  }
+  .verdict-trigger.missed::before {
+    content: '⚠'; left: 8px; color: #b54a2c;
+  }
+
+  .verdict-action {
+    font-size: 13px; color: #1a1815; padding: 6px 0 6px 22px;
+    line-height: 1.55; position: relative; font-weight: 500;
+  }
+  .verdict-action::before {
+    content: '→'; position: absolute; left: 4px; color: #b54a2c;
+    font-weight: 700;
+  }
+
+  .verdict-cta-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px;
+    padding-top: 18px; border-top: 1px solid #1a181525;
+  }
+  .verdict-cta {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em;
+    cursor: pointer; border: 1px solid #1a1815; background: transparent;
+    color: #1a1815; text-decoration: none; transition: all 0.12s;
+  }
+  .verdict-cta:hover { background: #1a1815; color: #f4f1ea; }
+  .verdict-cta.primary {
+    background: #b54a2c; color: #f4f1ea; border-color: #b54a2c;
+  }
+  .verdict-cta.primary:hover { background: #c4a661; border-color: #c4a661; color: #1a1815; }
+
+  /* Why this product exists box */
+  .refer-why {
+    background: #1a1815; color: #f4f1ea;
+    padding: 22px 26px; margin: 36px 0;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px;
+  }
+  @media (max-width: 700px) { .refer-why { grid-template-columns: 1fr; } }
+  .refer-why-stat {}
+  .refer-why-num {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: #c4a661; line-height: 1; margin-bottom: 4px;
+  }
+  .refer-why-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #f4f1ea99;
+    line-height: 1.55;
+  }
+
   /* CRITERIA CATALOG */
   .crit-view {
     max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
@@ -2105,6 +2258,8 @@ const INIT = {
   priorImid: false, priorPi: false, priorAntiCd38: false,
   // Disease activity — drives urgency score
   diseaseTempo: "", primaryRefractory: false, bSymptoms: false, elevatedLdh: false,
+  // Response to most recent line — drives community referral decision
+  latestResponse: "",
   // Disease-specific pathway factors — drive NCCN-aware logic
   earlyRelapse: false, doubleHit: false, transformedFromIndolent: false,
   pod24: false, flGrade3b: false, transformedToDlbcl: false,
@@ -2491,6 +2646,182 @@ function AccuracyModal({ onClose }) {
             <strong style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: "#3a352e" }}>Disclaimer</strong>
             {" "}— CellTx Match is for educational and research purposes only. Always confirm eligibility against current labeling, institutional protocols, and individual clinical assessment.
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Community Early Referral page ──────────────────────────────────────────
+const RESPONSE_OPTIONS = [
+  { value: "cr",  label: "Complete response (CR)" },
+  { value: "pr",  label: "Partial response (PR)" },
+  { value: "sd",  label: "Stable disease (SD)" },
+  { value: "pd",  label: "Progressive disease (PD)" },
+  { value: "primary_refractory", label: "Primary refractory (no response)" },
+];
+
+function CommunityReferralView({ pt, setPt, set, tog, onSeeFullAnalysis, onLoadIntoScreener }) {
+  const [ran, setRan] = useState(false);
+  const decision = ran ? calculateReferralDecision(pt) : null;
+
+  const isMM = pt.cancerType.toLowerCase().includes("myeloma");
+  const isLymphoma = !isMM && pt.cancerType !== "" && !pt.cancerType.toLowerCase().includes("not in scope");
+  const diseaseFields = getDiseaseFields(pt.cancerType);
+
+  const verdictClass = !decision ? "" :
+    decision.decision === "REFER_NOW" ? "refer-now" :
+    decision.decision === "REFER_AT_PROGRESSION" ? "refer-at-progression" :
+    decision.decision === "MONITOR" ? "monitor" :
+    decision.decision === "NOT_INDICATED" ? "not-indicated" : "";
+
+  return (
+    <div className="refer-view">
+      <div className="refer-hero">
+        <div className="refer-tag">Early Referral Intelligence</div>
+        <h1 className="refer-h1">
+          Should you refer this patient<br />for <em>cell therapy?</em>
+        </h1>
+        <p className="refer-sub">
+          A 60-second decision tool for community oncology. Built around the question every
+          generalist asks: <em>"Is this the right time to involve a CAR-T specialist?"</em>
+        </p>
+      </div>
+
+      <div className="refer-why">
+        <div className="refer-why-stat">
+          <div className="refer-why-num">~60%</div>
+          <div className="refer-why-label">of CAR-T-eligible patients are referred late or never</div>
+        </div>
+        <div className="refer-why-stat">
+          <div className="refer-why-num">4–6 wk</div>
+          <div className="refer-why-label">manufacturing wait means delayed referral = missed window</div>
+        </div>
+        <div className="refer-why-stat">
+          <div className="refer-why-num">80%</div>
+          <div className="refer-why-label">of cancer care happens in community settings — not academic centers</div>
+        </div>
+      </div>
+
+      <div className="refer-grid">
+        {/* FORM — left */}
+        <div className="refer-form">
+          <h2 className="refer-form-title">Patient snapshot</h2>
+
+          <div className="field">
+            <label className="lbl">Cancer type</label>
+            <select className="sel" value={pt.cancerType} onChange={e => set("cancerType", e.target.value)}>
+              {CANCER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="lbl">Number of prior therapies</label>
+            <input className="inp" type="number" min="0" max="20" placeholder="e.g. 2"
+              value={pt.priorLines} onChange={e => set("priorLines", e.target.value)} />
+          </div>
+
+          <div className="field">
+            <label className="lbl">Response to most recent therapy</label>
+            <select className="sel" value={pt.latestResponse} onChange={e => set("latestResponse", e.target.value)}>
+              <option value="">Select response…</option>
+              {RESPONSE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="lbl">Performance status (ECOG)</label>
+            <RadioGroup value={pt.ecog}
+              options={["0","1","2","3","4"].map(v => ({ value: v, label: v }))}
+              onChange={v => set("ecog", v)} />
+          </div>
+
+          {pt.cancerType && (
+            <>
+              <div className="sec-head">Early signals</div>
+              <Checkbox checked={pt.primaryRefractory} onChange={() => tog("primaryRefractory")}
+                label="No response to first-line therapy" />
+              {pt.cancerType && diseaseFields.length > 0 && diseaseFields.map(f => (
+                <Checkbox
+                  key={f}
+                  checked={pt[f]}
+                  onChange={() => tog(f)}
+                  label={DISEASE_FIELD_LABELS[f]}
+                />
+              ))}
+              {isLymphoma && (
+                <Checkbox checked={pt.bSymptoms} onChange={() => tog("bSymptoms")}
+                  label="B symptoms (fever, night sweats, weight loss)" />
+              )}
+            </>
+          )}
+
+          <button
+            className="run-btn"
+            onClick={() => setRan(true)}
+            disabled={!pt.cancerType || pt.priorLines === ""}
+          >
+            Check referral decision →
+          </button>
+        </div>
+
+        {/* DECISION — right */}
+        <div className="refer-decision">
+          {!decision || decision.decision === "INSUFFICIENT_DATA" ? (
+            <div className="refer-empty">
+              <div className="refer-empty-icon">?</div>
+              <p className="refer-empty-text">
+                Fill the snapshot on the left and click<br />
+                <strong>Check referral decision →</strong> to get a community-oncology-focused verdict.
+              </p>
+            </div>
+          ) : (
+            <div className={`verdict ${verdictClass}`}>
+              <div className="verdict-level">
+                {decision.decision === "REFER_NOW"            && "⚠ Refer immediately"}
+                {decision.decision === "REFER_AT_PROGRESSION" && "⏱ Refer at next progression"}
+                {decision.decision === "MONITOR"              && "○ Monitor"}
+                {decision.decision === "NOT_INDICATED"        && "✓ Not yet indicated"}
+              </div>
+              <div className="verdict-headline">{decision.headline}</div>
+              <div className="verdict-sub">{decision.sub}</div>
+
+              {decision.triggers.length > 0 && (
+                <div className="verdict-block">
+                  <div className="verdict-block-head">Why this decision</div>
+                  {decision.triggers.map((t, i) => (
+                    <div key={i} className={`verdict-trigger${t.includes("MISSED WINDOW") ? " missed" : ""}`}>
+                      {t.replace(/^⚠ /, "")}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {decision.actions.length > 0 && (
+                <div className="verdict-block">
+                  <div className="verdict-block-head">What to do today</div>
+                  {decision.actions.map((a, i) => (
+                    <div key={i} className="verdict-action">{a}</div>
+                  ))}
+                </div>
+              )}
+
+              <div className="verdict-cta-row">
+                {(decision.decision === "REFER_NOW" || decision.decision === "REFER_AT_PROGRESSION") && (
+                  <a
+                    className="verdict-cta primary"
+                    href="https://www.factwebsite.org/SearchAccrOrgs.aspx"
+                    target="_blank" rel="noopener noreferrer"
+                  >
+                    Find FACT-accredited CAR-T center →
+                  </a>
+                )}
+                <button className="verdict-cta" onClick={onSeeFullAnalysis}>
+                  See full eligibility analysis →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -3096,8 +3427,9 @@ export default function App() {
     if (p === "/pricing") return "pricing";
     if (p === "/board") return "board";
     if (p === "/criteria") return "criteria";
+    if (p === "/refer") return "refer";
     return "screener";
-  }); // "screener" | "board" | "pricing" | "criteria"
+  }); // "screener" | "board" | "pricing" | "criteria" | "refer"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -3124,6 +3456,7 @@ export default function App() {
     const target = view === "pricing" ? "/pricing"
       : view === "board" ? "/board"
       : view === "criteria" ? "/criteria"
+      : view === "refer" ? "/refer"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -3137,6 +3470,7 @@ export default function App() {
       if (p === "/pricing") setView("pricing");
       else if (p === "/board") setView("board");
       else if (p === "/criteria") setView("criteria");
+      else if (p === "/refer") setView("refer");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -3282,6 +3616,14 @@ export default function App() {
             </div>
             <nav className="hdr-nav">
               <button
+                className={`hdr-nav-btn${view === "refer" ? " active" : ""}`}
+                onClick={() => setView("refer")}
+                style={{ borderColor: "#b54a2c", color: view === "refer" ? "#f4f1ea" : "#b54a2c", background: view === "refer" ? "#b54a2c" : "transparent" }}
+                title="Community-oncology quick decision tool"
+              >
+                Early Referral
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "screener" ? " active" : ""}`}
                 onClick={() => setView("screener")}
               >
@@ -3359,6 +3701,18 @@ export default function App() {
         <PricingView
           onBackToScreener={() => setView("screener")}
           onRequestAccess={() => setShowWaitlist(true)}
+        />
+      )}
+
+      {/* COMMUNITY EARLY REFERRAL VIEW */}
+      {view === "refer" && (
+        <CommunityReferralView
+          pt={pt}
+          setPt={setPt}
+          set={set}
+          tog={tog}
+          onSeeFullAnalysis={() => { run(); setView("screener"); }}
+          onLoadIntoScreener={() => setView("screener")}
         />
       )}
 
