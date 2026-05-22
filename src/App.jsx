@@ -680,8 +680,115 @@ const CSS = `
 
   /* HERO */
   .hero {
-    max-width: 1200px; margin: 0 auto; padding: 52px 40px 36px;
+    max-width: 1200px; margin: 0 auto; padding: 72px 40px 56px;
     border-bottom: 1px solid #1a181520;
+    position: relative; overflow: hidden;
+  }
+  @media (max-width: 860px) { .hero { padding: 48px 20px 40px; } }
+  /* Subtle gradient orbs in the background — depth without distraction */
+  .hero::before {
+    content: ''; position: absolute; top: -120px; right: -120px;
+    width: 380px; height: 380px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(181,74,44,0.07), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -160px; left: -80px;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(76,107,140,0.06), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .hero > * { position: relative; z-index: 1; }
+
+  /* Hero grid: text + pipeline visualization */
+  .hero-grid {
+    display: grid; grid-template-columns: 1fr 280px; gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 1024px) { .hero-grid { grid-template-columns: 1fr; gap: 36px; } }
+  .hero-text {}
+
+  /* Stylized pipeline visualization */
+  .hero-pipeline {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 24px 22px;
+    background: linear-gradient(135deg, rgba(26,24,21,0.04), rgba(76,107,140,0.04));
+    border: 1px solid #1a181515;
+  }
+  .pipeline-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 4px;
+  }
+  .pipeline-flow {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .pipeline-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 0;
+    position: relative;
+  }
+  .pipeline-step:not(:last-child)::after {
+    content: ''; position: absolute; left: 9px; top: 24px;
+    bottom: -4px; width: 1px; background: #1a181530;
+  }
+  .pipeline-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #f4f1ea; border: 2px solid #6b645a;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    font-weight: 700; color: #1a1815;
+    position: relative; z-index: 2;
+  }
+  .pipeline-dot.complete {
+    background: #5a7a4a; border-color: #5a7a4a; color: #f4f1ea;
+  }
+  .pipeline-dot.active {
+    background: #c4a661; border-color: #c4a661; color: #1a1815;
+    animation: pipeline-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pipeline-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196,166,97,0.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(196,166,97,0); }
+  }
+  .pipeline-step-label {
+    font-size: 13px; color: #1a1815; line-height: 1.3;
+  }
+  .pipeline-step-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #6b645a; letter-spacing: 0.04em; margin-top: 2px;
+  }
+  .pipeline-step.active .pipeline-step-label {
+    font-weight: 600; color: #1a1815;
+  }
+  .pipeline-step.complete .pipeline-step-label {
+    color: #4a6a3a;
+  }
+
+  /* Larger, more confident H1 on desktop */
+  .hero-h1 {
+    font-size: 48px;
+  }
+  @media (min-width: 1024px) { .hero-h1 { font-size: 56px; } }
+
+  /* Stat strip — credibility band integrated into hero */
+  .hero-stats {
+    display: flex; gap: 28px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 22px;
+    border-top: 1px solid #1a181520;
+  }
+  .hero-stat {}
+  .hero-stat-num {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+    color: #1a1815; line-height: 1; letter-spacing: -0.015em;
+  }
+  .hero-stat-num em {
+    font-style: normal; color: #b54a2c;
+  }
+  .hero-stat-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #6b645a; margin-top: 6px; line-height: 1.4;
   }
   /* Hero CTA row */
   .hero-cta-row {
@@ -705,6 +812,131 @@ const CSS = `
   }
   .hero-cta.secondary:hover {
     background: #1a181508; border-color: #1a1815;
+  }
+
+  /* CAPABILITY GRID — what the platform does */
+  .capability-section {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 24px;
+    border-bottom: 1px solid #1a181520;
+  }
+  @media (max-width: 860px) { .capability-section { padding: 40px 20px 20px; } }
+  .capability-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .capability-eyebrow::before { content: ''; width: 24px; height: 1px; background: #6b645a; }
+  .capability-title {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: #1a1815; line-height: 1.2; letter-spacing: -0.022em; margin: 0 0 36px;
+    max-width: 720px;
+  }
+  .capability-title em { font-style: italic; color: #b54a2c; }
+  @media (min-width: 1024px) { .capability-title { font-size: 36px; } }
+
+  .capability-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  @media (max-width: 1024px) { .capability-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .capability-grid { grid-template-columns: 1fr; } }
+
+  .capability-card {
+    background: #f4f1ea; border: 1px solid #1a181530;
+    padding: 24px 22px;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .capability-card:hover {
+    transform: translateY(-4px);
+    border-color: #1a1815;
+    box-shadow: 0 12px 32px -16px rgba(26,24,21,0.18);
+  }
+  .capability-icon-wrap {
+    width: 40px; height: 40px;
+    background: #1a1815; color: #c4a661;
+    display: grid; place-items: center;
+    margin-bottom: 16px;
+    transition: background 0.18s, color 0.18s;
+  }
+  .capability-card:hover .capability-icon-wrap {
+    background: #b54a2c; color: #f4f1ea;
+  }
+  .capability-card-title {
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+    color: #1a1815; line-height: 1.25; letter-spacing: -0.012em;
+    margin: 0 0 8px;
+  }
+  .capability-card-body {
+    font-size: 13px; color: #4a4540; line-height: 1.55;
+  }
+  .capability-card-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #4c6b8c; margin-top: 12px; display: inline-block;
+    opacity: 0; transform: translateY(-3px);
+    transition: opacity 0.18s, transform 0.18s;
+  }
+  .capability-card:hover .capability-card-link {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* Trusted-approach band */
+  .trust-band {
+    max-width: 1200px; margin: 0 auto; padding: 32px 40px;
+    border-bottom: 1px solid #1a181520;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+  }
+  @media (max-width: 860px) {
+    .trust-band { padding: 28px 20px; grid-template-columns: 1fr; gap: 20px; }
+  }
+  .trust-item {
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .trust-icon {
+    width: 36px; height: 36px;
+    background: #ebe6dc; color: #1a1815;
+    display: grid; place-items: center;
+    border-left: 2px solid #b54a2c;
+    flex-shrink: 0;
+  }
+  .trust-text {}
+  .trust-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    margin-bottom: 4px;
+  }
+  .trust-detail {
+    font-size: 13px; color: #1a1815; line-height: 1.5;
+  }
+  .trust-detail a {
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+  }
+  .trust-detail a:hover { color: #1a1815; }
+
+  /* Scroll-triggered fade-in animation */
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in {
+    animation: fade-in-up 0.6s ease-out both;
+  }
+  .fade-in.delay-1 { animation-delay: 0.08s; }
+  .fade-in.delay-2 { animation-delay: 0.16s; }
+  .fade-in.delay-3 { animation-delay: 0.24s; }
+  .fade-in.delay-4 { animation-delay: 0.32s; }
+
+  /* Hero CTA hover lift */
+  .hero-cta {
+    transition: transform 0.15s ease, background 0.12s, border-color 0.12s;
+  }
+  .hero-cta:hover {
+    transform: translateY(-2px);
+  }
+  .hero-cta.primary:hover {
+    box-shadow: 0 12px 24px -10px rgba(181,74,44,0.4);
   }
 
   /* "Who this is for" strip */
@@ -8949,46 +9181,227 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO + WHO-STRIP — only on the screener landing */}
+      {/* HERO + capability grid + trust band — only on the screener landing */}
       {view === "screener" && <>
       <section className="hero">
-        <div className="hero-tag">Cell Therapy Referral Intelligence · May 2026</div>
-        <h1 className="hero-h1">
-          Identify <em>cell therapy</em> candidates,<br />ready for tumor board
-        </h1>
-        <p className="hero-sub">
-          Evaluate any patient against all 12 FDA-approved CAR-T and bispecific antibody
-          products simultaneously. Generate referral-ready intelligence in seconds — with the
-          criteria, recruiting trials, and bridging pathways your tumor board needs.
-        </p>
-        <div className="hero-pills">
-          {ALL_PRODUCTS.map(p => (
-            <span key={p.id} className="hero-pill" style={{ borderColor: p.color + "60", color: p.color }}>
-              {p.name}
-            </span>
-          ))}
-        </div>
+        <div className="hero-grid">
+          <div className="hero-text fade-in">
+            <div className="hero-tag">Cell Therapy Referral Intelligence · May 2026</div>
+            <h1 className="hero-h1">
+              Identify <em>cell therapy</em> candidates,<br />ready for tumor board
+            </h1>
+            <p className="hero-sub">
+              Evaluate any patient against all 12 FDA-approved CAR-T and bispecific antibody
+              products simultaneously. Generate referral-ready intelligence in seconds — with
+              the criteria, recruiting trials, and bridging pathways your tumor board needs.
+            </p>
 
-        {/* Primary + secondary CTAs — institutional positioning */}
-        <div className="hero-cta-row">
+            <div className="hero-pills">
+              {ALL_PRODUCTS.map(p => (
+                <span key={p.id} className="hero-pill" style={{ borderColor: p.color + "60", color: p.color }}>
+                  {p.name}
+                </span>
+              ))}
+            </div>
+
+            {/* Primary + secondary CTAs */}
+            <div className="hero-cta-row">
+              <button
+                className="hero-cta primary"
+                onClick={() => {
+                  trackPricingCta("hero-institutional");
+                  setShowWaitlist(true);
+                }}
+              >
+                Request institutional access →
+              </button>
+              <button
+                className="hero-cta secondary"
+                onClick={() => {
+                  const formEl = document.querySelector(".form-panel");
+                  if (formEl) formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                Start free analysis ↓
+              </button>
+            </div>
+
+            {/* Stat strip — credibility integrated into hero */}
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="hero-stat-num"><em>12</em></div>
+                <div className="hero-stat-label">FDA-approved products tracked</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-num">6</div>
+                <div className="hero-stat-label">NCCN-aligned disease pathways</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-num">22</div>
+                <div className="hero-stat-label">Pivotal trials cited · sourced to FDA labels</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-num">{screenCount.toLocaleString()}</div>
+                <div className="hero-stat-label">Cases analyzed · free for individual clinicians</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stylized pipeline visualization — hints at depth without screenshots */}
+          <div className="hero-pipeline fade-in delay-2">
+            <div className="pipeline-title">Referral lifecycle</div>
+            <div className="pipeline-flow">
+              <div className="pipeline-step complete">
+                <div className="pipeline-dot complete">✓</div>
+                <div>
+                  <div className="pipeline-step-label">Eligibility screen</div>
+                  <div className="pipeline-step-sub">12 products in seconds</div>
+                </div>
+              </div>
+              <div className="pipeline-step complete">
+                <div className="pipeline-dot complete">✓</div>
+                <div>
+                  <div className="pipeline-step-label">Tumor board review</div>
+                  <div className="pipeline-step-sub">Packet PDF in one click</div>
+                </div>
+              </div>
+              <div className="pipeline-step active">
+                <div className="pipeline-dot active">●</div>
+                <div>
+                  <div className="pipeline-step-label">Apheresis → manufacturing</div>
+                  <div className="pipeline-step-sub">Day-by-day countdown</div>
+                </div>
+              </div>
+              <div className="pipeline-step">
+                <div className="pipeline-dot">○</div>
+                <div>
+                  <div className="pipeline-step-label">Infusion + follow-up</div>
+                  <div className="pipeline-step-sub">D30 / D90 outcomes</div>
+                </div>
+              </div>
+              <div className="pipeline-step">
+                <div className="pipeline-dot">○</div>
+                <div>
+                  <div className="pipeline-step-label">Program analytics</div>
+                  <div className="pipeline-step-sub">QI-ready dashboard</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CAPABILITY GRID — four visual feature cards */}
+      <section className="capability-section">
+        <div className="capability-eyebrow">What you get</div>
+        <h2 className="capability-title">
+          Built for the way <em>oncology teams</em> actually work — not a generic checklist tool.
+        </h2>
+
+        <div className="capability-grid">
           <button
-            className="hero-cta primary"
-            onClick={() => {
-              trackPricingCta("hero-institutional");
-              setShowWaitlist(true);
-            }}
+            className="capability-card fade-in delay-1"
+            onClick={() => setView("criteria")}
+            style={{ background: "#f4f1ea", border: "1px solid #1a181530", textAlign: "left", font: "inherit", color: "inherit", cursor: "pointer" }}
           >
-            Request institutional access →
+            <div className="capability-icon-wrap">
+              <Dna size={20} strokeWidth={1.6} />
+            </div>
+            <h3 className="capability-card-title">Smart eligibility engine</h3>
+            <p className="capability-card-body">
+              12 FDA-approved CAR-T and bispecific products. Real-time analysis with citations
+              to FDA labels and pivotal trials.
+            </p>
+            <span className="capability-card-link">View criteria library →</span>
           </button>
+
           <button
-            className="hero-cta secondary"
-            onClick={() => {
-              const formEl = document.querySelector(".form-panel");
-              if (formEl) formEl.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
+            className="capability-card fade-in delay-2"
+            onClick={() => setView("refer")}
+            style={{ background: "#f4f1ea", border: "1px solid #1a181530", textAlign: "left", font: "inherit", color: "inherit", cursor: "pointer" }}
           >
-            Start free analysis ↓
+            <div className="capability-icon-wrap">
+              <BarChart3 size={20} strokeWidth={1.6} />
+            </div>
+            <h3 className="capability-card-title">NCCN-aware pathways</h3>
+            <p className="capability-card-body">
+              Disease-specific intelligence for DLBCL, FL, MCL, CLL, ALL, and MM. High-risk
+              modifiers and urgency triage built in.
+            </p>
+            <span className="capability-card-link">Try early referral tool →</span>
           </button>
+
+          <button
+            className="capability-card fade-in delay-3"
+            onClick={() => isSignedIn ? setView("today") : setShowWaitlist(true)}
+            style={{ background: "#f4f1ea", border: "1px solid #1a181530", textAlign: "left", font: "inherit", color: "inherit", cursor: "pointer" }}
+          >
+            <div className="capability-icon-wrap">
+              <Clock size={20} strokeWidth={1.6} />
+            </div>
+            <h3 className="capability-card-title">Operations dashboard</h3>
+            <p className="capability-card-body">
+              Daily coordinator queue · pending labs · insurance status · manufacturing
+              countdowns · escalations — your morning ritual.
+            </p>
+            <span className="capability-card-link">{isSignedIn ? "Open dashboard" : "Request demo"} →</span>
+          </button>
+
+          <button
+            className="capability-card fade-in delay-4"
+            onClick={() => setView("research")}
+            style={{ background: "#f4f1ea", border: "1px solid #1a181530", textAlign: "left", font: "inherit", color: "inherit", cursor: "pointer" }}
+          >
+            <div className="capability-icon-wrap">
+              <FileText size={20} strokeWidth={1.6} />
+            </div>
+            <h3 className="capability-card-title">FHIR-ready audit trail</h3>
+            <p className="capability-card-body">
+              Every case exports as a FHIR R4 Bundle. Per-event provenance log. Outcomes
+              CSV for QI reporting and retrospective studies.
+            </p>
+            <span className="capability-card-link">See data model →</span>
+          </button>
+        </div>
+      </section>
+
+      {/* TRUSTED APPROACH BAND */}
+      <section className="trust-band">
+        <div className="trust-item fade-in delay-1">
+          <div className="trust-icon">
+            <CheckCircle size={16} strokeWidth={1.8} />
+          </div>
+          <div className="trust-text">
+            <div className="trust-label">Sourced to current FDA labels</div>
+            <div className="trust-detail">
+              Every eligibility rule cites its source. Updated within 30 days of FDA approvals.{" "}
+              <button onClick={() => setView("criteria")} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80", font: "inherit" }}>Browse the library →</button>
+            </div>
+          </div>
+        </div>
+        <div className="trust-item fade-in delay-2">
+          <div className="trust-icon">
+            <Dna size={16} strokeWidth={1.8} />
+          </div>
+          <div className="trust-text">
+            <div className="trust-label">Built by clinical translational scientists</div>
+            <div className="trust-detail">
+              Tumor immunology PhD + practicing physician advisor. Real clinical workflow expertise.{" "}
+              <button onClick={() => setView("about")} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80", font: "inherit" }}>About the team →</button>
+            </div>
+          </div>
+        </div>
+        <div className="trust-item fade-in delay-3">
+          <div className="trust-icon">
+            <CheckCircle size={16} strokeWidth={1.8} />
+          </div>
+          <div className="trust-text">
+            <div className="trust-label">Privacy by architecture</div>
+            <div className="trust-detail">
+              Patient data never leaves the browser. No PHI on our servers — by design, not by policy.{" "}
+              <button onClick={() => setView("privacy")} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#4c6b8c", borderBottom: "1px dotted #4c6b8c80", font: "inherit" }}>Privacy policy →</button>
+            </div>
+          </div>
         </div>
       </section>
 
