@@ -5852,6 +5852,16 @@ export default function App() {
     trackPageview(target);
   }, [view]);
 
+  // Auth + digest preferences — declared BEFORE any effect that references them
+  const { isSignedIn, isLoaded, user } = useAuth();
+  const userEmail = user?.primaryEmailAddress?.emailAddress || null;
+  const userName  = user?.fullName || user?.firstName || null;
+
+  // Digest preference state — drives the toggle UI
+  const [digestEnabled, setDigestEnabledState] = useState(() => {
+    try { return isDigestEnabled(); } catch { return false; }
+  });
+
   // Auto-digest scheduler — checks once when conditions are met
   useEffect(() => {
     if (!isSignedIn || !userEmail || board.length === 0) return;
@@ -5885,14 +5895,6 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const { isSignedIn, isLoaded, user } = useAuth();
-  const userEmail = user?.primaryEmailAddress?.emailAddress || null;
-  const userName  = user?.fullName || user?.firstName || null;
-
-  // Digest preference state — drives the toggle UI
-  const [digestEnabled, setDigestEnabledState] = useState(() => {
-    try { return isDigestEnabled(); } catch { return false; }
-  });
   const toggleDigest = () => {
     setDigestEnabledState(prev => {
       const next = !prev;
