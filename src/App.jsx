@@ -1897,13 +1897,14 @@ const CSS = `
     max-width: 580px; line-height: 1.65;
   }
   .pricing-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-    margin-bottom: 56px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 48px;
   }
-  @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 1100px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+  @media (max-width: 600px)  { .pricing-grid { grid-template-columns: 1fr; } }
 
   .pricing-card {
-    border: 1px solid #1a1815; background: #f4f1ea; padding: 32px 26px;
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 28px 22px;
     display: flex; flex-direction: column; position: relative;
   }
   .pricing-card.featured {
@@ -1924,16 +1925,16 @@ const CSS = `
   }
   .featured .pricing-tier { color: #c4a661; }
   .pricing-name {
-    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
-    margin-bottom: 14px; letter-spacing: -0.015em; line-height: 1;
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    margin-bottom: 12px; letter-spacing: -0.015em; line-height: 1.1;
   }
   .pricing-price {
-    font-family: 'Fraunces', serif; font-size: 40px; font-weight: 400;
-    line-height: 1; margin-bottom: 6px;
+    font-family: 'Fraunces', serif; font-size: 34px; font-weight: 400;
+    line-height: 1; margin-bottom: 6px; letter-spacing: -0.01em;
   }
   .pricing-price .currency {
-    font-size: 18px; vertical-align: top; margin-right: 2px; opacity: 0.6;
-    position: relative; top: 6px;
+    font-size: 16px; vertical-align: top; margin-right: 2px; opacity: 0.6;
+    position: relative; top: 4px;
   }
   .pricing-per {
     font-size: 12px; color: #6b645a; font-style: italic; margin-bottom: 18px;
@@ -1970,6 +1971,58 @@ const CSS = `
   .featured .pricing-cta:hover {
     background: #c4a661; color: #1a1815; border-color: #c4a661;
   }
+
+  /* ALTERNATIVE / VOLUME PRICING */
+  .pricing-alt-panel {
+    border: 1px solid #1a1815; background: #ebe6dc;
+    padding: 28px 30px; margin: 0 0 48px;
+  }
+  .pricing-alt-head {
+    display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
+    margin-bottom: 6px; gap: 14px;
+  }
+  .pricing-alt-title {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em; margin: 0;
+  }
+  .pricing-alt-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+  }
+  .pricing-alt-sub {
+    font-size: 13px; color: #6b645a; margin: 0 0 18px; line-height: 1.55;
+  }
+  .pricing-alt-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  @media (max-width: 700px) { .pricing-alt-grid { grid-template-columns: 1fr; } }
+  .pricing-alt-item {
+    background: #f4f1ea; border: 1px solid #1a181530; padding: 16px 18px;
+  }
+  .pricing-alt-price {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500;
+    color: #1a1815; line-height: 1; margin-bottom: 4px;
+  }
+  .pricing-alt-price .alt-unit {
+    font-family: 'Inter Tight', sans-serif; font-size: 12px;
+    color: #6b645a; font-style: italic; font-weight: 400;
+    margin-left: 2px;
+  }
+  .pricing-alt-label {
+    font-size: 12.5px; color: #3a352e; line-height: 1.5; margin-top: 4px;
+  }
+  .pricing-alt-foot {
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid #1a181520;
+    font-size: 12px; color: #6b645a; line-height: 1.6;
+  }
+  .pricing-alt-link {
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #b54a2c;
+    margin-left: 4px;
+  }
+  .pricing-alt-link:hover { color: #1a1815; }
 
   /* FAQ */
   .pricing-faq {
@@ -3585,41 +3638,60 @@ const TIERS = [
   {
     id: "free",
     tier: "Free",
-    name: "Solo Clinician",
+    name: "Individual",
     price: "0",
     per: "forever · no card required",
-    best: "For individual oncologists & trainees",
+    best: "Individual oncologists & trainees",
     featured: false,
     features: [
       "Unlimited referral analyses",
-      "All 12 FDA-approved products (CAR-T + Bispecific)",
-      "CAR-T vs Bispecific candidate comparison",
+      "All 12 FDA-approved products",
+      "CAR-T vs Bispecific comparison",
       "Live ClinicalTrials.gov integration",
       "Shareable case URLs",
       "Bridging therapy guidance",
-      "PDF referral reports (color + B&W)",
-      "Mobile-optimized for phone use",
+      "PDF referral reports (with sign-in)",
+      "Mobile-optimized",
     ],
     cta: "Start analysis →",
     action: "screener",
   },
   {
+    id: "practice",
+    tier: "Practice",
+    name: "Community Oncology",
+    price: "299",
+    per: "per month · $2,990/yr (save 17%)",
+    best: "Practices & single CAR-T programs",
+    featured: false,
+    features: [
+      "Everything in Free",
+      "Up to 5 named users",
+      "Persistent shared tumor board",
+      "Custom practice name on reports",
+      "Email support · 2 business day SLA",
+      "14-day free trial · no card required",
+    ],
+    cta: "Start free trial →",
+    action: "waitlist",
+  },
+  {
     id: "institution",
     tier: "Institution",
     name: "Cancer Center",
-    price: "500",
-    per: "per month · 14-day free trial",
-    best: "For CAR-T programs & tumor boards",
+    price: "999",
+    per: "per month · $9,990/yr (save 17%)",
+    best: "CAR-T programs & academic centers",
     featured: true,
     features: [
-      "Everything in Free",
+      "Everything in Practice",
       "Up to 25 named users",
-      "Shared tumor board across team",
-      "Tumor board packet PDF exports",
-      "Custom institution branding on reports",
-      "Cross-device shared case retention",
-      "Quarterly criteria update alerts",
-      "Priority email support · 1 business day SLA",
+      "Multi-site shared tumor board",
+      "Custom institution branding on PDFs",
+      "Quarterly criteria update briefings",
+      "Read-only API access",
+      "Audit log (90-day retention)",
+      "Priority support · 1 business day SLA",
     ],
     cta: "Request access →",
     action: "waitlist",
@@ -3628,16 +3700,16 @@ const TIERS = [
     id: "enterprise",
     tier: "Enterprise",
     name: "Health System",
-    price: "2,000",
-    per: "per month · annual contract",
-    best: "For multi-site networks & systems",
+    price: "2,995",
+    per: "starting · annual contract only",
+    best: "Multi-site networks & systems",
     featured: false,
     features: [
       "Everything in Institution",
       "Unlimited users",
       "SSO (SAML · Okta · Azure AD)",
       "HIPAA Business Associate Agreement",
-      "Audit log + compliance reports",
+      "Full audit log + compliance reports",
       "Institution-specific criteria overrides",
       "Dedicated account manager",
       "99.9% uptime SLA · white-glove onboarding",
@@ -3650,19 +3722,27 @@ const TIERS = [
 const FAQS = [
   {
     q: "Is patient data ever stored on your servers?",
-    a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free or Institution tiers. Enterprise customers with a BAA can opt into encrypted server-side sync.",
+    a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free, Practice, or Institution tiers. Enterprise customers with a BAA can opt into encrypted server-side sync.",
   },
   {
-    q: "Can we try Institution before committing?",
-    a: "Yes — every Institution plan comes with a 14-day free trial, no credit card required upfront. You get full access including the shared tumor board, custom branding, and packet exports. Cancel anytime during the trial.",
+    q: "Is there a discount for academic medical centers or safety-net hospitals?",
+    a: "Yes — 30% off Institution and Enterprise tiers for academic centers willing to be a published reference customer. 25% off for FQHCs and safety-net hospitals. Free unlimited use for medical residents and fellows (with institutional attestation). Charter pricing: 50% off Year 1 for the first 5 Institution signups in exchange for case study and reference call rights.",
+  },
+  {
+    q: "Can I pay per-screen instead of subscribing?",
+    a: "Yes. For community practices, biotechs, advocacy groups, or pharma sales reps that don't fit the user-seat model, we offer volume pricing: $5/screen (pay-as-you-go, no minimum), $25/case (includes full tumor board persistence + PDF), or $10K/quarter unlimited with no SLA. Contact sales to set up.",
+  },
+  {
+    q: "Can we try Practice or Institution before committing?",
+    a: "Yes — every paid tier comes with a 14-day free trial, no credit card required upfront. You get full access including shared tumor board, custom branding, and packet exports. Cancel anytime during the trial with one click.",
   },
   {
     q: "How quickly do you add new FDA approvals?",
-    a: "Within 30 days of approval. Criteria are reviewed against the published prescribing information and added to all tiers simultaneously. Institution and Enterprise customers receive an email notification with a change summary.",
+    a: "Within 30 days of approval. Criteria are reviewed against the published prescribing information and added to all tiers simultaneously. Institution customers receive a written change summary; Enterprise customers receive a live quarterly briefing with the clinical content team.",
   },
   {
     q: "Do you offer a HIPAA Business Associate Agreement?",
-    a: "Yes, with Enterprise. Because no patient data leaves the browser on Free and Institution tiers, a BAA is technically not required at those levels — but Enterprise customers using server-side sync, SSO, or audit logging receive a signed BAA as standard.",
+    a: "Yes, with Enterprise. Because no patient data leaves the browser on Free, Practice, or Institution tiers, a BAA is technically not required at those levels — but Enterprise customers using server-side sync, SSO, or audit logging receive a signed BAA as standard. We also support DPAs for international institutions.",
   },
 ];
 
@@ -3707,6 +3787,47 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* Alternative / volume pricing — for non-seat-based buyers */}
+      <div className="pricing-alt-panel">
+        <div className="pricing-alt-head">
+          <h3 className="pricing-alt-title">Don't fit the user-seat model?</h3>
+          <span className="pricing-alt-tag">Volume pricing</span>
+        </div>
+        <p className="pricing-alt-sub">
+          For community practices, biotechs, pharma sales reps, advocacy groups, or independent
+          oncologists who run cases occasionally rather than continuously — pay only for what you use.
+        </p>
+
+        <div className="pricing-alt-grid">
+          <div className="pricing-alt-item">
+            <div className="pricing-alt-price">$5<span className="alt-unit">/screen</span></div>
+            <div className="pricing-alt-label">
+              Pay-as-you-go. No minimum, no monthly. Ideal for community sites with sporadic CAR-T cases.
+            </div>
+          </div>
+          <div className="pricing-alt-item">
+            <div className="pricing-alt-price">$25<span className="alt-unit">/case</span></div>
+            <div className="pricing-alt-label">
+              Full referral packet — board persistence, branded PDF, shareable URL. For one-off referrals.
+            </div>
+          </div>
+          <div className="pricing-alt-item">
+            <div className="pricing-alt-price">$10K<span className="alt-unit">/quarter</span></div>
+            <div className="pricing-alt-label">
+              Unlimited screens for a defined period. No SLA. Good for biotech sponsorship pilots.
+            </div>
+          </div>
+        </div>
+
+        <div className="pricing-alt-foot">
+          Best fit for non-traditional buyers. Volume pricing doesn't include shared tumor board, multi-user, or
+          SSO — pick Practice or Institution above for those.
+          <button className="pricing-alt-link" onClick={onRequestAccess}>
+            Talk to sales →
+          </button>
+        </div>
       </div>
 
       <div className="pricing-faq">
