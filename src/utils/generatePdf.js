@@ -32,7 +32,24 @@ function tag(doc, label, x, y, color) {
   doc.text(label.toUpperCase(), x, y);
 }
 
-export function generatePdf({ patient, results, products }) {
+export function generatePdf({ patient, results, products, grayscale = false }) {
+  // Shadow module-level COLORS with grayscale palette when grayscale=true
+  // All COLORS.xxx references below use this local variable automatically
+  // eslint-disable-next-line no-shadow
+  const COLORS = grayscale ? {
+    ink:    [26, 24, 21],   ink3:   [90, 90, 90],
+    paper:  [255, 255, 255], paper2: [210, 210, 210],
+    red:    [50, 50, 50],   green:  [26, 24, 21],
+    amber:  [80, 80, 80],   blue:   [60, 60, 60],
+    rule:   [160, 160, 160],
+  } : {
+    ink:    [26, 24, 21],   ink3:   [107, 100, 90],
+    paper:  [244, 241, 234], paper2: [235, 230, 220],
+    red:    [181, 74, 44],  green:  [90, 122, 74],
+    amber:  [196, 166, 97], blue:   [76, 107, 140],
+    rule:   [26, 24, 21],
+  };
+
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210, ML = 16, MR = 16, CW = W - ML - MR;
   let y = 0;
@@ -239,7 +256,7 @@ export function generatePdf({ patient, results, products }) {
     doc.text(`Page ${i} of ${pages}`, W - MR, 293, { align: "right" });
   }
 
-  doc.save("CAR-T-Eligibility-Report.pdf");
+  doc.save(grayscale ? "CellTx-Eligibility-Report-BW.pdf" : "CellTx-Eligibility-Report.pdf");
 }
 
 function hexToRgb(hex) {

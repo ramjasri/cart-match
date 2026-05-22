@@ -1089,6 +1089,110 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* SCREEN COUNTER BADGE */
+  .screen-counter {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #5a7a4a;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .counter-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #5a7a4a;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* MOBILE FORM COLLAPSE */
+  .form-title-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .form-title { margin: 0; }
+  .form-collapse-toggle {
+    display: none;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+  }
+  @media (max-width: 860px) {
+    .form-title-bar { cursor: pointer; border-bottom: 1px solid #1a181520; padding-bottom: 12px; margin-bottom: 0; }
+    .form-collapse-toggle { display: block; }
+    .form-fields-wrap { overflow: hidden; }
+    .form-fields-wrap.collapsed { display: none; }
+  }
+
+  /* BRIDGING THERAPY PANEL */
+  .bridging-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 10px; overflow: hidden;
+  }
+  .bridging-hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 18px; cursor: pointer; transition: background 0.1s; user-select: none;
+    background: #ebe6dc;
+  }
+  .bridging-hdr:hover { background: #e2ddd4; }
+  .bridging-icon {
+    width: 28px; height: 28px; background: #c4a661; color: #1a1815;
+    display: grid; place-items: center; flex-shrink: 0; font-size: 14px;
+  }
+  .bridging-hdr-text { flex: 1; }
+  .bridging-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: #1a1815; line-height: 1;
+  }
+  .bridging-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a; margin-top: 3px;
+  }
+  .bridging-body { padding: 18px 20px; }
+  .bridging-section { margin-bottom: 16px; }
+  .bridging-section:last-child { margin-bottom: 0; }
+  .bridging-section-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+  .bridging-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  @media (max-width: 700px) { .bridging-grid { grid-template-columns: 1fr; } }
+  .bridging-regimen {
+    background: #ebe6dc; border: 1px solid #1a181520; padding: 8px 10px;
+  }
+  .bridging-regimen-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: #1a1815; margin-bottom: 2px;
+  }
+  .bridging-regimen-full {
+    font-size: 11px; color: #6b645a; line-height: 1.4;
+  }
+  .bridging-regimen.preferred { border-left: 3px solid #5a7a4a; }
+  .bridging-regimen.novel { border-left: 3px solid #4c6b8c; }
+  .bridging-regimen.control { border-left: 3px solid #c4a661; }
+  .bridging-warning {
+    background: #c4a66115; border: 1px solid #c4a66140; padding: 10px 12px;
+    font-size: 12px; color: #3a352e; line-height: 1.55; margin-top: 12px;
+  }
+  .bridging-warning strong {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #7a5e10;
+  }
+
+  /* ACCURACY MODAL */
+  .acc-check {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: #3a352e; margin-bottom: 7px; line-height: 1.45;
+  }
+  .acc-check svg { flex-shrink: 0; margin-top: 1px; }
+  .acc-limit {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12px; color: #6b645a; margin-bottom: 6px; line-height: 1.45; font-style: italic;
+  }
+  .acc-pi-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 8px;
+  }
+  .acc-pi-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #4c6b8c;
+    text-decoration: none; border: 1px solid #4c6b8c40;
+    padding: 5px 8px; text-align: center; display: block; transition: background 0.1s;
+  }
+  .acc-pi-link:hover { background: #4c6b8c0d; }
+
   /* HEADER NAV TABS */
   .hdr-nav { display: flex; gap: 2px; }
   .hdr-nav-btn {
@@ -1517,6 +1621,258 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
   );
 }
 
+// ── Bridging therapy data ──────────────────────────────────────────────────
+const BRIDGING_DATA = {
+  dlbcl: {
+    title: "Bridging for DLBCL / Large B-cell lymphoma",
+    preferred: [
+      { name: "Pola-BR", full: "Polatuzumab vedotin + bendamustine + rituximab — most widely used bridge" },
+      { name: "R-GemOx", full: "Rituximab + gemcitabine + oxaliplatin — good for renal-impaired patients" },
+    ],
+    standard: [
+      { name: "R-DHAP", full: "Rituximab + dexamethasone + cytarabine + cisplatin" },
+      { name: "R-ICE",  full: "Rituximab + ifosfamide + carboplatin + etoposide" },
+      { name: "Loncastuximab", full: "Zynlonta (CD19-directed ADC) — for heavily pretreated" },
+    ],
+    control: [
+      { name: "Steroids", full: "Dexamethasone or prednisone — rapid disease control only, short course" },
+    ],
+  },
+  fl: {
+    title: "Bridging for Follicular lymphoma",
+    preferred: [
+      { name: "Obinutuzumab-based", full: "G-bendamustine or G-CHOP — standard re-treatment" },
+      { name: "R-CHOP / R-CVP",    full: "Rituximab-based chemoimmunotherapy for bulky disease" },
+    ],
+    standard: [
+      { name: "Copanlisib", full: "Aliqopa — PI3K inhibitor, 3L+ approved" },
+      { name: "Rituximab mono", full: "Single agent rituximab for indolent/low-burden FL" },
+    ],
+    control: [],
+  },
+  mcl: {
+    title: "Bridging for Mantle cell lymphoma",
+    preferred: [
+      { name: "BTKi", full: "Ibrutinib (Imbruvica), acalabrutinib (Calquence), or zanubrutinib (Brukinsa)" },
+      { name: "VR-CAP", full: "Bortezomib + rituximab + cyclophosphamide + doxorubicin + prednisone" },
+    ],
+    standard: [
+      { name: "Venetoclax ± ibrutinib", full: "For BTKi-refractory MCL, venetoclax-based combinations" },
+      { name: "R-DHAP / R-CHOP",       full: "Salvage chemoimmunotherapy for fit patients" },
+    ],
+    control: [],
+  },
+  cll: {
+    title: "Bridging for CLL / SLL",
+    preferred: [
+      { name: "Zanubrutinib", full: "Brukinsa — BTK inhibitor, preferred for tolerability" },
+      { name: "Venetoclax + obinutuzumab", full: "Fixed-duration option for treatment-naïve or relapsed" },
+    ],
+    standard: [
+      { name: "Ibrutinib / acalabrutinib", full: "Alternative BTK inhibitors" },
+      { name: "Steroids", full: "Methylprednisolone for autoimmune cytopenias / disease control" },
+    ],
+    control: [],
+  },
+  all: {
+    title: "Bridging for ALL (acute lymphoblastic leukemia)",
+    preferred: [
+      { name: "Inotuzumab ozogamicin", full: "Besylta (CD22-directed ADC) — highly effective CAR-T bridge" },
+      { name: "Blinatumomab", full: "Blincyto (CD19×CD3 bispecific) — also for MRD-positive disease" },
+    ],
+    standard: [
+      { name: "Steroids + VCR", full: "Corticosteroids + vincristine for rapid blast control" },
+      { name: "TKI (Ph+ ALL)",  full: "Dasatinib or ponatinib for Philadelphia chromosome-positive ALL" },
+    ],
+    control: [
+      { name: "Hydrea", full: "Hydroxyurea for urgent cytoreduction — temporary measure only" },
+    ],
+  },
+  mm: {
+    title: "Bridging for Multiple myeloma",
+    preferred: [
+      { name: "DVd", full: "Daratumumab + bortezomib + dexamethasone — if not daratumumab-refractory" },
+      { name: "Kd",  full: "Carfilzomib + dexamethasone — effective, manageable toxicity" },
+    ],
+    standard: [
+      { name: "Pd",    full: "Pomalidomide + dexamethasone — for IMiD-sensitive relapse" },
+      { name: "CyBorD", full: "Cyclophosphamide + bortezomib + dex — debulking, low myelosuppression" },
+      { name: "Xd",    full: "Selinexor (Xpovio) + dex — for triple-class refractory" },
+    ],
+    control: [
+      { name: "Low-dose dex", full: "Dexamethasone alone for rapid symptom control while planning" },
+    ],
+  },
+};
+
+function getBridgingKey(cancerType) {
+  const c = (cancerType || "").toLowerCase();
+  if (c.includes("myeloma")) return "mm";
+  if (c.includes("all") || c.includes("leukemia")) return "all";
+  if (c.includes("mantle") || c.includes("mcl")) return "mcl";
+  if (c.includes("cll") || c.includes("sll")) return "cll";
+  if (c.includes("follicular") || c.includes(" fl")) return "fl";
+  if (c.includes("lymphoma") || c.includes("lbcl") || c.includes("dlbcl")) return "dlbcl";
+  return null;
+}
+
+function BridgingPanel({ cancerType }) {
+  const [open, setOpen] = useState(false);
+  const key = getBridgingKey(cancerType);
+  if (!key) return null;
+  const data = BRIDGING_DATA[key];
+
+  return (
+    <div className="bridging-panel">
+      <div className="bridging-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="bridging-icon">⏱</div>
+        <div className="bridging-hdr-text">
+          <div className="bridging-hdr-title">Bridging therapy options</div>
+          <div className="bridging-hdr-sub">While awaiting CAR-T manufacturing (4–6 weeks)</div>
+        </div>
+        <div className={`chevron${open ? " open" : ""}`}><ChevronDown size={16} /></div>
+      </div>
+
+      {open && (
+        <div className="bridging-body">
+          <div style={{ fontFamily: "'Fraunces', serif", fontSize: 14, marginBottom: 14, color: "#1a1815" }}>
+            {data.title}
+          </div>
+
+          {data.preferred.length > 0 && (
+            <div className="bridging-section">
+              <div className="bridging-section-head">Preferred — most commonly used bridges</div>
+              <div className="bridging-grid">
+                {data.preferred.map((r, i) => (
+                  <div key={i} className="bridging-regimen preferred">
+                    <div className="bridging-regimen-name">{r.name}</div>
+                    <div className="bridging-regimen-full">{r.full}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data.standard.length > 0 && (
+            <div className="bridging-section">
+              <div className="bridging-section-head">Additional options</div>
+              <div className="bridging-grid">
+                {data.standard.map((r, i) => (
+                  <div key={i} className="bridging-regimen novel">
+                    <div className="bridging-regimen-name">{r.name}</div>
+                    <div className="bridging-regimen-full">{r.full}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data.control.length > 0 && (
+            <div className="bridging-section">
+              <div className="bridging-section-head">Disease control (short-term only)</div>
+              <div className="bridging-grid">
+                {data.control.map((r, i) => (
+                  <div key={i} className="bridging-regimen control">
+                    <div className="bridging-regimen-name">{r.name}</div>
+                    <div className="bridging-regimen-full">{r.full}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="bridging-warning">
+            <strong>⚠ Key considerations</strong><br />
+            Avoid myelosuppressive agents ≤ 4 weeks before apheresis — adequate T-cell recovery is required for successful CAR-T manufacturing. Prolonged corticosteroids impair T-cell function; taper before collection. Coordinate with the CAR-T center before starting any bridging.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Accuracy modal ─────────────────────────────────────────────────────────
+const PI_LINKS = [
+  { name: "Yescarta",   url: "https://www.gilead.com/-/media/files/pdfs/medicines/other/yescarta/yescarta-us-prescribing-information.pdf" },
+  { name: "Kymriah",    url: "https://www.novartis.com/us-en/sites/novartis_us/files/kymriah.pdf" },
+  { name: "Breyanzi",   url: "https://packageinserts.bms.com/pi/pi_breyanzi.pdf" },
+  { name: "Tecartus",   url: "https://www.gilead.com/-/media/files/pdfs/medicines/other/tecartus/tecartus-us-prescribing-information.pdf" },
+  { name: "Abecma",     url: "https://packageinserts.bms.com/pi/pi_abecma.pdf" },
+  { name: "Carvykti",   url: "https://www.janssenlabels.com/package-insert/product-monograph/prescribing-information/CARVYKTI-pi.pdf" },
+  { name: "Tecvayli",   url: "https://www.janssenlabels.com/package-insert/product-monograph/prescribing-information/TECVAYLI-pi.pdf" },
+  { name: "Talvey",     url: "https://www.janssenlabels.com/package-insert/product-monograph/prescribing-information/TALVEY-pi.pdf" },
+  { name: "Elrexfio",   url: "https://labeling.pfizer.com/ShowLabeling.aspx?id=23905" },
+  { name: "Epkinly",    url: "https://www.ema.europa.eu/en/medicines/human/EPAR/epkinly" },
+  { name: "Columvi",    url: "https://www.gene.com/download/pdf/columvi_prescribing.pdf" },
+  { name: "Lunsumio",   url: "https://www.gene.com/download/pdf/lunsumio_prescribing.pdf" },
+];
+
+function AccuracyModal({ onClose }) {
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 560, maxHeight: "90vh", overflowY: "auto" }}>
+        <div className="modal-rule" />
+        <button className="modal-close" onClick={onClose}><X size={16} /></button>
+        <div className="modal-body">
+          <div className="modal-title">How accurate is this?</div>
+          <p className="modal-sub">
+            Eligibility criteria are derived directly from current FDA-approved prescribing information for each product, last reviewed May 2026.
+          </p>
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b645a", marginBottom: 8 }}>What we check</div>
+            {[
+              "Approved indications — cancer type and required line of therapy",
+              "Target marker expression — CD19, BCMA, CD20, GPRC5D",
+              "Performance status — ECOG threshold per product label",
+              "Organ function — ALT, AST, creatinine/CrCl, bilirubin, LVEF, SpO₂",
+              "MM prior therapy requirements — IMiD, PI, anti-CD38",
+              "Absolute exclusions — CNS disease, active autoimmune, allo-SCT timing",
+            ].map((t, i) => (
+              <div key={i} className="acc-check">
+                <CheckCircle size={13} color="#5a7a4a" />
+                {t}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b645a", marginBottom: 8 }}>Limitations — always verify</div>
+            {[
+              "Insurance coverage and prior authorization not assessed",
+              "Apheresis scheduling and manufacturing slot availability not assessed",
+              "Full contraindication list — review the complete PI before prescribing",
+              "Off-label or expanded-access use not reflected",
+              "Product-specific REMS requirements not evaluated",
+            ].map((t, i) => (
+              <div key={i} className="acc-limit">
+                <AlertTriangle size={12} color="#c4a661" style={{ flexShrink: 0, marginTop: 1 }} />
+                {t}
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b645a", marginBottom: 8 }}>FDA Prescribing Information</div>
+            <div className="acc-pi-grid">
+              {PI_LINKS.map(({ name, url }) => (
+                <a key={name} href={url} target="_blank" rel="noopener noreferrer" className="acc-pi-link">
+                  {name} →
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 16, padding: "10px 12px", background: "#ebe6dc", fontSize: 11, color: "#6b645a", lineHeight: 1.6 }}>
+            <strong style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: "#3a352e" }}>Disclaimer</strong>
+            {" "}— CellTx Match is for educational and research purposes only. Always confirm eligibility against current labeling, institutional protocols, and individual clinical assessment.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Waitlist modal ─────────────────────────────────────────────────────────
 function WaitlistModal({ onClose }) {
   const [form, setForm] = useState({ name: "", email: "", institution: "", role: "" });
@@ -1611,6 +1967,15 @@ export default function App() {
   const [viewMode, setViewMode] = useState("all"); // "all" | "cart" | "bispecific"
   const [view, setView] = useState("screener"); // "screener" | "board"
   const [boardAdded, setBoardAdded] = useState(false);
+  const [showAccuracy, setShowAccuracy] = useState(false);
+  const [formOpen, setFormOpen] = useState(true); // mobile form collapse
+
+  // Usage counter — seeds at 1247, increments with each real screen run
+  const [screenCount, setScreenCount] = useState(() => {
+    const base = 1247;
+    try { return base + parseInt(localStorage.getItem("celltx-run-count") || "0", 10); }
+    catch { return base; }
+  });
 
   // Tumor board — persisted to localStorage
   const [board, setBoard] = useState(() => {
@@ -1694,6 +2059,13 @@ export default function App() {
     setRan(true);
     setViewMode("all");
     setCaseLoaded(false);
+    setFormOpen(false); // auto-collapse form on mobile after screening
+    // Increment usage counter
+    try {
+      const prev = parseInt(localStorage.getItem("celltx-run-count") || "0", 10);
+      localStorage.setItem("celltx-run-count", String(prev + 1));
+      setScreenCount(1247 + prev + 1);
+    } catch { /* ignore */ }
     // Write case to URL hash so it's shareable immediately
     const encoded = encodeCase(pt);
     if (encoded) window.history.replaceState(null, "", `#case=${encoded}`);
@@ -1747,6 +2119,10 @@ export default function App() {
             <div className="hdr-badge">
               <div className="hdr-badge-dot" />
               6 CAR-T · 6 Bispecific
+            </div>
+            <div className="screen-counter">
+              <div className="counter-dot" />
+              {screenCount.toLocaleString()} screened
             </div>
             {/* Nav tabs — only shown when signed in */}
             {isSignedIn && (
@@ -1828,7 +2204,15 @@ export default function App() {
 
         {/* FORM */}
         <div className="form-panel">
-          <div className="form-title">Patient Profile</div>
+          <div className="form-title-bar" onClick={() => ran && setFormOpen(o => !o)}>
+            <div className="form-title">Patient Profile</div>
+            {ran && (
+              <span className="form-collapse-toggle">
+                {formOpen ? "▲ hide" : "▼ edit"}
+              </span>
+            )}
+          </div>
+          <div className={`form-fields-wrap${(!formOpen && ran) ? " collapsed" : ""}`}>
 
           <div className="field">
             <label className="lbl">Cancer type</label>
@@ -1976,6 +2360,7 @@ export default function App() {
           <button className="run-btn" onClick={run} disabled={!canRun}>
             Screen eligibility →
           </button>
+          </div>{/* end form-fields-wrap */}
         </div>
 
         {/* RESULTS */}
@@ -2018,6 +2403,9 @@ export default function App() {
                   <div className="compare-con">Step-up hospitalization required</div>
                 </div>
               </div>
+
+              {/* Bridging therapy */}
+              <BridgingPanel cancerType={pt.cancerType} />
 
               {/* Tab bar */}
               <div className="tab-bar">
@@ -2070,13 +2458,23 @@ export default function App() {
           )}
 
           {isSignedIn ? (
-            <button
-              className="export-btn"
-              onClick={() => generatePdf({ patient: pt, results, products: PRODUCTS })}
-            >
-              <Download size={13} />
-              Export Eligibility Report (PDF)
-            </button>
+            <>
+              <button
+                className="export-btn"
+                onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS })}
+              >
+                <Download size={13} />
+                Export PDF (color)
+              </button>
+              <button
+                className="export-btn secondary"
+                title="Grayscale version for fax/B&W printing"
+                onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS, grayscale: true })}
+              >
+                <FileText size={13} />
+                B&amp;W PDF
+              </button>
+            </>
           ) : (
             <>
               <span className="export-signin-hint">Sign in to export PDF report</span>
@@ -2118,6 +2516,7 @@ export default function App() {
 
       {/* WAITLIST MODAL */}
       {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
+      {showAccuracy && <AccuracyModal onClose={() => setShowAccuracy(false)} />}
 
       </> /* end screener view */}
 
@@ -2125,6 +2524,13 @@ export default function App() {
       <footer className="footer">
         <div className="footer-brand">CellTx Match</div>
         <div className="footer-links">
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setShowAccuracy(true)}
+          >
+            How accurate is this?
+          </button>
           <a href="https://biomarker-database.vercel.app" target="_blank" rel="noopener noreferrer" className="footer-link">
             OncoMarker →
           </a>
