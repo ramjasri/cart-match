@@ -23,6 +23,7 @@ import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
 import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
+import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -1636,6 +1637,112 @@ const CSS = `
     content: '→'; position: absolute; left: 0; color: #c4a661; font-weight: 600;
   }
 
+  /* Pivotal trial citations */
+  .citation-block {
+    background: #ebe6dc; padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .citation-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #1a181515;
+    font-size: 12.5px; line-height: 1.5;
+  }
+  .citation-row:last-child { border-bottom: none; }
+  .citation-trial {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: #1a1815; min-width: 100px; flex-shrink: 0;
+    letter-spacing: 0.06em;
+  }
+  .citation-nct {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #4c6b8c; text-decoration: none; min-width: 110px; flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+  .citation-nct:hover { text-decoration: underline; }
+  .citation-bla-row {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: #6b645a;
+    padding: 6px 0 10px; margin-bottom: 6px;
+    border-bottom: 1px solid #1a181520;
+  }
+  .citation-bla-row strong {
+    color: #1a1815; letter-spacing: 0.05em;
+  }
+
+  /* Action source line */
+  .action-source {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; padding-left: 18px;
+    margin-top: 4px; line-height: 1.5;
+    font-style: italic;
+  }
+  .action-source::before {
+    content: 'Source: '; color: #4c6b8c; font-weight: 600; font-style: normal;
+  }
+
+  /* API endpoint section */
+  .api-panel {
+    border: 2px solid #1a1815; background: #1a1815; color: #f4f1ea;
+    margin-top: 24px; padding: 28px 30px;
+  }
+  .api-hdr {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .api-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    letter-spacing: -0.015em; margin: 0;
+  }
+  .api-title em { font-style: italic; color: #c4a661; }
+  .api-version {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #c4a661;
+    border: 1px solid #c4a66145; padding: 4px 10px;
+  }
+  .api-desc {
+    font-size: 13.5px; color: #f4f1eaaa; line-height: 1.65;
+    margin-bottom: 18px; max-width: 700px;
+  }
+  .api-code {
+    background: #0e0d0b; border: 1px solid #f4f1ea20; padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: #c4a661; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .api-method {
+    background: #5a7a4a; color: #f4f1ea; padding: 3px 8px;
+    font-size: 9px; letter-spacing: 0.15em; font-weight: 700;
+  }
+  .api-path { color: #f4f1ea; }
+  .api-copy-btn {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #c4a661; background: transparent; border: 1px solid #c4a66145;
+    padding: 5px 10px; cursor: pointer;
+  }
+  .api-copy-btn:hover { background: #c4a66120; }
+  .api-schema {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 16px;
+  }
+  @media (max-width: 700px) { .api-schema { grid-template-columns: 1fr; } }
+  .api-schema-item {
+    padding: 10px 14px; border-left: 2px solid #c4a661;
+    background: #f4f1ea08;
+  }
+  .api-schema-key {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #c4a661; letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .api-schema-desc { font-size: 12px; color: #f4f1eacc; line-height: 1.5; }
+  .api-link {
+    color: #c4a661; text-decoration: none;
+    border-bottom: 1px dotted #c4a66180;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+  }
+  .api-link:hover { color: #f4f1ea; border-bottom-color: #f4f1ea; }
+
   /* Source citation */
   .rule-source {
     margin-top: 12px; padding-top: 12px;
@@ -2893,6 +3000,7 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
         <a href="#actions" className="crit-nav-btn">Action Engine</a>
         <a href="#urgency" className="crit-nav-btn">Urgency Rubric</a>
         <a href="#trials" className="crit-nav-btn">Trial Matching</a>
+        <a href="#api" className="crit-nav-btn" style={{ borderColor: "#c4a661", color: "#7a5e10" }}>API</a>
         <button className="crit-nav-btn" onClick={onBackToScreener}>← Screener</button>
       </div>
 
@@ -2972,6 +3080,28 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
                   </ul>
                 </div>
 
+                {/* Citation block — FDA + pivotal trials with NCT IDs */}
+                {PRODUCT_CITATIONS[p.id] && (
+                  <div className="rule-sub-section">
+                    <div className="rule-sub-head">Pivotal trials &amp; FDA approval</div>
+                    <div className="citation-block">
+                      <div className="citation-bla-row">
+                        <span><strong>BLA:</strong> {PRODUCT_CITATIONS[p.id].bla}</span>
+                        <span><strong>First approval:</strong> {PRODUCT_CITATIONS[p.id].fdaApprovalDate}</span>
+                      </div>
+                      {PRODUCT_CITATIONS[p.id].pivotalTrials.map((t, i) => (
+                        <div key={i} className="citation-row">
+                          <span className="citation-trial">{t.name}</span>
+                          <a href={ctGovUrl(t.nctId)} target="_blank" rel="noopener noreferrer" className="citation-nct">
+                            {t.nctId} →
+                          </a>
+                          <span>{t.indication}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="rule-source">
                   <span className="rule-source-label">Source:</span>
                   {piUrl(p.name) ? (
@@ -2981,7 +3111,7 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
                   ) : (
                     <span>FDA {p.name} Prescribing Information</span>
                   )}
-                  <span>· Reviewed May 2026</span>
+                  <span>· Reviewed {CATALOG_META.asOf}</span>
                 </div>
               </div>
             </div>
@@ -3030,7 +3160,14 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
                       <span className="pref-name" style={{ color: prod?.color || "#1a1815" }}>
                         {prod?.name || p.id}
                       </span>
-                      <span className="pref-trial">{p.trial}</span>
+                      <span className="pref-trial">
+                        {p.nctId ? (
+                          <a href={ctGovUrl(p.nctId)} target="_blank" rel="noopener noreferrer"
+                             style={{ color: "#4c6b8c", textDecoration: "none", borderBottom: "1px dotted #4c6b8c80" }}>
+                            {p.trial}
+                          </a>
+                        ) : p.trial}
+                      </span>
                       <span>{p.line}</span>
                     </div>
                   );
@@ -3067,6 +3204,7 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
               <div key={i} className="action-row">
                 <span className="action-trigger">{String(r.match).replace(/^\/|\/i$/g, "")}</span>
                 <div className="action-text">{r.action}</div>
+                {r.source && <div className="action-source">{r.source}</div>}
               </div>
             ))}
           </div>
@@ -3085,6 +3223,7 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
               <div key={i} className="action-row">
                 <span className="action-trigger">{String(r.match).replace(/^\/|\/i$/g, "")}</span>
                 <div className="action-text">{r.action}</div>
+                {r.source && <div className="action-source">{r.source}</div>}
               </div>
             ))}
           </div>
@@ -3180,6 +3319,91 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
               <span>{TRIAL_SCORING_RULES.source}</span>
               <a href="https://clinicaltrials.gov/data-api/api" target="_blank" rel="noopener noreferrer">CT.gov API v2 →</a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── API endpoint ─────────────────────────────────────────────────── */}
+      <section id="api" className="crit-section">
+        <div className="crit-section-hdr">
+          <h2 className="crit-section-title">Criteria API</h2>
+          <span className="crit-section-meta">JSON dump · audit-ready · stays in sync with the rule library</span>
+        </div>
+
+        <div className="api-panel">
+          <div className="api-hdr">
+            <h3 className="api-title">
+              The entire rule library as <em>JSON</em>
+            </h3>
+            <span className="api-version">{CATALOG_META.version}</span>
+          </div>
+
+          <p className="api-desc">
+            Every product, pathway, action, urgency factor, and trial-scoring rule on this page
+            is available as a single JSON document. Pipe it into your CDS system, audit it against
+            your institutional protocols, or use it to build downstream tooling. The dump is
+            regenerated at every site build, so it never drifts from the rule library.
+          </p>
+
+          <div className="api-code">
+            <span className="api-method">GET</span>
+            <span className="api-path">https://cart-match.vercel.app/api/criteria/v1.json</span>
+            <button
+              className="api-copy-btn"
+              onClick={() => {
+                navigator.clipboard.writeText("https://cart-match.vercel.app/api/criteria/v1.json");
+              }}
+            >
+              Copy URL
+            </button>
+          </div>
+
+          <div className="api-schema">
+            <div className="api-schema-item">
+              <div className="api-schema-key">meta</div>
+              <div className="api-schema-desc">Version, as-of date, last-updated timestamp, changelog</div>
+            </div>
+            <div className="api-schema-item">
+              <div className="api-schema-key">products[]</div>
+              <div className="api-schema-desc">12 FDA-approved products with full eligibility rules, organ thresholds, BLA, pivotal trial NCT IDs</div>
+            </div>
+            <div className="api-schema-item">
+              <div className="api-schema-key">pathways[]</div>
+              <div className="api-schema-desc">6 NCCN-aware disease evaluators with high-risk modifiers, context rules, preferred-product citations</div>
+            </div>
+            <div className="api-schema-item">
+              <div className="api-schema-key">actions.blocks[]</div>
+              <div className="api-schema-desc">{BLOCK_ACTIONS.length} block-pattern → action mappings with source citations</div>
+            </div>
+            <div className="api-schema-item">
+              <div className="api-schema-key">actions.warnings[]</div>
+              <div className="api-schema-desc">{WARNING_ACTIONS.length} warning-pattern → action mappings with source citations</div>
+            </div>
+            <div className="api-schema-item">
+              <div className="api-schema-key">urgency</div>
+              <div className="api-schema-desc">{URGENCY_RUBRIC.factors.length} weighted factors + 3-tier triage thresholds</div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid #f4f1ea20", display: "flex", gap: 18, flexWrap: "wrap" }}>
+            <a href="/api/criteria/v1.json" target="_blank" rel="noopener noreferrer" className="api-link">
+              View raw JSON →
+            </a>
+            <span style={{ color: "#f4f1ea60", fontFamily: "'JetBrains Mono', monospace", fontSize: 10 }}>
+              {CATALOG_META.version} · As of {CATALOG_META.asOf} · Last build: {CATALOG_META.lastUpdated}
+            </span>
+          </div>
+
+          <div style={{ marginTop: 18, padding: "12px 14px", background: "#f4f1ea0c", fontSize: 12, color: "#f4f1eacc", lineHeight: 1.6 }}>
+            <strong style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.16em", color: "#c4a661" }}>Enterprise tier</strong>
+            {" "}— Authenticated API access with audit logging, webhook notifications on rule changes, and SLA-backed update guarantees are available on the Enterprise tier.{" "}
+            <button
+              className="api-link"
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+              onClick={() => onBackToScreener()}
+            >
+              See pricing →
+            </button>
           </div>
         </div>
       </section>

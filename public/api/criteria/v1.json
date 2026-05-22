@@ -1,0 +1,1342 @@
+{
+  "$schema": "https://cart-match.vercel.app/api/criteria/v1.schema.json",
+  "meta": {
+    "version": "v1.0.0",
+    "schemaUrl": "https://cart-match.vercel.app/api/criteria/v1.json",
+    "asOf": "2026-05",
+    "lastUpdated": "2026-05-22",
+    "reviewedBy": "CellTx Match clinical content team",
+    "changelog": [
+      {
+        "date": "2026-05",
+        "change": "Initial catalog v1.0.0 — 12 FDA-approved products + 6 disease pathways"
+      }
+    ],
+    "generatedAt": "2026-05-22T02:56:34.558Z",
+    "productCount": 12,
+    "pathwayCount": 6,
+    "blockActionCount": 14,
+    "warningActionCount": 9,
+    "urgencyFactorCount": 14
+  },
+  "products": [
+    {
+      "id": "yescarta",
+      "name": "Yescarta",
+      "generic": "axicabtagene ciloleucel",
+      "target": "CD19",
+      "sponsor": "Kite / Gilead",
+      "color": "#b54a2c",
+      "indications": [
+        "Large B-cell lymphoma (LBCL) — 2L+",
+        "Follicular lymphoma (FL) — 3L+",
+        "Primary mediastinal B-cell lymphoma (PMBCL)"
+      ],
+      "cancerKeys": [
+        "lbcl",
+        "dlbcl",
+        "lymphoma",
+        "fl",
+        "follicular",
+        "pmbcl",
+        "b-cell",
+        "large b"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "targetMarker": "CD19",
+      "mmReqs": false,
+      "nctSearch": "axicabtagene+ciloleucel",
+      "organThresholds": {
+        "altMax": 200,
+        "astMax": 200,
+        "creatMax": 1.8,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 50,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+        "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL) or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
+        "LVEF ≥ 50% (echo or MUGA)",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Active or prior CNS lymphoma",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection",
+        "Prior CAR-T or gene therapy",
+        "Allo-SCT within 6 months or active GVHD",
+        "Auto-SCT within 3 months"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "125643",
+        "fdaApprovalDate": "2017-10-18",
+        "pivotalTrials": [
+          {
+            "name": "ZUMA-1",
+            "nctId": "NCT02348216",
+            "indication": "LBCL 3L+ (initial approval)"
+          },
+          {
+            "name": "ZUMA-7",
+            "nctId": "NCT03391466",
+            "indication": "LBCL 2L+ (primary refractory / early relapse)"
+          },
+          {
+            "name": "ZUMA-5",
+            "nctId": "NCT03105336",
+            "indication": "FL 3L+"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kymriah",
+      "name": "Kymriah",
+      "generic": "tisagenlecleucel",
+      "target": "CD19",
+      "sponsor": "Novartis",
+      "color": "#4c6b8c",
+      "indications": [
+        "ALL (≤25 yr, R/R B-cell)",
+        "Large B-cell lymphoma (LBCL) — 2L+",
+        "Follicular lymphoma (FL) — 3L+"
+      ],
+      "cancerKeys": [
+        "all",
+        "leukemia",
+        "lbcl",
+        "dlbcl",
+        "lymphoma",
+        "fl",
+        "follicular",
+        "b-cell",
+        "large b"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "targetMarker": "CD19",
+      "mmReqs": false,
+      "nctSearch": "tisagenlecleucel",
+      "organThresholds": {
+        "altMax": 200,
+        "astMax": 200,
+        "creatMax": 1.8,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 45,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+        "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL)",
+        "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
+        "LVEF ≥ 45% (LBCL); no restriction (ALL)",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Active CNS disease (CNS-3 for ALL)",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection including HIV, HBV, HCV",
+        "Prior CD19-targeted therapy",
+        "Allo-SCT < 6 months or active GVHD"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "125646",
+        "fdaApprovalDate": "2017-08-30",
+        "pivotalTrials": [
+          {
+            "name": "ELIANA",
+            "nctId": "NCT02435849",
+            "indication": "R/R B-ALL ≤25 yo (initial approval)"
+          },
+          {
+            "name": "JULIET",
+            "nctId": "NCT02445248",
+            "indication": "R/R DLBCL"
+          },
+          {
+            "name": "ELARA",
+            "nctId": "NCT03568461",
+            "indication": "R/R FL 3L+"
+          }
+        ]
+      }
+    },
+    {
+      "id": "breyanzi",
+      "name": "Breyanzi",
+      "generic": "lisocabtagene maraleucel",
+      "target": "CD19",
+      "sponsor": "Bristol Myers Squibb",
+      "color": "#5a7a4a",
+      "indications": [
+        "Large B-cell lymphoma (LBCL) — 2L+",
+        "CLL / SLL — 3L+",
+        "Mantle cell lymphoma (MCL) — 2L+",
+        "Follicular lymphoma (FL) — 3L+"
+      ],
+      "cancerKeys": [
+        "lbcl",
+        "dlbcl",
+        "lymphoma",
+        "cll",
+        "sll",
+        "mcl",
+        "mantle",
+        "fl",
+        "follicular",
+        "b-cell",
+        "large b"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "targetMarker": "CD19",
+      "mmReqs": false,
+      "nctSearch": "lisocabtagene+maraleucel",
+      "organThresholds": {
+        "altMax": 200,
+        "astMax": 200,
+        "creatMax": 1.8,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 40,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+        "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL) or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL; ≤ 3× if Gilbert's)",
+        "LVEF ≥ 40%",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Active CNS lymphoma",
+        "Active autoimmune disease requiring systemic immunosuppression",
+        "Active uncontrolled infection",
+        "Prior CAR-T within 3 months",
+        "Allo-SCT within 6 months or active GVHD"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "761113",
+        "fdaApprovalDate": "2021-02-05",
+        "pivotalTrials": [
+          {
+            "name": "TRANSCEND-NHL-001",
+            "nctId": "NCT02631044",
+            "indication": "R/R LBCL 3L+ (initial approval)"
+          },
+          {
+            "name": "TRANSFORM",
+            "nctId": "NCT03575351",
+            "indication": "LBCL 2L+ (primary refractory / early relapse)"
+          },
+          {
+            "name": "TRANSCEND-FL",
+            "nctId": "NCT04245839",
+            "indication": "R/R FL 3L+"
+          },
+          {
+            "name": "TRANSCEND CLL 004",
+            "nctId": "NCT03331198",
+            "indication": "R/R CLL/SLL after BTKi + venetoclax"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tecartus",
+      "name": "Tecartus",
+      "generic": "brexucabtagene autoleucel",
+      "target": "CD19",
+      "sponsor": "Kite / Gilead",
+      "color": "#8a4a7a",
+      "indications": [
+        "Mantle cell lymphoma (MCL) — R/R",
+        "ALL (adult, R/R B-cell)"
+      ],
+      "cancerKeys": [
+        "mcl",
+        "mantle",
+        "all",
+        "leukemia",
+        "b-cell",
+        "lymphoma"
+      ],
+      "minPriorLines": 1,
+      "ecogMax": 2,
+      "targetMarker": "CD19",
+      "mmReqs": false,
+      "nctSearch": "brexucabtagene+autoleucel",
+      "organThresholds": {
+        "altMax": 200,
+        "astMax": 200,
+        "creatMax": 1.8,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 50,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+        "Creatinine ≤ 1.5× ULN (≤ 1.8 mg/dL)",
+        "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)",
+        "LVEF ≥ 50%",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Active CNS disease",
+        "Active autoimmune disease requiring systemic immunosuppression",
+        "Active uncontrolled infection",
+        "Prior CD19-targeted CAR-T",
+        "Allo-SCT within 6 months or active GVHD"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "761151",
+        "fdaApprovalDate": "2020-07-24",
+        "pivotalTrials": [
+          {
+            "name": "ZUMA-2",
+            "nctId": "NCT02601313",
+            "indication": "R/R MCL after BTKi (initial approval)"
+          },
+          {
+            "name": "ZUMA-3",
+            "nctId": "NCT02614066",
+            "indication": "Adult R/R B-ALL"
+          }
+        ]
+      }
+    },
+    {
+      "id": "abecma",
+      "name": "Abecma",
+      "generic": "idecabtagene vicleucel",
+      "target": "BCMA",
+      "sponsor": "Bristol Myers Squibb",
+      "color": "#c4a661",
+      "indications": [
+        "Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38, anti-BCMA)"
+      ],
+      "cancerKeys": [
+        "myeloma",
+        "mm",
+        "multiple myeloma"
+      ],
+      "minPriorLines": 4,
+      "ecogMax": 2,
+      "targetMarker": "BCMA",
+      "mmReqs": true,
+      "nctSearch": "idecabtagene+vicleucel",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 2.4,
+        "crclMin": 40,
+        "bilMax": 1.5,
+        "lvefMin": 45,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 2× ULN (≤ 2.4 mg/dL) or CrCl ≥ 40 mL/min",
+        "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+        "LVEF ≥ 45%",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Prior BCMA-targeted therapy (antibody-drug conjugate or CAR-T)",
+        "Active CNS myeloma",
+        "Active autoimmune disease",
+        "Active uncontrolled infection",
+        "Allo-SCT within 6 months or active GVHD",
+        "Auto-SCT within 3 months"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "125736",
+        "fdaApprovalDate": "2021-03-26",
+        "pivotalTrials": [
+          {
+            "name": "KarMMa",
+            "nctId": "NCT03361748",
+            "indication": "R/R MM 4L+ (initial approval)"
+          },
+          {
+            "name": "KarMMa-3",
+            "nctId": "NCT03651128",
+            "indication": "R/R MM 3L+ (confirmatory)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "carvykti",
+      "name": "Carvykti",
+      "generic": "ciltacabtagene autoleucel",
+      "target": "BCMA",
+      "sponsor": "J&J / Legend Biotech",
+      "color": "#6b5a8c",
+      "indications": [
+        "Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)",
+        "Multiple myeloma — 1L+ lenalidomide-refractory (2024)"
+      ],
+      "cancerKeys": [
+        "myeloma",
+        "mm",
+        "multiple myeloma"
+      ],
+      "minPriorLines": 1,
+      "ecogMax": 2,
+      "targetMarker": "BCMA",
+      "mmReqs": true,
+      "nctSearch": "ciltacabtagene+autoleucel",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 2.4,
+        "crclMin": 30,
+        "bilMax": 1.5,
+        "lvefMin": 45,
+        "spo2Min": 92
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 2× ULN (≤ 2.4 mg/dL) or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+        "LVEF ≥ 45%",
+        "SpO₂ ≥ 92% on room air"
+      ],
+      "exclusions": [
+        "Prior BCMA-targeted therapy",
+        "Active CNS myeloma",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection",
+        "Allo-SCT within 6 months or active GVHD",
+        "Auto-SCT within 3 months",
+        "Prior CAR-T within 6 months"
+      ],
+      "type": "cart",
+      "citations": {
+        "bla": "125743",
+        "fdaApprovalDate": "2022-02-28",
+        "pivotalTrials": [
+          {
+            "name": "CARTITUDE-1",
+            "nctId": "NCT03548207",
+            "indication": "R/R MM 4L+ (initial approval)"
+          },
+          {
+            "name": "CARTITUDE-4",
+            "nctId": "NCT04181827",
+            "indication": "R/R MM 1L+ lenalidomide-refractory (new indication)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tecvayli",
+      "name": "Tecvayli",
+      "generic": "teclistamab",
+      "target": "BCMA×CD3",
+      "targetMarker": "BCMA",
+      "type": "bispecific",
+      "sponsor": "J&J / Janssen",
+      "color": "#c4a661",
+      "indications": [
+        "Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"
+      ],
+      "cancerKeys": [
+        "myeloma",
+        "mm",
+        "multiple myeloma"
+      ],
+      "minPriorLines": 4,
+      "ecogMax": 2,
+      "mmReqs": true,
+      "requiresObinutuzumab": false,
+      "nctSearch": "teclistamab",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 3,
+        "crclMin": 30,
+        "bilMax": 1.5,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)",
+        "No specific LVEF or SpO₂ requirement"
+      ],
+      "exclusions": [
+        "Active CNS myeloma",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection",
+        "Hospitalization required for step-up dosing (first 2 doses)"
+      ],
+      "advantages": [
+        "Off-the-shelf — no manufacturing wait",
+        "No leukapheresis required",
+        "Subcutaneous weekly dosing (then Q2W)"
+      ],
+      "notes": [
+        "Step-up dosing: 0.06 → 0.3 → 1.5 mg/kg SC",
+        "CRS monitoring required for first doses"
+      ],
+      "citations": {
+        "bla": "761291",
+        "fdaApprovalDate": "2022-10-25",
+        "pivotalTrials": [
+          {
+            "name": "MajesTEC-1",
+            "nctId": "NCT04557098",
+            "indication": "R/R MM 4L+ (BCMA bispecific)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "talvey",
+      "name": "Talvey",
+      "generic": "talquetamab",
+      "target": "GPRC5D×CD3",
+      "targetMarker": "GPRC5D",
+      "type": "bispecific",
+      "sponsor": "J&J / Janssen",
+      "color": "#8a4a7a",
+      "indications": [
+        "Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"
+      ],
+      "cancerKeys": [
+        "myeloma",
+        "mm",
+        "multiple myeloma"
+      ],
+      "minPriorLines": 4,
+      "ecogMax": 2,
+      "mmReqs": true,
+      "requiresObinutuzumab": false,
+      "nctSearch": "talquetamab",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 3,
+        "crclMin": 30,
+        "bilMax": 1.5,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)"
+      ],
+      "exclusions": [
+        "Active CNS myeloma",
+        "Active autoimmune disease",
+        "Active uncontrolled infection",
+        "Hospitalization for step-up dosing required"
+      ],
+      "advantages": [
+        "Targets GPRC5D — usable after BCMA-directed therapy failure",
+        "No leukapheresis required",
+        "Two dosing schedules: QW or Q2W"
+      ],
+      "notes": [
+        "Step-up dosing required",
+        "Unique SEs: dysgeusia, nail/skin changes, weight loss"
+      ],
+      "citations": {
+        "bla": "761342",
+        "fdaApprovalDate": "2023-08-09",
+        "pivotalTrials": [
+          {
+            "name": "MonumenTAL-1",
+            "nctId": "NCT03399799",
+            "indication": "R/R MM 4L+ (GPRC5D bispecific)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "elrexfio",
+      "name": "Elrexfio",
+      "generic": "elranatamab",
+      "target": "BCMA×CD3",
+      "targetMarker": "BCMA",
+      "type": "bispecific",
+      "sponsor": "Pfizer",
+      "color": "#4c6b8c",
+      "indications": [
+        "Multiple myeloma — 4L+ (prior IMiD, PI, anti-CD38)"
+      ],
+      "cancerKeys": [
+        "myeloma",
+        "mm",
+        "multiple myeloma"
+      ],
+      "minPriorLines": 4,
+      "ecogMax": 2,
+      "mmReqs": true,
+      "requiresObinutuzumab": false,
+      "nctSearch": "elranatamab",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 3,
+        "crclMin": 30,
+        "bilMax": 1.5,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 3.0 mg/dL or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 1.5× ULN (≤ 1.5 mg/dL)"
+      ],
+      "exclusions": [
+        "Active CNS myeloma",
+        "Active autoimmune disease",
+        "Active uncontrolled infection",
+        "Step-up dosing hospitalization required"
+      ],
+      "advantages": [
+        "Off-the-shelf — immediate availability",
+        "No leukapheresis required",
+        "Sequential use after GPRC5D-targeted therapy possible"
+      ],
+      "notes": [
+        "Step-up dosing: 12 → 32 → 76 mg SC",
+        "Q2W after confirmed response"
+      ],
+      "citations": {
+        "bla": "761345",
+        "fdaApprovalDate": "2023-08-14",
+        "pivotalTrials": [
+          {
+            "name": "MagnetisMM-3",
+            "nctId": "NCT04649359",
+            "indication": "R/R MM 4L+ (BCMA bispecific)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "epkinly",
+      "name": "Epkinly",
+      "generic": "epcoritamab",
+      "target": "CD20×CD3",
+      "targetMarker": "CD20",
+      "type": "bispecific",
+      "sponsor": "AbbVie / Genmab",
+      "color": "#5a7a4a",
+      "indications": [
+        "R/R DLBCL — 3L+ (after ≥2 prior lines incl. CD20 + alkylator)",
+        "R/R Follicular lymphoma (FL grade 1–3A) — 3L+"
+      ],
+      "cancerKeys": [
+        "dlbcl",
+        "lbcl",
+        "lymphoma",
+        "fl",
+        "follicular",
+        "b-cell",
+        "large b"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "mmReqs": false,
+      "requiresObinutuzumab": false,
+      "nctSearch": "epcoritamab",
+      "organThresholds": {
+        "altMax": 200,
+        "astMax": 200,
+        "creatMax": 2,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 5× ULN (≤ 200 U/L)",
+        "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 2× ULN (≤ 2.0 mg/dL)"
+      ],
+      "exclusions": [
+        "Active CNS lymphoma",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection",
+        "Hospitalization for step-up dosing required"
+      ],
+      "advantages": [
+        "Off-the-shelf subcutaneous injection",
+        "No leukapheresis required",
+        "Can bridge to or follow CAR-T"
+      ],
+      "notes": [
+        "Step-up dosing: 0.16 → 0.8 → 48 mg SC",
+        "CRS prophylaxis required for first doses"
+      ],
+      "citations": {
+        "bla": "761324",
+        "fdaApprovalDate": "2023-05-19",
+        "pivotalTrials": [
+          {
+            "name": "EPCORE-NHL-1",
+            "nctId": "NCT03625037",
+            "indication": "R/R DLBCL 3L+ · R/R FL 3L+"
+          }
+        ]
+      }
+    },
+    {
+      "id": "columvi",
+      "name": "Columvi",
+      "generic": "glofitamab",
+      "target": "CD20×CD3",
+      "targetMarker": "CD20",
+      "type": "bispecific",
+      "sponsor": "Roche / Genentech",
+      "color": "#b54a2c",
+      "indications": [
+        "R/R DLBCL — 2L+",
+        "R/R Follicular lymphoma (FL) — 2L+"
+      ],
+      "cancerKeys": [
+        "dlbcl",
+        "lbcl",
+        "lymphoma",
+        "fl",
+        "follicular",
+        "b-cell",
+        "large b"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "mmReqs": false,
+      "requiresObinutuzumab": true,
+      "nctSearch": "glofitamab",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 2,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 2× ULN"
+      ],
+      "exclusions": [
+        "Requires obinutuzumab (Gazyva) pretreatment 7 days before cycle 1",
+        "Active CNS lymphoma",
+        "Active autoimmune disease",
+        "Active uncontrolled infection"
+      ],
+      "advantages": [
+        "Fixed duration — 12 cycles total (not lifelong)",
+        "Off-the-shelf IV infusion",
+        "Durable complete responses documented"
+      ],
+      "notes": [
+        "Obinutuzumab pretreatment mandatory — plan 7 days ahead",
+        "Step-up dosing cycles 1–2"
+      ],
+      "citations": {
+        "bla": "761309",
+        "fdaApprovalDate": "2023-06-15",
+        "pivotalTrials": [
+          {
+            "name": "NP30179",
+            "nctId": "NCT03075696",
+            "indication": "R/R DLBCL 2L+ · R/R FL 2L+ (obinutuzumab pretreatment required)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lunsumio",
+      "name": "Lunsumio",
+      "generic": "mosunetuzumab",
+      "target": "CD20×CD3",
+      "targetMarker": "CD20",
+      "type": "bispecific",
+      "sponsor": "Roche / Genentech",
+      "color": "#6b5a8c",
+      "indications": [
+        "R/R Follicular lymphoma (FL grade 1–3A) — 2L+"
+      ],
+      "cancerKeys": [
+        "fl",
+        "follicular",
+        "lymphoma"
+      ],
+      "minPriorLines": 2,
+      "ecogMax": 2,
+      "mmReqs": false,
+      "requiresObinutuzumab": false,
+      "nctSearch": "mosunetuzumab",
+      "organThresholds": {
+        "altMax": 120,
+        "astMax": 120,
+        "creatMax": 2,
+        "crclMin": 30,
+        "bilMax": 2,
+        "lvefMin": 0,
+        "spo2Min": 0
+      },
+      "organ": [
+        "ALT / AST ≤ 3× ULN (≤ 120 U/L)",
+        "Creatinine ≤ 2× ULN or CrCl ≥ 30 mL/min",
+        "Bilirubin ≤ 2× ULN"
+      ],
+      "exclusions": [
+        "Active CNS lymphoma",
+        "Active autoimmune disease requiring systemic treatment",
+        "Active uncontrolled infection"
+      ],
+      "advantages": [
+        "Fixed duration — 8 cycles (not lifelong)",
+        "Off-the-shelf IV then subcutaneous",
+        "Established durable remissions in FL"
+      ],
+      "notes": [
+        "Step-up dosing cycle 1",
+        "Fixed-duration therapy — re-treatment possible at relapse"
+      ],
+      "citations": {
+        "bla": "761263",
+        "fdaApprovalDate": "2022-12-22",
+        "pivotalTrials": [
+          {
+            "name": "GO29781",
+            "nctId": "NCT02500407",
+            "indication": "R/R FL grade 1-3A 2L+ (fixed-duration)"
+          }
+        ]
+      }
+    }
+  ],
+  "pathways": [
+    {
+      "id": "dlbcl",
+      "name": "DLBCL / Large B-cell lymphoma",
+      "highRiskModifiers": [
+        "Primary refractory disease (no response to 1L)",
+        "Early relapse (<12 months from 1L immunochemo)",
+        "Double/triple-hit lymphoma (MYC + BCL2 ± BCL6)",
+        "Histologic transformation from indolent lymphoma"
+      ],
+      "nccnRules": [
+        "Primary refractory or relapse <12 mo from 1L → CAR-T preferred over auto-SCT (NCCN Category 1)",
+        "Late relapse (>12 mo) with transplant eligibility → consider auto-SCT vs CAR-T at 2L (shared decision)",
+        "Double-hit lymphoma → CAR-T preferred at 2L due to poor auto-SCT outcomes",
+        "Histologic transformation → prior indolent-directed lines don't count toward DLBCL line threshold"
+      ],
+      "preferredProducts": [
+        {
+          "id": "yescarta",
+          "trial": "ZUMA-7",
+          "nctId": "NCT03391466",
+          "line": "2L+ for primary refractory / early relapse"
+        },
+        {
+          "id": "breyanzi",
+          "trial": "TRANSFORM",
+          "nctId": "NCT03575351",
+          "line": "2L+ approved"
+        },
+        {
+          "id": "kymriah",
+          "trial": "JULIET",
+          "nctId": "NCT02445248",
+          "line": "2L+ approved"
+        },
+        {
+          "id": "epkinly",
+          "trial": "EPCORE-NHL-1",
+          "nctId": "NCT03625037",
+          "line": "3L+ approved (bispecific, off-the-shelf SC)"
+        },
+        {
+          "id": "columvi",
+          "trial": "NP30179",
+          "nctId": "NCT03075696",
+          "line": "2L+ approved (fixed-duration bispecific)"
+        }
+      ],
+      "source": "NCCN B-Cell Lymphomas Guidelines v3.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480"
+    },
+    {
+      "id": "fl",
+      "name": "Follicular lymphoma",
+      "highRiskModifiers": [
+        "POD24 — progression <24 months from 1L immunochemo",
+        "Grade 3B (biologically aggressive — treat per DLBCL)",
+        "Transformed to DLBCL"
+      ],
+      "nccnRules": [
+        "POD24 portends inferior survival — consider CAR-T or bispecific at 3L+ rather than re-treatment",
+        "Grade 3B FL → treat per DLBCL pathway, not FL pathway",
+        "Histologic transformation → DLBCL-style approach (Yescarta, Breyanzi at 2L+)"
+      ],
+      "preferredProducts": [
+        {
+          "id": "yescarta",
+          "trial": "ZUMA-5",
+          "nctId": "NCT03105336",
+          "line": "3L+ approved"
+        },
+        {
+          "id": "breyanzi",
+          "trial": "TRANSCEND-FL",
+          "nctId": "NCT04245839",
+          "line": "3L+ approved"
+        },
+        {
+          "id": "kymriah",
+          "trial": "ELARA",
+          "nctId": "NCT03568461",
+          "line": "3L+ approved"
+        },
+        {
+          "id": "lunsumio",
+          "trial": "GO29781",
+          "nctId": "NCT02500407",
+          "line": "2L+ approved (no leukapheresis, fixed-duration)"
+        },
+        {
+          "id": "epkinly",
+          "trial": "EPCORE-NHL-1",
+          "nctId": "NCT03625037",
+          "line": "3L+ approved"
+        }
+      ],
+      "source": "NCCN B-Cell Lymphomas Guidelines v3.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480"
+    },
+    {
+      "id": "mcl",
+      "name": "Mantle cell lymphoma",
+      "highRiskModifiers": [
+        "BTK inhibitor–refractory",
+        "Blastoid / pleomorphic variant",
+        "TP53 mutation"
+      ],
+      "nccnRules": [
+        "Post-BTKi failure → short survival without CAR-T; refer urgently",
+        "Blastoid MCL → high MIPI, short PFS to standard therapy; prioritize CAR-T",
+        "TP53 mutation predicts BTKi failure and chemoresistance — CAR-T is preferred consolidative approach"
+      ],
+      "preferredProducts": [
+        {
+          "id": "tecartus",
+          "trial": "ZUMA-2",
+          "nctId": "NCT02601313",
+          "line": "R/R MCL after BTKi exposure"
+        }
+      ],
+      "source": "NCCN B-Cell Lymphomas Guidelines v3.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480"
+    },
+    {
+      "id": "cll",
+      "name": "CLL / SLL",
+      "highRiskModifiers": [
+        "Richter's transformation (treat per DLBCL pathway)"
+      ],
+      "nccnRules": [
+        "Breyanzi for CLL/SLL requires prior BTKi AND venetoclax exposure",
+        "Richter's transformation → DLBCL-style CAR-T (Yescarta, Breyanzi)"
+      ],
+      "preferredProducts": [
+        {
+          "id": "breyanzi",
+          "trial": "TRANSCEND CLL 004",
+          "nctId": "NCT03331198",
+          "line": "R/R CLL/SLL after BTKi + venetoclax"
+        }
+      ],
+      "source": "NCCN CLL/SLL Guidelines v3.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1478"
+    },
+    {
+      "id": "all",
+      "name": "Acute lymphoblastic leukemia (B-ALL)",
+      "highRiskModifiers": [
+        "R/R B-ALL — inherently rapid disease tempo",
+        "Philadelphia chromosome–positive (Ph+)"
+      ],
+      "nccnRules": [
+        "Pediatric/AYA (≤25 yo) R/R B-ALL → Kymriah (ELIANA — only product approved in this age group)",
+        "Adult R/R B-ALL → Tecartus (ZUMA-3)",
+        "Ph+ B-ALL: continue TKI through bridging and resume after CAR-T",
+        "Blinatumomab bridging: CD19-directed — may impact subsequent CAR-T target antigen"
+      ],
+      "preferredProducts": [
+        {
+          "id": "kymriah",
+          "trial": "ELIANA",
+          "nctId": "NCT02435849",
+          "line": "≤25 years, R/R B-ALL"
+        },
+        {
+          "id": "tecartus",
+          "trial": "ZUMA-3",
+          "nctId": "NCT02614066",
+          "line": "Adult R/R B-ALL"
+        }
+      ],
+      "source": "NCCN ALL Guidelines v1.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1410"
+    },
+    {
+      "id": "mm",
+      "name": "Multiple myeloma",
+      "highRiskModifiers": [
+        "Extramedullary disease (EMD)",
+        "High-risk cytogenetics (del17p, t(4;14), t(14;16), 1q+)",
+        "Triple-class exposed (IMiD + PI + anti-CD38)"
+      ],
+      "nccnRules": [
+        "CARTITUDE-4: Carvykti approved at 1L+ for lenalidomide-refractory MM (broader than 4L+ indication)",
+        "Triple-class exposed with ≥4 lines → full CAR-T and bispecific access",
+        "EMD portends shorter PFS to BCMA-directed therapies — consider sequencing GPRC5D (Talvey)",
+        "High-risk cytogenetics → prioritize deep response with CAR-T or bispecific sequencing"
+      ],
+      "preferredProducts": [
+        {
+          "id": "carvykti",
+          "trial": "CARTITUDE-1/4",
+          "nctId": "NCT04181827",
+          "line": "4L+ standard · 1L+ for len-refractory (CARTITUDE-4: NCT04181827)"
+        },
+        {
+          "id": "abecma",
+          "trial": "KarMMa",
+          "nctId": "NCT03361748",
+          "line": "4L+ approved"
+        },
+        {
+          "id": "tecvayli",
+          "trial": "MajesTEC-1",
+          "nctId": "NCT04557098",
+          "line": "4L+ BCMA bispecific"
+        },
+        {
+          "id": "talvey",
+          "trial": "MonumenTAL-1",
+          "nctId": "NCT03399799",
+          "line": "4L+ GPRC5D — alt after BCMA failure"
+        },
+        {
+          "id": "elrexfio",
+          "trial": "MagnetisMM-3",
+          "nctId": "NCT04649359",
+          "line": "4L+ BCMA bispecific"
+        }
+      ],
+      "source": "NCCN Multiple Myeloma Guidelines v3.2024",
+      "sourceUrl": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1445"
+    }
+  ],
+  "actions": {
+    "blocks": [
+      {
+        "pattern": "ECOG",
+        "action": "Optimize performance status (PT/OT, palliative care, supportive care) and reassess ECOG in 4 weeks",
+        "source": "FDA product labels (all 12) — performance status exclusion criteria"
+      },
+      {
+        "pattern": "ALT|AST",
+        "action": "Repeat LFTs in 1–2 weeks · review hepatotoxic medications · hepatology consult if persistent",
+        "source": "FDA product labels — organ function entry criteria (PI §5 Warnings)"
+      },
+      {
+        "pattern": "Renal function|Creatinine|CrCl",
+        "action": "Recheck creatinine + 24-hr CrCl · ensure adequate hydration · nephrology consult if persistent",
+        "source": "FDA product labels — organ function entry criteria (PI §2 Patient Selection)"
+      },
+      {
+        "pattern": "Bilirubin",
+        "action": "Repeat bilirubin · rule out cholestasis (RUQ ultrasound, GGT, alk phos)",
+        "source": "FDA product labels — hepatic function thresholds (PI §2)"
+      },
+      {
+        "pattern": "LVEF",
+        "action": "Cardiology consult · optimize HF therapy · repeat echo/MUGA in 4–6 weeks",
+        "source": "FDA CAR-T product labels — cardiac function for CRS tolerance (PI §5.1)"
+      },
+      {
+        "pattern": "SpO",
+        "action": "Pulmonology consult · PFTs and ABG · address reversible causes",
+        "source": "FDA CAR-T product labels — pulmonary function for CRS tolerance"
+      },
+      {
+        "pattern": "Cancer type not in approved",
+        "action": "Re-confirm pathology · explore clinical trial enrollment for off-label indications",
+        "source": "FDA product labels — Approved Indications section (PI §1)"
+      },
+      {
+        "pattern": "Requires .\\d+ prior lines|prior lines.*patient has",
+        "action": "Continue current therapy line · re-screen at progression (manufacturer expanded-access may apply for select patients)",
+        "source": "FDA product labels — line-of-therapy indication threshold"
+      },
+      {
+        "pattern": "negative — product requires",
+        "action": "Re-biopsy with IHC and/or flow cytometry · consider alternative-target therapy if confirmed negative",
+        "source": "FDA product labels — target antigen expression requirement"
+      },
+      {
+        "pattern": "Active CNS",
+        "action": "Initiate CNS-directed therapy (IT chemo, radiation) · MRI brain + CSF cytology · reassess after CNS control",
+        "source": "FDA product labels — CNS disease exclusion (PI §5.3 Neurologic Toxicities)"
+      },
+      {
+        "pattern": "Active autoimmune",
+        "action": "Rheumatology consult · taper systemic immunosuppression if disease activity allows · reassess in 3–6 months",
+        "source": "FDA product labels — active autoimmune disease exclusion"
+      },
+      {
+        "pattern": "Allo-SCT only .* months ago|Allo-SCT.*minimum 6",
+        "action": "Wait until ≥6 months post-allo-SCT · confirm no active GVHD before referral",
+        "source": "FDA product labels — allogeneic SCT timing exclusion (PI §5)"
+      },
+      {
+        "pattern": "Auto-SCT.*months",
+        "action": "Wait the required interval post-auto-SCT before referral",
+        "source": "FDA product labels — autologous SCT timing exclusion"
+      },
+      {
+        "pattern": "Prior CAR-T|Prior CD19-targeted",
+        "action": "Document prior CAR-T product and date · consider alternate-target therapy",
+        "source": "FDA product labels — prior CAR-T / target-directed therapy exclusion"
+      }
+    ],
+    "warnings": [
+      {
+        "pattern": "CD19 status unknown",
+        "action": "Order CD19 IHC on most recent biopsy specimen (typically positive in B-cell malignancies)",
+        "source": "FDA CD19-directed product labels — target antigen confirmation recommendation"
+      },
+      {
+        "pattern": "BCMA status unknown",
+        "action": "Order BCMA IHC or flow cytometry on bone marrow biopsy",
+        "source": "FDA BCMA-directed product labels — target antigen confirmation"
+      },
+      {
+        "pattern": "CD20 status unknown",
+        "action": "Order CD20 IHC on biopsy specimen (typically positive in B-cell lymphomas)",
+        "source": "FDA CD20-directed bispecific labels (Epkinly, Columvi, Lunsumio)"
+      },
+      {
+        "pattern": "GPRC5D status unknown",
+        "action": "GPRC5D testing has limited availability — confirm via specialty/reference lab if pursuing Talvey",
+        "source": "FDA Talvey label · MonumenTAL-1 (NCT03399799)"
+      },
+      {
+        "pattern": "Prior IMiD required",
+        "action": "Confirm lenalidomide/pomalidomide exposure via outside medical records",
+        "source": "FDA MM product labels — prior therapy requirement (PI §1 Indications)"
+      },
+      {
+        "pattern": "Prior PI required",
+        "action": "Confirm bortezomib/carfilzomib exposure via outside medical records",
+        "source": "FDA MM product labels — prior therapy requirement (PI §1 Indications)"
+      },
+      {
+        "pattern": "Prior anti-CD38 required",
+        "action": "Confirm daratumumab/isatuximab exposure via outside medical records",
+        "source": "FDA MM product labels — prior therapy requirement (PI §1 Indications)"
+      },
+      {
+        "pattern": "Prior allo-SCT",
+        "action": "Document allo-SCT date · confirm no active GVHD · taper immunosuppression if possible",
+        "source": "FDA product labels — allogeneic SCT history confirmation"
+      },
+      {
+        "pattern": "obinutuzumab",
+        "action": "Schedule obinutuzumab 1000 mg IV 7 days before glofitamab cycle 1 — coordinate with infusion center",
+        "source": "FDA Columvi label · NP30179 protocol (NCT03075696)"
+      }
+    ]
+  },
+  "urgency": {
+    "factors": [
+      {
+        "factor": "Rapidly progressive disease",
+        "weight": 4
+      },
+      {
+        "factor": "Primary refractory (no 1L response)",
+        "weight": 3
+      },
+      {
+        "factor": "ECOG ≥ 3 (declining)",
+        "weight": 3
+      },
+      {
+        "factor": "≥4 prior lines",
+        "weight": 3
+      },
+      {
+        "factor": "B symptoms present",
+        "weight": 2
+      },
+      {
+        "factor": "3 prior lines",
+        "weight": 2
+      },
+      {
+        "factor": "Triple-class exposed MM",
+        "weight": 2
+      },
+      {
+        "factor": "Pathway high-risk modifier (per disease)",
+        "weight": 2
+      },
+      {
+        "factor": "Stable disease tempo",
+        "weight": 1
+      },
+      {
+        "factor": "Elevated LDH",
+        "weight": 1
+      },
+      {
+        "factor": "ECOG 2 (borderline)",
+        "weight": 1
+      },
+      {
+        "factor": "2 prior lines",
+        "weight": 1
+      },
+      {
+        "factor": "Creatinine > 1.5 mg/dL",
+        "weight": 1
+      },
+      {
+        "factor": "LVEF < 50%",
+        "weight": 1
+      }
+    ],
+    "thresholds": [
+      {
+        "level": "HIGH",
+        "score": "≥ 8",
+        "timeline": "Apheresis evaluation within 7 days · expedite prior auth · bridging in parallel"
+      },
+      {
+        "level": "MODERATE",
+        "score": "4–7",
+        "timeline": "Initiate referral within 1–2 weeks · complete missing biomarker/labs"
+      },
+      {
+        "level": "LOW",
+        "score": "1–3",
+        "timeline": "Schedule referral at next routine visit · monitor for tempo changes"
+      }
+    ],
+    "source": "Internal rubric · derived from NCCN risk stratification and pivotal trial entry criteria"
+  },
+  "trialScoring": {
+    "modality": [
+      {
+        "pattern": "CAR-T / chimeric antigen receptor",
+        "weight": 6
+      },
+      {
+        "pattern": "Bispecific / BiTE / T-cell engager",
+        "weight": 6
+      },
+      {
+        "pattern": "Antibody-drug conjugate (ADC)",
+        "weight": 4
+      },
+      {
+        "pattern": "Allogeneic / off-the-shelf",
+        "weight": 3
+      }
+    ],
+    "targetMarkers": [
+      {
+        "pattern": "GPRC5D",
+        "weight": 4,
+        "note": "Alternative after BCMA failure"
+      },
+      {
+        "pattern": "CD19",
+        "weight": 3,
+        "note": "Patient-aware: green tag when CD19+"
+      },
+      {
+        "pattern": "BCMA",
+        "weight": 3,
+        "note": "Patient-aware: green tag when BCMA+"
+      },
+      {
+        "pattern": "CD22",
+        "weight": 3,
+        "note": "Alternative after CD19 failure"
+      },
+      {
+        "pattern": "CD20",
+        "weight": 2,
+        "note": "Patient-aware: green tag when CD20+"
+      },
+      {
+        "pattern": "CD79b · FcRH5",
+        "weight": 2
+      }
+    ],
+    "setting": [
+      {
+        "pattern": "Refractory / relapsed",
+        "weight": 2
+      },
+      {
+        "pattern": "Phase 3 (mature)",
+        "weight": 2
+      },
+      {
+        "pattern": "Phase 2",
+        "weight": 1
+      }
+    ],
+    "penalties": [
+      {
+        "pattern": "Healthy volunteer",
+        "weight": -20
+      },
+      {
+        "pattern": "Prevention",
+        "weight": -8
+      },
+      {
+        "pattern": "First-line / frontline",
+        "weight": -2
+      }
+    ],
+    "source": "Internal scoring · derived from ClinicalTrials.gov v2 intervention/condition metadata"
+  },
+  "nccnReferences": {
+    "B-Cell Lymphomas": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1480",
+    "CLL/SLL": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1478",
+    "ALL": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1410",
+    "Multiple Myeloma": "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1445"
+  }
+}

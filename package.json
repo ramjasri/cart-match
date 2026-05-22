@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-criteria.mjs",
     "build": "vite build",
+    "generate-criteria": "node scripts/generate-criteria.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
