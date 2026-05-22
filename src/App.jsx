@@ -11,7 +11,7 @@ function useAuth() {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useUser();
   } catch {
-    return { isSignedIn: false, isLoaded: false };
+    return { isSignedIn: false, isLoaded: false, user: null };
   }
 }
 import { generatePdf } from "./utils/generatePdf.js";
@@ -31,6 +31,7 @@ import {
   trackPricingCta, trackCriteriaApiAccess, trackEarlyReferralRun,
 } from "./utils/analytics.js";
 import { startCheckout } from "./utils/billing.js";
+import { sendDigest, maybeSendAutoDigest, isDigestEnabled, setDigestEnabled } from "./utils/digest.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -3097,8 +3098,21 @@ function nextStageAfter(currentStageId) {
   return LINEAR_PIPELINE[idx + 1];
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
+  const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
+
+  const handleSendDigest = async () => {
+    if (!userEmail) {
+      alert("Sign in with an email account to receive the digest.");
+      return;
+    }
+    if (board.length === 0) return;
+    setDigestStatus("sending");
+    const result = await onSendDigest();
+    setDigestStatus(result?.ok ? "sent" : "error");
+    setTimeout(() => setDigestStatus("idle"), 3500);
+  };
   const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
@@ -3132,6 +3146,29 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
           </div>
         </div>
         <div className="board-hdr-actions">
+          {board.length > 0 && userEmail && (
+            <>
+              <button
+                className="board-btn"
+                onClick={handleSendDigest}
+                disabled={digestStatus === "sending"}
+                title={`Send a tumor board digest to ${userEmail}`}
+              >
+                {digestStatus === "sending" ? "Sending…"
+                 : digestStatus === "sent"   ? "✓ Digest sent"
+                 : digestStatus === "error"  ? "✗ Send failed"
+                 : "Email digest now"}
+              </button>
+              <button
+                className="board-btn"
+                onClick={onToggleDigest}
+                title="Toggle automatic weekly digest"
+                style={digestEnabled ? { background: "#5a7a4a", color: "#f4f1ea", borderColor: "#5a7a4a" } : {}}
+              >
+                Weekly: {digestEnabled ? "ON" : "OFF"}
+              </button>
+            </>
+          )}
           {board.length > 0 && (
             <button className="board-btn primary" onClick={onExport}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
@@ -5373,6 +5410,20 @@ export default function App() {
     trackPageview(target);
   }, [view]);
 
+  // Auto-digest scheduler — checks once when conditions are met
+  useEffect(() => {
+    if (!isSignedIn || !userEmail || board.length === 0) return;
+    let cancelled = false;
+    // Slight delay so it doesn't block initial paint
+    const t = setTimeout(() => {
+      if (cancelled) return;
+      maybeSendAutoDigest({ board, toEmail: userEmail, toName: userName })
+        .then(() => { /* fire-and-forget; idempotent via timestamp guard */ })
+        .catch(() => { /* silent */ });
+    }, 1500);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [isSignedIn, userEmail, userName, board.length]);
+
   // Sync URL → view on back/forward
   useEffect(() => {
     const onPop = () => {
@@ -5391,7 +5442,21 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, user } = useAuth();
+  const userEmail = user?.primaryEmailAddress?.emailAddress || null;
+  const userName  = user?.fullName || user?.firstName || null;
+
+  // Digest preference state — drives the toggle UI
+  const [digestEnabled, setDigestEnabledState] = useState(() => {
+    try { return isDigestEnabled(); } catch { return false; }
+  });
+  const toggleDigest = () => {
+    setDigestEnabledState(prev => {
+      const next = !prev;
+      setDigestEnabled(next);
+      return next;
+    });
+  };
 
   const set = (k, v) => setPt(p => ({ ...p, [k]: v }));
   const tog = k => setPt(p => ({ ...p, [k]: !p[k] }));
@@ -5684,6 +5749,10 @@ export default function App() {
           onGoToScreener={() => setView("screener")}
           onExport={() => { generateBoardPdf(board); trackBoardPacketExport(board.length); }}
           onRequestDemo={() => { trackPricingCta("board-workflow-demo"); setShowWaitlist(true); }}
+          onSendDigest={() => sendDigest({ board, toEmail: userEmail, toName: userName })}
+          digestEnabled={digestEnabled}
+          onToggleDigest={toggleDigest}
+          userEmail={userEmail}
         />
       )}
 
