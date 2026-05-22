@@ -36,6 +36,14 @@ import {
   computeBoardAnalytics, OUTCOME_LABELS, OUTCOME_COLORS,
   formatPercent, formatDays,
 } from "./utils/analytics-board.js";
+import {
+  emptyTimeline, migrateTimeline,
+  manufacturingCountdown, MFG_TYPICAL_DAYS,
+  LAB_STATUSES, isLabOverdue, commonLabsForCancer,
+  INSURANCE_STATUSES,
+  daysFromNow, relativeDateLabel, todayISO,
+  computeTimelineInsights,
+} from "./utils/timeline.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -2794,6 +2802,143 @@ const CSS = `
   }
   .board-stat.active .board-stat-label { color: #c4a661; }
 
+  /* LONGITUDINAL TIMELINE — per case */
+  .timeline-panel {
+    background: #ebe6dc; border: 1px solid #1a181530;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .timeline-hdr {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: #1a1815; color: #f4f1ea; cursor: pointer; user-select: none;
+  }
+  .timeline-hdr:hover { background: #2a2520; }
+  .timeline-hdr-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700; flex: 1;
+  }
+  .timeline-hdr-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #c4a661; letter-spacing: 0.1em;
+  }
+  .timeline-body { padding: 14px 16px; display: grid; gap: 12px; }
+
+  .tl-section {
+    background: #f4f1ea; border: 1px solid #1a181520; padding: 12px 14px;
+  }
+  .tl-section-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px;
+  }
+  .tl-section-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #1a1815; font-weight: 700;
+  }
+  .tl-section-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 8px;
+    border: 1px solid currentColor;
+  }
+
+  .tl-field-row {
+    display: flex; align-items: center; gap: 10px; padding: 5px 0;
+    font-size: 12.5px; color: #1a1815; flex-wrap: wrap;
+  }
+  .tl-field-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #6b645a;
+    min-width: 100px; flex-shrink: 0;
+  }
+  .tl-date-input, .tl-text-input, .tl-select {
+    padding: 5px 9px; border: 1px solid #1a181530; background: #f4f1ea;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1a1815;
+    border-radius: 0;
+  }
+  .tl-date-input:focus, .tl-text-input:focus, .tl-select:focus {
+    outline: none; border-color: #1a1815;
+  }
+  .tl-text-input { font-family: 'Inter Tight', sans-serif; font-size: 12.5px; min-width: 160px; flex: 1; }
+  .tl-relative {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b645a;
+  }
+  .tl-relative.soon { color: #c4a661; font-weight: 600; }
+  .tl-relative.today { color: #b54a2c; font-weight: 700; }
+  .tl-relative.overdue { color: #b54a2c; font-weight: 700; }
+
+  /* Lab list */
+  .tl-labs-list { display: flex; flex-direction: column; gap: 4px; }
+  .tl-lab-row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+    background: #ebe6dc; border-left: 3px solid #6b645a;
+    font-size: 12px;
+  }
+  .tl-lab-row.complete { border-left-color: #5a7a4a; opacity: 0.7; }
+  .tl-lab-row.overdue { border-left-color: #b54a2c; background: #b54a2c0a; }
+  .tl-lab-name { flex: 1; min-width: 0; color: #1a1815; }
+  .tl-lab-row.complete .tl-lab-name { text-decoration: line-through; color: #6b645a; }
+  .tl-lab-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 2px 6px; border: 1px solid currentColor; flex-shrink: 0;
+  }
+  .tl-lab-date {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #6b645a; flex-shrink: 0;
+  }
+  .tl-lab-x {
+    background: transparent; border: none; cursor: pointer;
+    color: #98908380; font-size: 14px; padding: 0 4px;
+  }
+  .tl-lab-x:hover { color: #b54a2c; }
+
+  .tl-lab-add-row {
+    display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;
+  }
+  .tl-lab-add-chip {
+    padding: 4px 9px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px dashed #1a181540; background: transparent; color: #6b645a;
+    cursor: pointer;
+  }
+  .tl-lab-add-chip:hover { background: #1a181508; color: #1a1815; border-color: #1a1815; }
+
+  /* Manufacturing progress bar */
+  .mfg-bar-row {
+    display: flex; align-items: center; gap: 12px; margin: 10px 0 6px;
+  }
+  .mfg-bar-track {
+    flex: 1; height: 14px; background: #1a181515; border: 1px solid #1a181530;
+    position: relative;
+  }
+  .mfg-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #5a7a4a 0%, #c4a661 100%);
+    transition: width 0.3s;
+  }
+  .mfg-bar-fill.complete { background: #5a7a4a; }
+  .mfg-bar-fill.overdue { background: #b54a2c; }
+  .mfg-day-counter {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: #1a1815; font-weight: 700; min-width: 110px; text-align: right;
+  }
+
+  /* Daily insights strip — board header */
+  .insights-strip {
+    background: #1a1815; color: #f4f1ea; padding: 14px 18px;
+    margin-bottom: 16px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  @media (max-width: 700px) { .insights-strip { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+  .insight-item {}
+  .insight-num {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    line-height: 1; color: #c4a661;
+  }
+  .insight-num.none { color: #f4f1ea60; }
+  .insight-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #f4f1ea99;
+    margin-top: 4px; line-height: 1.4;
+  }
+
   /* REMINDER ROW (per case) */
   .reminder-row {
     display: flex; align-items: center; gap: 10px;
@@ -3409,7 +3554,7 @@ function todayPlusDays(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
 
@@ -3501,6 +3646,47 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
           </button>
         </div>
       </div>
+
+      {/* TODAY insights — daily operational pulse */}
+      {board.length > 0 && (() => {
+        const insights = computeTimelineInsights(board);
+        if (!insights) return null;
+        const total =
+          insights.upcomingApheresis.length +
+          insights.upcomingInfusions.length +
+          insights.mfgArrivingThisWeek.length +
+          insights.insurancePending.length +
+          insights.overdueLabs.length;
+        if (total === 0) return null;
+        return (
+          <div className="insights-strip">
+            <div className="insight-item">
+              <div className={`insight-num${insights.upcomingApheresis.length === 0 ? " none" : ""}`}>
+                {insights.upcomingApheresis.length}
+              </div>
+              <div className="insight-label">Apheresis this week</div>
+            </div>
+            <div className="insight-item">
+              <div className={`insight-num${insights.upcomingInfusions.length === 0 ? " none" : ""}`}>
+                {insights.upcomingInfusions.length}
+              </div>
+              <div className="insight-label">Infusions this week</div>
+            </div>
+            <div className="insight-item">
+              <div className={`insight-num${insights.mfgArrivingThisWeek.length === 0 ? " none" : ""}`}>
+                {insights.mfgArrivingThisWeek.length}
+              </div>
+              <div className="insight-label">Manufacturing arriving</div>
+            </div>
+            <div className="insight-item">
+              <div className={`insight-num${insights.insurancePending.length === 0 ? " none" : ""}`}>
+                {insights.insurancePending.length}
+              </div>
+              <div className="insight-label">Insurance pending</div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Aggregate stats by lifecycle phase (also act as filter chips) */}
       {board.length > 0 && (
@@ -3675,6 +3861,15 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
                     })}
                   </div>
                 </div>
+
+                {/* Longitudinal timeline — referral, labs, insurance, apheresis, mfg, infusion */}
+                {!isTerminal && (
+                  <TimelinePanel
+                    caseData={c}
+                    onUpdate={onUpdateTimeline}
+                    onSetLabs={onSetPendingLabs}
+                  />
+                )}
 
                 {/* Reminder row — date picker + status */}
                 {!isTerminal && (() => {
@@ -3872,6 +4067,373 @@ function getBridgingKey(cancerType) {
   if (c.includes("follicular") || c.includes(" fl")) return "fl";
   if (c.includes("lymphoma") || c.includes("lbcl") || c.includes("dlbcl")) return "dlbcl";
   return null;
+}
+
+// Longitudinal timeline panel — referral / labs / insurance / apheresis / mfg / infusion
+function TimelinePanel({ caseData, onUpdate, onSetLabs }) {
+  const isActive = ["approved", "referred", "apheresis", "manufacturing", "infused"].includes(caseData.stage);
+  const [open, setOpen] = useState(isActive);
+  const tl = caseData.timeline || emptyTimeline();
+  const id = caseData.id;
+  const cancerType = caseData.patient?.cancerType || "";
+  const commonLabs = commonLabsForCancer(cancerType);
+
+  const mfg = manufacturingCountdown(tl.manufacturing);
+
+  // Compute a one-line summary for the collapsed header
+  const summary = (() => {
+    const parts = [];
+    if (tl.pendingLabs.length > 0) {
+      const done = tl.pendingLabs.filter(l => l.status === "complete").length;
+      parts.push(`${done}/${tl.pendingLabs.length} labs`);
+    }
+    if (tl.insurance.status !== "none") {
+      const meta = INSURANCE_STATUSES.find(s => s.id === tl.insurance.status);
+      parts.push(`Ins: ${meta?.label || tl.insurance.status}`);
+    }
+    if (mfg && !mfg.isComplete) parts.push(`Mfg Day ${mfg.elapsed}/${mfg.totalDays}`);
+    if (tl.apheresis.scheduledAt && !tl.apheresis.performedAt) {
+      const d = daysFromNow(tl.apheresis.scheduledAt);
+      if (d !== null) parts.push(`Apheresis ${relativeDateLabel(tl.apheresis.scheduledAt)}`);
+    }
+    if (tl.infusion.scheduledAt && !tl.infusion.performedAt) {
+      parts.push(`Infusion ${relativeDateLabel(tl.infusion.scheduledAt)}`);
+    }
+    return parts.length === 0 ? "Click to add timeline details" : parts.join(" · ");
+  })();
+
+  // Lab add: support quick-add chip + custom
+  const addLab = (name) => {
+    if (!name) return;
+    const newLab = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+      name,
+      status: "ordered",
+      orderedAt: todayISO(),
+      completedAt: null,
+      notes: "",
+    };
+    onSetLabs(id, [...tl.pendingLabs, newLab]);
+  };
+  const updateLab = (labId, patch) => {
+    onSetLabs(id, tl.pendingLabs.map(l => l.id === labId ? { ...l, ...patch } : l));
+  };
+  const removeLab = (labId) => {
+    onSetLabs(id, tl.pendingLabs.filter(l => l.id !== labId));
+  };
+  const toggleLab = (labId) => {
+    const lab = tl.pendingLabs.find(l => l.id === labId);
+    if (!lab) return;
+    if (lab.status === "complete") {
+      updateLab(labId, { status: "ordered", completedAt: null });
+    } else {
+      updateLab(labId, { status: "complete", completedAt: todayISO() });
+    }
+  };
+
+  // Quick-add chips: show common labs that haven't been added yet
+  const addedNames = new Set(tl.pendingLabs.map(l => l.name.toLowerCase()));
+  const availableChips = commonLabs.filter(n => !addedNames.has(n.toLowerCase()));
+
+  const insMeta = INSURANCE_STATUSES.find(s => s.id === tl.insurance.status) || INSURANCE_STATUSES[0];
+
+  return (
+    <div className="timeline-panel">
+      <div className="timeline-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="timeline-hdr-title">⏱ Timeline</div>
+        <div className="timeline-hdr-meta">{summary}</div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={14} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="timeline-body">
+          {/* ─── REFERRAL ─────────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Referral</span>
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Created</span>
+              <input
+                type="date"
+                className="tl-date-input"
+                value={tl.referralCreatedAt || ""}
+                onChange={e => onUpdate(id, "_root", { referralCreatedAt: e.target.value || null })}
+              />
+              {tl.referralCreatedAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.referralCreatedAt)}</span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Center</span>
+              <input
+                type="text"
+                className="tl-text-input"
+                placeholder="e.g. MSK Cell Therapy Center"
+                value={tl.referralCenter}
+                onChange={e => onUpdate(id, "_root", { referralCenter: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* ─── PENDING LABS ─────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Pending labs &amp; workup</span>
+              <span className="tl-section-status" style={{ color: "#6b645a" }}>
+                {tl.pendingLabs.filter(l => l.status === "complete").length} / {tl.pendingLabs.length}
+              </span>
+            </div>
+            {tl.pendingLabs.length > 0 && (
+              <div className="tl-labs-list">
+                {tl.pendingLabs.map(lab => {
+                  const overdue = isLabOverdue(lab);
+                  const meta = LAB_STATUSES.find(s => s.id === lab.status) || LAB_STATUSES[0];
+                  return (
+                    <div key={lab.id} className={`tl-lab-row${lab.status === "complete" ? " complete" : ""}${overdue ? " overdue" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={lab.status === "complete"}
+                        onChange={() => toggleLab(lab.id)}
+                        title="Mark complete"
+                        style={{ flexShrink: 0 }}
+                      />
+                      <span className="tl-lab-name">{lab.name}</span>
+                      <select
+                        className="tl-lab-status"
+                        style={{ color: meta.color, fontFamily: "'JetBrains Mono', monospace", background: "transparent" }}
+                        value={lab.status}
+                        onChange={e => updateLab(lab.id, { status: e.target.value, completedAt: e.target.value === "complete" ? todayISO() : null })}
+                      >
+                        {LAB_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
+                      {lab.orderedAt && lab.status !== "complete" && (
+                        <span className="tl-lab-date">ordered {relativeDateLabel(lab.orderedAt)}</span>
+                      )}
+                      {lab.completedAt && (
+                        <span className="tl-lab-date">done {relativeDateLabel(lab.completedAt)}</span>
+                      )}
+                      <button className="tl-lab-x" onClick={() => removeLab(lab.id)} title="Remove">×</button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {availableChips.length > 0 && (
+              <div className="tl-lab-add-row">
+                {availableChips.slice(0, 6).map(name => (
+                  <button key={name} className="tl-lab-add-chip" onClick={() => addLab(name)}>
+                    + {name}
+                  </button>
+                ))}
+                <button
+                  className="tl-lab-add-chip"
+                  onClick={() => {
+                    const name = prompt("Custom lab / workup item:");
+                    if (name?.trim()) addLab(name.trim());
+                  }}
+                >
+                  + Custom…
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ─── INSURANCE ─────────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Insurance</span>
+              <span className="tl-section-status" style={{ color: insMeta.color }}>
+                {insMeta.label}
+              </span>
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Status</span>
+              <select
+                className="tl-select"
+                value={tl.insurance.status}
+                onChange={e => {
+                  const patch = { status: e.target.value };
+                  if (e.target.value === "submitted" && !tl.insurance.submittedAt) patch.submittedAt = todayISO();
+                  if ((e.target.value === "approved" || e.target.value === "denied") && !tl.insurance.decisionAt) patch.decisionAt = todayISO();
+                  onUpdate(id, "insurance", patch);
+                }}
+              >
+                {INSURANCE_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
+            </div>
+            {tl.insurance.status !== "none" && (
+              <>
+                <div className="tl-field-row">
+                  <span className="tl-field-label">Submitted</span>
+                  <input
+                    type="date" className="tl-date-input"
+                    value={tl.insurance.submittedAt || ""}
+                    onChange={e => onUpdate(id, "insurance", { submittedAt: e.target.value || null })}
+                  />
+                  {tl.insurance.submittedAt && (
+                    <span className="tl-relative">{relativeDateLabel(tl.insurance.submittedAt)}</span>
+                  )}
+                </div>
+                <div className="tl-field-row">
+                  <span className="tl-field-label">Policy</span>
+                  <input
+                    type="text" className="tl-text-input"
+                    placeholder="e.g. BCBS PPO"
+                    value={tl.insurance.policy}
+                    onChange={e => onUpdate(id, "insurance", { policy: e.target.value })}
+                  />
+                </div>
+                <div className="tl-field-row">
+                  <span className="tl-field-label">Auth #</span>
+                  <input
+                    type="text" className="tl-text-input"
+                    placeholder="Prior auth reference"
+                    value={tl.insurance.authNumber}
+                    onChange={e => onUpdate(id, "insurance", { authNumber: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ─── APHERESIS ─────────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Apheresis</span>
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Scheduled</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.apheresis.scheduledAt || ""}
+                onChange={e => onUpdate(id, "apheresis", { scheduledAt: e.target.value || null })}
+              />
+              {tl.apheresis.scheduledAt && (
+                <span className={`tl-relative${daysFromNow(tl.apheresis.scheduledAt) <= 7 && daysFromNow(tl.apheresis.scheduledAt) >= 0 ? " soon" : ""}`}>
+                  {relativeDateLabel(tl.apheresis.scheduledAt)}
+                </span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Performed</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.apheresis.performedAt || ""}
+                onChange={e => onUpdate(id, "apheresis", { performedAt: e.target.value || null })}
+              />
+              {tl.apheresis.performedAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.apheresis.performedAt)}</span>
+              )}
+            </div>
+          </div>
+
+          {/* ─── MANUFACTURING ─────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Manufacturing</span>
+              {mfg && !mfg.isComplete && (
+                <span className="tl-section-status" style={{ color: mfg.isOverdue ? "#b54a2c" : "#c4a661" }}>
+                  {mfg.isOverdue ? `Overdue ${Math.abs(mfg.remaining)}d` : `${mfg.remaining}d remaining`}
+                </span>
+              )}
+              {mfg?.isComplete && <span className="tl-section-status" style={{ color: "#5a7a4a" }}>Received</span>}
+            </div>
+            {mfg && (
+              <div className="mfg-bar-row">
+                <div className="mfg-bar-track">
+                  <div
+                    className={`mfg-bar-fill${mfg.isComplete ? " complete" : ""}${mfg.isOverdue ? " overdue" : ""}`}
+                    style={{ width: `${mfg.percent * 100}%` }}
+                  />
+                </div>
+                <div className="mfg-day-counter">Day {mfg.elapsed} / {mfg.totalDays}</div>
+              </div>
+            )}
+            <div className="tl-field-row">
+              <span className="tl-field-label">Started</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.manufacturing.productStartedAt || ""}
+                onChange={e => onUpdate(id, "manufacturing", { productStartedAt: e.target.value || null })}
+              />
+              {tl.manufacturing.productStartedAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.manufacturing.productStartedAt)}</span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Expected</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.manufacturing.expectedDeliveryAt || ""}
+                onChange={e => onUpdate(id, "manufacturing", { expectedDeliveryAt: e.target.value || null })}
+              />
+              {tl.manufacturing.expectedDeliveryAt && (
+                <span className={`tl-relative${daysFromNow(tl.manufacturing.expectedDeliveryAt) <= 7 && daysFromNow(tl.manufacturing.expectedDeliveryAt) >= 0 ? " soon" : ""}`}>
+                  {relativeDateLabel(tl.manufacturing.expectedDeliveryAt)}
+                </span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Received</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.manufacturing.receivedAt || ""}
+                onChange={e => onUpdate(id, "manufacturing", { receivedAt: e.target.value || null })}
+              />
+              {tl.manufacturing.receivedAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.manufacturing.receivedAt)}</span>
+              )}
+            </div>
+          </div>
+
+          {/* ─── INFUSION ──────────────────────────────────────────────── */}
+          <div className="tl-section">
+            <div className="tl-section-hdr">
+              <span className="tl-section-title">Infusion</span>
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Scheduled</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.infusion.scheduledAt || ""}
+                onChange={e => onUpdate(id, "infusion", { scheduledAt: e.target.value || null })}
+              />
+              {tl.infusion.scheduledAt && (
+                <span className={`tl-relative${daysFromNow(tl.infusion.scheduledAt) <= 7 && daysFromNow(tl.infusion.scheduledAt) >= 0 ? " soon" : ""}`}>
+                  {relativeDateLabel(tl.infusion.scheduledAt)}
+                </span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Conditioning</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.infusion.conditioningStartAt || ""}
+                onChange={e => onUpdate(id, "infusion", { conditioningStartAt: e.target.value || null })}
+              />
+              {tl.infusion.conditioningStartAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.infusion.conditioningStartAt)}</span>
+              )}
+            </div>
+            <div className="tl-field-row">
+              <span className="tl-field-label">Performed</span>
+              <input
+                type="date" className="tl-date-input"
+                value={tl.infusion.performedAt || ""}
+                onChange={e => onUpdate(id, "infusion", { performedAt: e.target.value || null })}
+              />
+              {tl.infusion.performedAt && (
+                <span className="tl-relative">{relativeDateLabel(tl.infusion.performedAt)}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function WorkupPanel({ pt }) {
@@ -6020,7 +6582,7 @@ export default function App() {
   const [board, setBoard] = useState(() => {
     try {
       const raw = JSON.parse(localStorage.getItem("celltx-board") || "[]");
-      return raw.map(migrateCase);
+      return raw.map(c => migrateTimeline(migrateCase(c)));
     } catch { return []; }
   });
   useEffect(() => {
@@ -6139,6 +6701,7 @@ export default function App() {
       nextActionDate: null,
       notes: "",
       stageHistory: [{ stage: "pending_review", at: now }],
+      timeline: emptyTimeline(),
     };
     setBoard(b => [...b, newCase]);
     setBoardAdded(true);
@@ -6150,31 +6713,84 @@ export default function App() {
     setBoard(b => b.map(c => c.id === id ? { ...c, ...patch } : c));
 
   // Advance to a specific stage, with history tracking.
-  // Auto-suggests a nextActionDate based on stage timing rules (only if
-  // the case has no reminder set OR the existing reminder is already past).
+  // Auto-populates relevant timeline fields:
+  //   - referred       → timeline.referralCreatedAt = today (if unset)
+  //   - apheresis      → timeline.apheresis.performedAt = today (if unset)
+  //   - manufacturing  → timeline.manufacturing.productStartedAt = today (if unset)
+  //                       + expectedDeliveryAt = today + 28 days
+  //   - infused        → timeline.infusion.performedAt = today (if unset)
+  // Also auto-suggests a nextActionDate.
   const setBoardCaseStage = (id, newStage) =>
     setBoard(b => b.map(c => {
       if (c.id !== id) return c;
       if (c.stage === newStage) return c;
+      const now = new Date().toISOString();
+      const today = todayISO();
       const next = {
         ...c,
         stage: newStage,
         stageHistory: [
           ...(c.stageHistory || []),
-          { stage: newStage, at: new Date().toISOString() },
+          { stage: newStage, at: now },
         ],
       };
+
+      // Reminder auto-suggestion
       const existing = c.nextActionDate;
       const existingPast = existing && new Date(existing + "T23:59:59") < new Date();
       if (!existing || existingPast) {
         const suggested = suggestReminderDate(newStage);
         if (suggested) next.nextActionDate = suggested;
       }
+
+      // Timeline auto-population
+      const tl = next.timeline || emptyTimeline();
+      const tlNext = { ...tl };
+      if (newStage === "referred" && !tl.referralCreatedAt) {
+        tlNext.referralCreatedAt = today;
+      }
+      if (newStage === "apheresis" && !tl.apheresis.performedAt) {
+        tlNext.apheresis = { ...tl.apheresis, performedAt: today };
+      }
+      if (newStage === "manufacturing" && !tl.manufacturing.productStartedAt) {
+        const expected = new Date(); expected.setDate(expected.getDate() + MFG_TYPICAL_DAYS);
+        tlNext.manufacturing = {
+          ...tl.manufacturing,
+          productStartedAt: today,
+          expectedDeliveryAt: tl.manufacturing.expectedDeliveryAt || expected.toISOString().slice(0, 10),
+        };
+      }
+      if (newStage === "infused" && !tl.infusion.performedAt) {
+        tlNext.infusion = { ...tl.infusion, performedAt: today };
+        // Mark mfg received on infusion if not already
+        if (!tl.manufacturing.receivedAt) {
+          tlNext.manufacturing = { ...tlNext.manufacturing, receivedAt: today };
+        }
+      }
+      next.timeline = tlNext;
+
       return next;
     }));
 
   const removeBoardCase = (id) =>
     setBoard(b => b.filter(c => c.id !== id));
+
+  // Partial timeline update (deep-merges into the timeline sub-object).
+  // Pass section + patch, e.g. updateBoardCaseTimeline(id, "insurance", { status: "approved" })
+  // For top-level fields like referralCreatedAt, pass section = "_root".
+  const updateBoardCaseTimeline = (id, section, patch) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      const tl = c.timeline || emptyTimeline();
+      const nextTl = section === "_root"
+        ? { ...tl, ...patch }
+        : { ...tl, [section]: { ...tl[section], ...patch } };
+      return { ...c, timeline: nextTl };
+    }));
+
+  // Replace the entire pendingLabs array
+  const setPendingLabs = (id, labs) =>
+    setBoard(b => b.map(c => c.id === id ? { ...c, timeline: { ...(c.timeline || emptyTimeline()), pendingLabs: labs } } : c));
 
   const loadBoardCase = (c) => {
     setPt({ ...INIT, ...c.patient });
@@ -6401,6 +7017,8 @@ export default function App() {
           board={board}
           onUpdateCase={updateBoardCase}
           onSetCaseStage={setBoardCaseStage}
+          onUpdateTimeline={updateBoardCaseTimeline}
+          onSetPendingLabs={setPendingLabs}
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
