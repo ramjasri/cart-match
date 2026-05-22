@@ -20,6 +20,7 @@ import { findAction, getPathToEligibility, getReferralSteps } from "./utils/acti
 import { calculateUrgency } from "./utils/urgency.js";
 import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS } from "./utils/pathways.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
+import TrialMatcher from "./components/TrialMatcher.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
 const FORMSPREE_URL = "https://formspree.io/f/xwvydwjb";
@@ -3111,6 +3112,13 @@ export default function App() {
                   <div className="compare-con">Step-up hospitalization required</div>
                 </div>
               </div>
+
+              {/* Patient-level trial matcher — surfaces recruiting trials when products are ineligible or in addition to them */}
+              <TrialMatcher
+                pt={pt}
+                ineligibleCount={ALL_PRODUCTS.length - eligible}
+                totalProducts={ALL_PRODUCTS.length}
+              />
 
               {/* Bridging therapy */}
               <BridgingPanel cancerType={pt.cancerType} />
