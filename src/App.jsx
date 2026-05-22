@@ -48,6 +48,10 @@ import {
   computePendingItems, groupByUrgency, summarizeOps,
   filterByAssignee, uniqueAssignees, URGENCY_META,
 } from "./utils/operations.js";
+import {
+  EVENT_TYPES, createEvent, diffEvents, diffLabEvents,
+  formatEventTime, sortEventsDescending,
+} from "./utils/events.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -2806,6 +2810,93 @@ const CSS = `
   }
   .board-stat.active .board-stat-label { color: #c4a661; }
 
+  /* ACTIVITY LOG — per-case event stream */
+  .activity-log {
+    border: 1px solid #1a181530; background: #f4f1ea;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .activity-log-hdr {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: #1a1815; color: #f4f1ea; cursor: pointer; user-select: none;
+  }
+  .activity-log-hdr:hover { background: #2a2520; }
+  .activity-log-hdr-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700; flex: 1;
+  }
+  .activity-log-hdr-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #c4a661; letter-spacing: 0.1em;
+  }
+  .activity-log-body { padding: 14px 16px; }
+
+  /* Event entry form */
+  .event-add-row {
+    display: flex; gap: 8px; margin-bottom: 14px;
+    padding-bottom: 12px; border-bottom: 1px solid #1a181520;
+  }
+  .event-add-input {
+    flex: 1; padding: 8px 11px;
+    border: 1px solid #1a181530; background: #f4f1ea;
+    font-family: 'Inter Tight', sans-serif; font-size: 12.5px; color: #1a1815;
+    border-radius: 0;
+  }
+  .event-add-input:focus { outline: none; border-color: #1a1815; }
+  .event-add-btn {
+    padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    background: #1a1815; color: #f4f1ea; border: none; cursor: pointer;
+    white-space: nowrap;
+  }
+  .event-add-btn:hover { background: #5a7a4a; }
+  .event-add-btn:disabled { background: #98908380; cursor: default; }
+
+  /* Event stream */
+  .event-stream {
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .event-row {
+    display: grid; grid-template-columns: 100px 24px 1fr;
+    gap: 12px; padding: 9px 0;
+    border-bottom: 1px solid #1a181510;
+    align-items: start;
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; letter-spacing: 0.04em;
+    padding-top: 4px;
+  }
+  .event-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #ebe6dc; display: grid; place-items: center;
+    border: 2px solid currentColor;
+    flex-shrink: 0;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    color: #1a1815;
+    margin-top: 2px;
+  }
+  .event-body {}
+  .event-title {
+    font-size: 13px; color: #1a1815; line-height: 1.4;
+    font-weight: 500;
+  }
+  .event-detail {
+    font-size: 11.5px; color: #4a4540; line-height: 1.5;
+    margin-top: 2px; font-style: italic;
+  }
+  .event-by {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #98908399; margin-top: 3px; letter-spacing: 0.06em;
+  }
+  .event-system .event-by { color: #4c6b8c99; }
+
+  .event-empty {
+    font-size: 12px; color: #6b645a; font-style: italic;
+    padding: 12px 0;
+  }
+
   /* OPERATIONS DASHBOARD — /today */
   .ops-view {
     max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
@@ -3731,7 +3822,7 @@ function todayPlusDays(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onAddNote, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
 
@@ -4082,6 +4173,12 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline,
                   />
                 )}
 
+                {/* Activity log — event stream / audit trail */}
+                <ActivityLog
+                  caseData={c}
+                  onAddNote={onAddNote}
+                />
+
                 {/* Reminder row — date picker + status */}
                 {!isTerminal && (() => {
                   const status = reminderStatus(c.nextActionDate);
@@ -4278,6 +4375,79 @@ function getBridgingKey(cancerType) {
   if (c.includes("follicular") || c.includes(" fl")) return "fl";
   if (c.includes("lymphoma") || c.includes("lbcl") || c.includes("dlbcl")) return "dlbcl";
   return null;
+}
+
+// Activity log — vertical event stream per case
+function ActivityLog({ caseData, onAddNote }) {
+  const [open, setOpen] = useState(false);
+  const [draftNote, setDraftNote] = useState("");
+  const events = sortEventsDescending(caseData.events || []);
+
+  const submitNote = () => {
+    if (!draftNote.trim()) return;
+    onAddNote(caseData.id, draftNote);
+    setDraftNote("");
+  };
+
+  return (
+    <div className="activity-log">
+      <div className="activity-log-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="activity-log-hdr-title">⌚ Activity log</div>
+        <div className="activity-log-hdr-count">{events.length} event{events.length !== 1 ? "s" : ""}</div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={14} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="activity-log-body">
+          {/* Manual note entry */}
+          <div className="event-add-row">
+            <input
+              type="text"
+              className="event-add-input"
+              placeholder="Add a note about this case (e.g., spoke with insurance — peer-to-peer scheduled)…"
+              value={draftNote}
+              onChange={e => setDraftNote(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") submitNote(); }}
+            />
+            <button
+              className="event-add-btn"
+              onClick={submitNote}
+              disabled={!draftNote.trim()}
+            >
+              Add note
+            </button>
+          </div>
+
+          {/* Event stream — descending chronological */}
+          {events.length === 0 ? (
+            <div className="event-empty">No events yet. Actions you take on this case will appear here.</div>
+          ) : (
+            <div className="event-stream">
+              {events.map(ev => {
+                const meta = EVENT_TYPES[ev.type] || EVENT_TYPES["note.added"];
+                const isSystem = ev.by === "system";
+                return (
+                  <div key={ev.id} className={`event-row${isSystem ? " event-system" : ""}`}>
+                    <div className="event-time">{formatEventTime(ev.at)}</div>
+                    <div className="event-dot" style={{ color: meta.dot, background: "#f4f1ea" }}>
+                      {meta.icon}
+                    </div>
+                    <div className="event-body">
+                      <div className="event-title">{ev.title}</div>
+                      {ev.detail && <div className="event-detail">{ev.detail}</div>}
+                      <div className="event-by">— {ev.by}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Longitudinal timeline panel — referral / labs / insurance / apheresis / mfg / infusion
@@ -7112,6 +7282,12 @@ export default function App() {
     const labels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"];
     const patientLabel = `Patient ${labels[board.length] ?? board.length + 1}`;
     const now = new Date().toISOString();
+    const initialEvent = createEvent({
+      type: "case.created",
+      by: userName || "you",
+      title: `Case created — ${patientLabel}`,
+      detail: (pt.cancerType || "").split("(")[0].trim(),
+    });
     const newCase = {
       id: Date.now().toString(),
       addedAt: now,
@@ -7125,6 +7301,7 @@ export default function App() {
       notes: "",
       stageHistory: [{ stage: "pending_review", at: now }],
       timeline: emptyTimeline(),
+      events: [initialEvent],
     };
     setBoard(b => [...b, newCase]);
     setBoardAdded(true);
@@ -7149,6 +7326,7 @@ export default function App() {
       if (c.stage === newStage) return c;
       const now = new Date().toISOString();
       const today = todayISO();
+      const actor = userName || "you";
       const next = {
         ...c,
         stage: newStage,
@@ -7192,6 +7370,11 @@ export default function App() {
       }
       next.timeline = tlNext;
 
+      // Emit events from diff
+      const newEvents = diffEvents(c, next, actor);
+      if (newEvents.length > 0) {
+        next.events = [...(c.events || []), ...newEvents];
+      }
       return next;
     }));
 
@@ -7199,8 +7382,7 @@ export default function App() {
     setBoard(b => b.filter(c => c.id !== id));
 
   // Partial timeline update (deep-merges into the timeline sub-object).
-  // Pass section + patch, e.g. updateBoardCaseTimeline(id, "insurance", { status: "approved" })
-  // For top-level fields like referralCreatedAt, pass section = "_root".
+  // Emits events from the diff.
   const updateBoardCaseTimeline = (id, section, patch) =>
     setBoard(b => b.map(c => {
       if (c.id !== id) return c;
@@ -7208,32 +7390,67 @@ export default function App() {
       const nextTl = section === "_root"
         ? { ...tl, ...patch }
         : { ...tl, [section]: { ...tl[section], ...patch } };
-      return { ...c, timeline: nextTl };
+      const next = { ...c, timeline: nextTl };
+      const evs = diffEvents(c, next, userName || "you");
+      if (evs.length > 0) next.events = [...(c.events || []), ...evs];
+      return next;
     }));
 
-  // Replace the entire pendingLabs array
+  // Replace the entire pendingLabs array (emits lab.* events)
   const setPendingLabs = (id, labs) =>
-    setBoard(b => b.map(c => c.id === id ? { ...c, timeline: { ...(c.timeline || emptyTimeline()), pendingLabs: labs } } : c));
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      const oldLabs = (c.timeline || emptyTimeline()).pendingLabs || [];
+      const next = { ...c, timeline: { ...(c.timeline || emptyTimeline()), pendingLabs: labs } };
+      const evs = diffLabEvents(oldLabs, labs, userName || "you");
+      if (evs.length > 0) next.events = [...(c.events || []), ...evs];
+      return next;
+    }));
 
   // Assign / unassign a case to a coordinator (free-text)
   const assignBoardCase = (id, assignee) =>
-    setBoard(b => b.map(c => c.id === id ? { ...c, assignedTo: assignee || "" } : c));
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      const next = { ...c, assignedTo: assignee || "" };
+      const evs = diffEvents(c, next, userName || "you");
+      if (evs.length > 0) next.events = [...(c.events || []), ...evs];
+      return next;
+    }));
 
   // Toggle escalation flag with optional reason
   const escalateBoardCase = (id, reason) =>
     setBoard(b => b.map(c => {
       if (c.id !== id) return c;
+      let next;
       if (c.escalated) {
-        // Toggle OFF: clear escalation
-        return { ...c, escalated: false, escalationReason: "", escalationFlaggedAt: null };
+        next = { ...c, escalated: false, escalationReason: "", escalationFlaggedAt: null };
+      } else {
+        next = {
+          ...c,
+          escalated: true,
+          escalationReason: reason || "Escalated for physician review",
+          escalationFlaggedAt: new Date().toISOString(),
+        };
       }
-      return {
-        ...c,
-        escalated: true,
-        escalationReason: reason || "Escalated for physician review",
-        escalationFlaggedAt: new Date().toISOString(),
-      };
+      const evs = diffEvents(c, next, userName || "you");
+      if (evs.length > 0) next.events = [...(c.events || []), ...evs];
+      return next;
     }));
+
+  // Append a manual note (free-form) as a note.added event
+  const addCaseNote = (id, text) => {
+    if (!text || !text.trim()) return;
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      const ev = createEvent({
+        type: "note.added",
+        by: userName || "you",
+        title: "Note",
+        detail: text.trim(),
+      });
+      return { ...c, events: [...(c.events || []), ev] };
+    }));
+  };
 
   const loadBoardCase = (c) => {
     setPt({ ...INIT, ...c.patient });
@@ -7482,6 +7699,7 @@ export default function App() {
           onSetPendingLabs={setPendingLabs}
           onAssignCase={assignBoardCase}
           onEscalateCase={escalateBoardCase}
+          onAddNote={addCaseNote}
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
