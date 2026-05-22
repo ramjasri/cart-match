@@ -1445,6 +1445,143 @@ const CSS = `
   }
   .pass-item svg { flex-shrink: 0; margin-top: 1px; }
 
+  /* LEGAL PAGES — /privacy, /terms, /disclaimer */
+  .legal-view {
+    max-width: 760px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .legal-view { padding: 36px 20px 60px; } }
+
+  .legal-hero { text-align: center; margin-bottom: 36px; }
+  .legal-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .legal-tag::before, .legal-tag::after {
+    content: ''; width: 24px; height: 1px; background: #6b645a;
+  }
+  .legal-h1 {
+    font-family: 'Fraunces', serif; font-size: 34px; font-weight: 400;
+    line-height: 1.15; color: #1a1815; letter-spacing: -0.022em; margin: 0;
+  }
+  .legal-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    margin-top: 14px;
+  }
+
+  .legal-toc {
+    background: #ebe6dc; border-left: 3px solid #b54a2c;
+    padding: 16px 20px; margin-bottom: 36px;
+  }
+  .legal-toc-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    margin-bottom: 10px;
+  }
+  .legal-toc-list {
+    columns: 2; column-gap: 24px; font-size: 13px; line-height: 1.85;
+    list-style: none; padding: 0; margin: 0;
+  }
+  @media (max-width: 600px) { .legal-toc-list { columns: 1; } }
+  .legal-toc-list a {
+    color: #1a1815; text-decoration: none;
+    border-bottom: 1px dotted #1a181530;
+  }
+  .legal-toc-list a:hover { color: #b54a2c; border-bottom-color: #b54a2c; }
+
+  .legal-section { margin-bottom: 32px; scroll-margin-top: 60px; }
+  .legal-section h2 {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    letter-spacing: -0.015em; color: #1a1815; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid #1a181530;
+  }
+  .legal-section h3 {
+    font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500;
+    color: #1a1815; margin: 20px 0 8px; letter-spacing: -0.005em;
+  }
+  .legal-section p {
+    font-size: 14px; color: #1a1815; line-height: 1.7;
+    margin: 0 0 12px;
+  }
+  .legal-section ul {
+    padding-left: 22px; margin: 0 0 12px;
+  }
+  .legal-section li {
+    font-size: 14px; color: #1a1815; line-height: 1.65;
+    margin-bottom: 5px;
+  }
+  .legal-section strong { color: #1a1815; font-weight: 600; }
+  .legal-section a {
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+  }
+  .legal-section a:hover { color: #1a1815; }
+
+  .legal-callout {
+    background: #b54a2c0a; border: 1px solid #b54a2c30; border-left: 3px solid #b54a2c;
+    padding: 14px 18px; margin: 18px 0;
+    font-size: 13.5px; color: #1a1815; line-height: 1.65;
+  }
+  .legal-callout-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #b54a2c;
+    font-weight: 700; margin-bottom: 6px;
+  }
+
+  .legal-key-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    margin: 18px 0 24px;
+  }
+  @media (max-width: 600px) { .legal-key-grid { grid-template-columns: 1fr; } }
+  .legal-key-item {
+    background: #f4f1ea; border: 1px solid #1a181530;
+    border-left: 3px solid #b54a2c;
+    padding: 14px 16px;
+  }
+  .legal-key-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    color: #b54a2c; font-weight: 700; margin-bottom: 6px;
+  }
+  .legal-key-text {
+    font-size: 13.5px; color: #1a1815; line-height: 1.55; font-weight: 500;
+  }
+
+  .legal-table {
+    width: 100%; border-collapse: collapse; margin: 12px 0 18px;
+    font-size: 13px;
+  }
+  .legal-table th, .legal-table td {
+    padding: 10px 12px; text-align: left;
+    border-bottom: 1px solid #1a181520; line-height: 1.55;
+    vertical-align: top;
+  }
+  .legal-table th {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #6b645a; font-weight: 600;
+    border-bottom: 1px solid #1a181530;
+  }
+
+  /* SITE-WIDE DISCLAIMER BANNER (footer-top) */
+  .disclaimer-banner {
+    background: #ebe6dc; border-top: 1px solid #1a181530;
+    border-bottom: 1px solid #1a181520;
+    padding: 12px 40px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; letter-spacing: 0.04em; line-height: 1.65;
+    text-align: center;
+  }
+  @media (max-width: 860px) { .disclaimer-banner { padding: 12px 20px; text-align: left; } }
+  .disclaimer-banner strong { color: #1a1815; }
+  .disclaimer-banner a {
+    color: #b54a2c; text-decoration: none;
+    border-bottom: 1px dotted #b54a2c80;
+    margin-left: 6px;
+  }
+  .disclaimer-banner a:hover { color: #1a1815; border-bottom-color: #1a1815; }
+
   /* ABOUT — /about */
   .about-view {
     max-width: 880px; margin: 0 auto; padding: 56px 40px 80px;
@@ -3207,6 +3344,432 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── Legal pages ────────────────────────────────────────────────────────────
+
+function PrivacyView() {
+  return (
+    <div className="legal-view">
+      <div className="legal-hero">
+        <div className="legal-tag">Privacy</div>
+        <h1 className="legal-h1">Privacy Policy</h1>
+        <div className="legal-meta">Effective May 2026 · Last reviewed May 2026</div>
+      </div>
+
+      <div className="legal-callout">
+        <div className="legal-callout-label">Privacy by architecture</div>
+        Patient data never leaves the browser on Free, Practice, and Institution tiers. We don't collect, transmit, or store any patient health information. The eligibility engine runs entirely client-side; shareable case URLs encode patient state as base64 in the URL hash and are never transmitted to our servers.
+      </div>
+
+      <div className="legal-toc">
+        <div className="legal-toc-title">Contents</div>
+        <ul className="legal-toc-list">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#collect">What we collect</a></li>
+          <li><a href="#nocollect">What we never collect</a></li>
+          <li><a href="#processors">Third-party processors</a></li>
+          <li><a href="#retention">Data retention</a></li>
+          <li><a href="#rights">Your rights</a></li>
+          <li><a href="#cookies">Cookies &amp; tracking</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#children">Children's privacy</a></li>
+          <li><a href="#changes">Changes to this policy</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div id="overview" className="legal-section">
+        <h2>1. Overview</h2>
+        <p>CellTx Match is operated by an independent software vendor providing reference and decision-support information to licensed healthcare professionals. This policy describes the limited data we collect, why we collect it, and the operational controls that prevent us from ever holding patient health information.</p>
+        <p>We are <strong>not a covered entity</strong> under HIPAA and, in our standard operating mode, <strong>not a business associate</strong>. We do not receive, store, or transmit Protected Health Information (PHI) on behalf of any covered entity unless explicitly contracted to do so under the Enterprise tier with a signed Business Associate Agreement.</p>
+      </div>
+
+      <div id="collect" className="legal-section">
+        <h2>2. What we collect</h2>
+        <h3>Analytics events (Plausible)</h3>
+        <p>We use Plausible Analytics — a privacy-first, cookie-free, EU-based analytics service. Plausible captures:</p>
+        <ul>
+          <li>Page views (which routes are visited)</li>
+          <li>Custom events (e.g., "Screen Run", "PDF Export") with non-identifying properties such as cancer type category and prior-line count buckets</li>
+          <li>Referring domain (e.g., google.com)</li>
+          <li>Approximate geographic region (country-level only)</li>
+          <li>Device/browser type</li>
+        </ul>
+        <p>Plausible does not use cookies, does not fingerprint visitors, and does not collect any personal identifiers. See <a href="https://plausible.io/data-policy" target="_blank" rel="noopener noreferrer">Plausible's data policy</a>.</p>
+
+        <h3>Waitlist / institutional access form</h3>
+        <p>When you submit the institutional access form, we collect:</p>
+        <ul>
+          <li>Full name</li>
+          <li>Work email address</li>
+          <li>Institution name</li>
+          <li>Role (e.g., coordinator, oncologist, BMT administrator)</li>
+          <li>Patient volume range (e.g., 1–5 per month)</li>
+          <li>Workflow pain point (free-text, optional)</li>
+        </ul>
+        <p>This information is used solely to respond to your inquiry and qualify potential pilot or subscription engagement. We do not use this data for unsolicited marketing or share it with third parties.</p>
+
+        <h3>Account information (Clerk)</h3>
+        <p>If you create an account, Clerk handles authentication and stores your email address, name, and password hash (or social login token). We never store passwords. See <a href="https://clerk.com/legal/privacy" target="_blank" rel="noopener noreferrer">Clerk's privacy policy</a>.</p>
+
+        <h3>Billing information (Stripe)</h3>
+        <p>If you subscribe to a paid tier, Stripe processes your payment. We do not see or store payment card numbers — Stripe handles these under PCI DSS Level 1 compliance. We see your billing email, subscription tier, and payment status. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe's privacy policy</a>.</p>
+
+        <h3>Email communications (Resend)</h3>
+        <p>If you submit the institutional access form, we send a welcome email via Resend. The email contains no patient information. See <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Resend's privacy policy</a>.</p>
+      </div>
+
+      <div id="nocollect" className="legal-section">
+        <h2>3. What we never collect</h2>
+        <div className="legal-callout">
+          <div className="legal-callout-label">No PHI · No patient identifiers · No clinical inputs transmitted</div>
+          We do not collect, transmit, or store any of the following on our servers:
+        </div>
+        <ul>
+          <li>Patient names, dates of birth, medical record numbers, or any other patient identifier</li>
+          <li>Clinical inputs you enter into the screener (cancer type, prior lines, ECOG, biomarkers, lab values, disease activity flags) — these live in your browser's localStorage and the URL hash only</li>
+          <li>Eligibility results, urgency scores, pathway analyses, or workup checklists for specific patients</li>
+          <li>Tumor board cases — stored in your browser only; never synced to our servers (Free, Practice, Institution tiers)</li>
+          <li>Shareable case URLs — the patient state is base64-encoded in the URL fragment (after the <code>#</code>), which browsers never transmit to servers</li>
+        </ul>
+        <p>The only exception is the Enterprise tier with a signed Business Associate Agreement, in which encrypted server-side sync is available as an explicit, opt-in feature. This is the only context in which CellTx Match holds patient data.</p>
+      </div>
+
+      <div id="processors" className="legal-section">
+        <h2>4. Third-party processors</h2>
+        <p>We rely on the following services to operate CellTx Match. None of them receive patient health information from us under standard operating mode.</p>
+        <table className="legal-table">
+          <thead>
+            <tr><th>Service</th><th>Purpose</th><th>Privacy policy</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vercel</strong></td><td>Static hosting, edge CDN</td><td><a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">vercel.com/privacy</a></td></tr>
+            <tr><td><strong>Clerk</strong></td><td>User authentication</td><td><a href="https://clerk.com/legal/privacy" target="_blank" rel="noopener noreferrer">clerk.com/privacy</a></td></tr>
+            <tr><td><strong>Stripe</strong></td><td>Subscription billing</td><td><a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">stripe.com/privacy</a></td></tr>
+            <tr><td><strong>Plausible</strong></td><td>Privacy-first analytics (no cookies)</td><td><a href="https://plausible.io/data-policy" target="_blank" rel="noopener noreferrer">plausible.io/data-policy</a></td></tr>
+            <tr><td><strong>Resend</strong></td><td>Transactional email</td><td><a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">resend.com/privacy</a></td></tr>
+            <tr><td><strong>Formspree</strong></td><td>Fallback waitlist endpoint</td><td><a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">formspree.io/privacy</a></td></tr>
+            <tr><td><strong>ClinicalTrials.gov</strong></td><td>Public trial data (queried client-side)</td><td><a href="https://www.clinicaltrials.gov/about-site/disclaimer" target="_blank" rel="noopener noreferrer">clinicaltrials.gov</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="retention" className="legal-section">
+        <h2>5. Data retention</h2>
+        <ul>
+          <li><strong>Analytics events:</strong> retained by Plausible for 24 months in aggregated, non-identifying form</li>
+          <li><strong>Waitlist submissions:</strong> retained indefinitely for relationship management; delete on request</li>
+          <li><strong>Account data:</strong> retained while account is active; deleted within 30 days of account closure</li>
+          <li><strong>Billing data:</strong> retained per Stripe and accounting requirements (typically 7 years for tax records)</li>
+          <li><strong>Browser localStorage:</strong> under your control; clearing browser data removes all stored cases and tumor boards immediately</li>
+        </ul>
+      </div>
+
+      <div id="rights" className="legal-section">
+        <h2>6. Your rights</h2>
+        <p>Regardless of your jurisdiction, you may exercise the following rights by emailing <a href="mailto:sri.ramya003@gmail.com">sri.ramya003@gmail.com</a>:</p>
+        <ul>
+          <li><strong>Access:</strong> request a copy of what we have about you</li>
+          <li><strong>Correction:</strong> ask us to fix incorrect data</li>
+          <li><strong>Deletion:</strong> ask us to delete your data</li>
+          <li><strong>Portability:</strong> request your data in machine-readable form</li>
+          <li><strong>Opt-out of analytics:</strong> Plausible respects Do Not Track; you can also block <code>plausible.io</code> via your browser or any ad blocker</li>
+          <li><strong>Opt-out of marketing:</strong> we do not currently send marketing emails; if we do in future, every email will have a one-click unsubscribe</li>
+        </ul>
+        <p>We do not sell, rent, or trade personal information.</p>
+      </div>
+
+      <div id="cookies" className="legal-section">
+        <h2>7. Cookies &amp; tracking</h2>
+        <p>CellTx Match itself does not set cookies. Plausible Analytics does not use cookies. Two of our integrated services use cookies for their core functionality:</p>
+        <ul>
+          <li><strong>Clerk</strong> sets cookies to maintain your authenticated session, if you sign in</li>
+          <li><strong>Stripe</strong> sets cookies during checkout for fraud prevention</li>
+        </ul>
+        <p>Neither vendor uses cookies for cross-site tracking or advertising on CellTx Match.</p>
+      </div>
+
+      <div id="security" className="legal-section">
+        <h2>8. Security</h2>
+        <ul>
+          <li>All traffic to and from CellTx Match is encrypted via HTTPS (TLS 1.2+)</li>
+          <li>The application runs on Vercel's edge network with industry-standard infrastructure security</li>
+          <li>Authentication is managed by Clerk (SOC 2 Type II certified)</li>
+          <li>Payment processing is handled by Stripe (PCI DSS Level 1)</li>
+          <li>The "no PHI on servers" architecture is our strongest security control: data we never collect cannot be breached</li>
+        </ul>
+        <p>If you become aware of a security issue, please email <a href="mailto:sri.ramya003@gmail.com">sri.ramya003@gmail.com</a> with the subject line "Security disclosure".</p>
+      </div>
+
+      <div id="children" className="legal-section">
+        <h2>9. Children's privacy</h2>
+        <p>CellTx Match is intended for licensed healthcare professionals and healthcare-affiliated staff. It is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe we have inadvertently collected information from a child, contact us and we will delete it.</p>
+      </div>
+
+      <div id="changes" className="legal-section">
+        <h2>10. Changes to this policy</h2>
+        <p>We will update this policy when our data practices change. The "Last reviewed" date at the top of this page reflects the most recent revision. Material changes will be highlighted on the platform for at least 30 days. Continued use of the platform after a change constitutes acceptance of the updated policy.</p>
+      </div>
+
+      <div id="contact" className="legal-section">
+        <h2>11. Contact</h2>
+        <p>Privacy questions, data requests, or concerns:</p>
+        <p><a href="mailto:sri.ramya003@gmail.com">sri.ramya003@gmail.com</a></p>
+        <p>Ramja Sritharan · Founder, CellTx Match</p>
+      </div>
+    </div>
+  );
+}
+
+function TermsView() {
+  return (
+    <div className="legal-view">
+      <div className="legal-hero">
+        <div className="legal-tag">Terms</div>
+        <h1 className="legal-h1">Terms of Service</h1>
+        <div className="legal-meta">Effective May 2026 · Last reviewed May 2026</div>
+      </div>
+
+      <div className="legal-toc">
+        <div className="legal-toc-title">Contents</div>
+        <ul className="legal-toc-list">
+          <li><a href="#about">About the service</a></li>
+          <li><a href="#eligibility">Eligibility</a></li>
+          <li><a href="#accounts">Accounts &amp; subscriptions</a></li>
+          <li><a href="#trial">Trial &amp; refunds</a></li>
+          <li><a href="#acceptable">Acceptable use</a></li>
+          <li><a href="#ip">Intellectual property</a></li>
+          <li><a href="#clinical">Clinical reality</a></li>
+          <li><a href="#warranty">Warranties</a></li>
+          <li><a href="#liability">Liability</a></li>
+          <li><a href="#indemnification">Indemnification</a></li>
+          <li><a href="#termination">Termination</a></li>
+          <li><a href="#changes">Changes</a></li>
+          <li><a href="#law">Governing law</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div id="about" className="legal-section">
+        <h2>1. About the service</h2>
+        <p>CellTx Match ("the Service") is an online reference and decision-support platform for cell therapy referral intelligence, operated by Ramja Sritharan ("we", "us", "our"). The Service provides structured, sourced reference information about FDA-approved CAR-T and bispecific antibody products, NCCN-aligned disease pathways, and recruiting clinical trials.</p>
+        <p>The Service is intended for use by licensed healthcare professionals, healthcare administrative staff, and clinical trainees as an educational and operational reference tool. The Service is <strong>not a medical device</strong>, <strong>not a substitute for clinical judgment</strong>, and <strong>not intended for diagnostic use</strong>.</p>
+      </div>
+
+      <div id="eligibility" className="legal-section">
+        <h2>2. Eligibility</h2>
+        <p>You may use the Service if you are at least 18 years of age and meet one or more of the following:</p>
+        <ul>
+          <li>A licensed healthcare professional (physician, nurse practitioner, physician assistant, pharmacist, etc.)</li>
+          <li>A healthcare-affiliated administrative or coordination role (CAR-T coordinator, BMT administrator, referral navigator, tumor board administrator, etc.)</li>
+          <li>A clinical trainee under appropriate supervision (resident, fellow, medical student)</li>
+          <li>A researcher, biotech, or industry professional using the Service for reference purposes</li>
+        </ul>
+        <p>By using the Service, you represent that you meet one of these categories.</p>
+      </div>
+
+      <div id="accounts" className="legal-section">
+        <h2>3. Accounts &amp; subscriptions</h2>
+        <h3>Account creation</h3>
+        <p>Some features (PDF export, tumor board persistence, paid tiers) require an account, managed by Clerk. You agree to provide accurate information and to keep your credentials confidential. You are responsible for activity under your account.</p>
+
+        <h3>Free tier</h3>
+        <p>The Free tier is provided at no cost and without warranty. We may change or discontinue Free tier features at any time with reasonable notice. The Free tier does not include any service level agreement.</p>
+
+        <h3>Paid subscriptions</h3>
+        <p>Practice ($299/mo), Institution ($999/mo), and Enterprise (starting $2,995/mo, annual) subscriptions are billed via Stripe. Subscriptions auto-renew at the end of each billing period unless cancelled. You may cancel at any time via the customer portal; cancellation takes effect at the end of the current billing period.</p>
+      </div>
+
+      <div id="trial" className="legal-section">
+        <h2>4. Trial &amp; refunds</h2>
+        <h3>14-day free trial</h3>
+        <p>Practice and Institution plans include a 14-day free trial. You will not be charged during the trial period. You may cancel without charge before the trial ends.</p>
+
+        <h3>Refunds</h3>
+        <p>Monthly subscriptions are not refundable for partial months. Annual subscriptions cancelled within the first 30 days are eligible for a pro-rated refund of unused months. Enterprise contracts follow the refund terms in the executed agreement.</p>
+      </div>
+
+      <div id="acceptable" className="legal-section">
+        <h2>5. Acceptable use</h2>
+        <p>You agree to use the Service only for its intended purpose as an educational and operational reference tool. You agree NOT to:</p>
+        <ul>
+          <li>Use the Service for diagnostic claims or as the sole basis for clinical decisions</li>
+          <li>Enter Protected Health Information (PHI) for patients without proper authorization under HIPAA or applicable law</li>
+          <li>Resell, sublicense, or redistribute access to the Service or its outputs without written permission</li>
+          <li>Scrape, mass-query, reverse-engineer, or otherwise circumvent rate limits and intended interfaces (the Criteria API has documented rate limits)</li>
+          <li>Use the Service to make false marketing or regulatory claims about cell therapy products</li>
+          <li>Misrepresent your role or institutional affiliation</li>
+          <li>Use the Service in a manner that violates applicable laws or regulations</li>
+        </ul>
+      </div>
+
+      <div id="ip" className="legal-section">
+        <h2>6. Intellectual property</h2>
+        <p>The Service — including the software, rule library, eligibility engine, pathway logic, urgency rubric, action engine, trial-scoring rules, brand identity, and accompanying documentation — is the intellectual property of Ramja Sritharan and licensors. The Criteria Library JSON document and all derived data products are provided for reference use under the terms of this agreement.</p>
+        <p>You retain ownership of any patient-level inputs you provide (which, on our standard tiers, never leave your browser anyway). The outputs of the Service for a given patient are yours to use in clinical practice and to include in patient records.</p>
+      </div>
+
+      <div id="clinical" className="legal-section">
+        <h2>7. Clinical reality</h2>
+        <div className="legal-callout">
+          <div className="legal-callout-label">Important — Read carefully</div>
+          The Service provides reference information sourced from FDA prescribing information, NCCN clinical practice guidelines, and pivotal trial entry criteria. It is <strong>not a medical device</strong> under FDA regulation and qualifies as <strong>clinical decision support exempt from premarket review</strong> under section 3060(a) of the 21st Century Cures Act and FDA's guidance on Clinical Decision Support Software.
+        </div>
+        <p>By using the Service, you acknowledge and agree that:</p>
+        <ul>
+          <li>You are a qualified healthcare professional (or supervised trainee) and will independently verify all outputs against the current FDA prescribing information for each product before making any clinical decision</li>
+          <li>You retain full responsibility for any clinical decisions made for any patient</li>
+          <li>The Service's outputs are intended to inform, not replace, your clinical judgment</li>
+          <li>The eligibility criteria reflect FDA labeling as of the date noted on each product page and may not capture the most recent updates</li>
+          <li>The Service does not assess insurance coverage, prior authorization, apheresis/manufacturing slot availability, REMS requirements, or institutional protocols</li>
+        </ul>
+      </div>
+
+      <div id="warranty" className="legal-section">
+        <h2>8. Disclaimer of warranties</h2>
+        <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS, OR NON-INFRINGEMENT.</p>
+        <p>WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR THAT ITS OUTPUTS WILL ALWAYS MATCH THE MOST CURRENT FDA PRESCRIBING INFORMATION. YOU ARE SOLELY RESPONSIBLE FOR VERIFYING ALL OUTPUTS AGAINST CURRENT LABELING.</p>
+      </div>
+
+      <div id="liability" className="legal-section">
+        <h2>9. Limitation of liability</h2>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, OUR TOTAL LIABILITY FOR ANY CLAIM ARISING OUT OF OR RELATED TO THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE FEES PAID BY YOU TO US IN THE TWELVE MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED U.S. DOLLARS ($100).</p>
+        <p>IN NO EVENT WILL WE BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION LOST PROFITS, LOST DATA, OR ANY DAMAGES ARISING FROM CLINICAL DECISIONS OR PATIENT OUTCOMES.</p>
+      </div>
+
+      <div id="indemnification" className="legal-section">
+        <h2>10. Indemnification</h2>
+        <p>You agree to indemnify, defend, and hold harmless Ramja Sritharan, the operators of CellTx Match, and any affiliates from any claims, damages, losses, or expenses (including reasonable attorneys' fees) arising out of:</p>
+        <ul>
+          <li>Your use of the Service in violation of these Terms</li>
+          <li>Your introduction of PHI you were not authorized to access</li>
+          <li>Clinical use of the Service without independent verification against FDA labeling</li>
+          <li>Any claim by a third party arising from your acts or omissions</li>
+        </ul>
+      </div>
+
+      <div id="termination" className="legal-section">
+        <h2>11. Termination</h2>
+        <p>You may stop using the Service or cancel your subscription at any time. We may suspend or terminate your access for breach of these Terms, abusive use, or to comply with legal obligations, with reasonable notice when feasible. We may discontinue the Service entirely with at least 30 days' notice to active paying customers.</p>
+      </div>
+
+      <div id="changes" className="legal-section">
+        <h2>12. Changes to these terms</h2>
+        <p>We may update these Terms periodically. Material changes will be highlighted on the platform for at least 30 days. Continued use of the Service after a change indicates acceptance.</p>
+      </div>
+
+      <div id="law" className="legal-section">
+        <h2>13. Governing law &amp; disputes</h2>
+        <p>These Terms are governed by the laws of the State of Delaware, USA, without regard to conflict-of-laws principles. Any dispute arising from these Terms or your use of the Service shall be resolved through binding arbitration in accordance with the American Arbitration Association's rules, conducted in English. You retain the right to bring claims in small-claims court for matters within that court's jurisdiction.</p>
+      </div>
+
+      <div id="contact" className="legal-section">
+        <h2>14. Contact</h2>
+        <p>For questions about these Terms:</p>
+        <p><a href="mailto:sri.ramya003@gmail.com">sri.ramya003@gmail.com</a></p>
+        <p>Ramja Sritharan · Founder, CellTx Match</p>
+      </div>
+    </div>
+  );
+}
+
+function DisclaimerView() {
+  return (
+    <div className="legal-view">
+      <div className="legal-hero">
+        <div className="legal-tag">Clinical Disclaimer</div>
+        <h1 className="legal-h1">For licensed healthcare professionals only</h1>
+        <div className="legal-meta">Last reviewed May 2026 · Criteria current as of FDA labels May 2026</div>
+      </div>
+
+      <div className="legal-key-grid">
+        <div className="legal-key-item">
+          <div className="legal-key-label">Not a medical device</div>
+          <div className="legal-key-text">CellTx Match is not a medical device and is not regulated by the FDA as such.</div>
+        </div>
+        <div className="legal-key-item">
+          <div className="legal-key-label">Not for diagnostic use</div>
+          <div className="legal-key-text">Outputs are reference information only and must not be used to diagnose any disease or condition.</div>
+        </div>
+        <div className="legal-key-item">
+          <div className="legal-key-label">Not a replacement for judgment</div>
+          <div className="legal-key-text">Clinical decisions remain the sole responsibility of the treating clinician.</div>
+        </div>
+        <div className="legal-key-item">
+          <div className="legal-key-label">Always verify against FDA labels</div>
+          <div className="legal-key-text">Confirm all eligibility against current FDA prescribing information before any decision.</div>
+        </div>
+      </div>
+
+      <div className="legal-section">
+        <h2>Regulatory status</h2>
+        <p>CellTx Match qualifies as <strong>clinical decision support software exempt from premarket review</strong> under section 3060(a) of the 21st Century Cures Act and FDA's guidance on Clinical Decision Support Software (CDSS). Specifically, the platform:</p>
+        <ul>
+          <li>Provides information from independent sources (FDA prescribing information, NCCN guidelines, pivotal trial entry criteria)</li>
+          <li>Displays the basis for recommendations transparently — every rule is sourced and cited at <a href="/criteria">/criteria</a></li>
+          <li>Does not acquire, process, or analyze medical images or signals</li>
+          <li>Is intended for the purpose of supporting a healthcare professional's clinical decision, who can independently review the basis for the recommendation</li>
+        </ul>
+        <p>The platform is therefore not regulated as a medical device under current FDA guidance.</p>
+      </div>
+
+      <div className="legal-section">
+        <h2>What the platform IS</h2>
+        <ul>
+          <li>A reference and decision-support tool for licensed healthcare professionals</li>
+          <li>A structured presentation of FDA-approved cell therapy eligibility criteria with citations</li>
+          <li>An operational workflow tool for tumor board case management and referral preparation</li>
+          <li>A discovery layer for recruiting clinical trials matched to a patient profile</li>
+        </ul>
+      </div>
+
+      <div className="legal-section">
+        <h2>What the platform IS NOT</h2>
+        <ul>
+          <li>A diagnostic device</li>
+          <li>A clinical decision-making system that operates without human verification</li>
+          <li>A replacement for the FDA prescribing information for any product</li>
+          <li>A replacement for NCCN, ASH, ASCO, or other society guidelines</li>
+          <li>A guarantee of clinical outcome, insurance coverage, or apheresis/manufacturing eligibility</li>
+        </ul>
+      </div>
+
+      <div className="legal-section">
+        <h2>Criteria currency &amp; update cadence</h2>
+        <p>The eligibility rule library reflects FDA prescribing information and NCCN clinical practice guidelines as of <strong>May 2026</strong>. Criteria are reviewed within 30 days of FDA approval changes or guideline updates. Each product card on the <a href="/criteria">/criteria</a> page displays its last-reviewed date and links to the current FDA prescribing information.</p>
+        <p>Criteria can become outdated between updates. <strong>Always verify against the current FDA prescribing information before any clinical decision.</strong></p>
+      </div>
+
+      <div className="legal-section">
+        <h2>What the platform does not assess</h2>
+        <p>The eligibility engine evaluates the structured clinical criteria published in FDA labeling. It does not evaluate:</p>
+        <ul>
+          <li>Insurance coverage or prior authorization</li>
+          <li>Apheresis center availability or scheduling</li>
+          <li>CAR-T manufacturing slot availability</li>
+          <li>Product-specific REMS program enrollment</li>
+          <li>Institutional protocols layered on top of FDA labeling</li>
+          <li>Off-label or expanded-access use</li>
+          <li>Treating clinician judgment regarding aggressive vs. palliative goals of care</li>
+          <li>Patient preferences, social determinants, or non-clinical factors</li>
+        </ul>
+        <p>These factors must be assessed independently by the treating team.</p>
+      </div>
+
+      <div className="legal-section">
+        <h2>Reporting concerns</h2>
+        <p>If you identify a discrepancy between a CellTx Match output and the current FDA prescribing information for any product, please email <a href="mailto:sri.ramya003@gmail.com">sri.ramya003@gmail.com</a> with the subject line "Criteria correction". We review every such report and update the rule library accordingly, typically within 5 business days.</p>
+      </div>
+
+      <div className="legal-section">
+        <h2>Final boundary statement</h2>
+        <div className="legal-callout">
+          By using CellTx Match, you affirm that you are a qualified healthcare professional or supervised trainee, that you will independently verify all outputs against current FDA labeling and institutional protocols, and that you accept sole responsibility for any clinical decision made for any patient. CellTx Match, its operators, and its licensors disclaim all liability for clinical outcomes resulting from use of the platform.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── About page ─────────────────────────────────────────────────────────────
 function AboutView({ onBackToScreener, onGoToPricing, onGoToCriteria }) {
   return (
@@ -4413,6 +4976,9 @@ function WaitlistModal({ onClose }) {
                   onChange={e => setF("workflow", e.target.value)}
                   style={{ resize: "vertical", minHeight: 50, fontFamily: "'Inter Tight', sans-serif" }}
                 />
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8.5, color: "#98908380", letterSpacing: "0.05em", marginTop: 5, lineHeight: 1.5 }}>
+                  Do not include patient names or identifiable health information in this field.
+                </div>
               </div>
               {status === "error" && (
                 <p style={{ fontSize: 12, color: "#b54a2c", marginBottom: 8 }}>
@@ -4447,8 +5013,11 @@ export default function App() {
     if (p === "/criteria") return "criteria";
     if (p === "/refer") return "refer";
     if (p === "/about") return "about";
+    if (p === "/privacy") return "privacy";
+    if (p === "/terms") return "terms";
+    if (p === "/disclaimer") return "disclaimer";
     return "screener";
-  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about"
+  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -4477,6 +5046,9 @@ export default function App() {
       : view === "criteria" ? "/criteria"
       : view === "refer" ? "/refer"
       : view === "about" ? "/about"
+      : view === "privacy" ? "/privacy"
+      : view === "terms" ? "/terms"
+      : view === "disclaimer" ? "/disclaimer"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -4493,6 +5065,9 @@ export default function App() {
       else if (p === "/criteria") setView("criteria");
       else if (p === "/refer") setView("refer");
       else if (p === "/about") setView("about");
+      else if (p === "/privacy") setView("privacy");
+      else if (p === "/terms") setView("terms");
+      else if (p === "/disclaimer") setView("disclaimer");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -4773,6 +5348,11 @@ export default function App() {
           onRequestDemo={() => { trackPricingCta("board-workflow-demo"); setShowWaitlist(true); }}
         />
       )}
+
+      {/* LEGAL VIEWS */}
+      {view === "privacy" && <PrivacyView />}
+      {view === "terms" && <TermsView />}
+      {view === "disclaimer" && <DisclaimerView />}
 
       {/* ABOUT VIEW */}
       {view === "about" && (
@@ -5296,6 +5876,17 @@ export default function App() {
       {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
       {showAccuracy && <AccuracyModal onClose={() => setShowAccuracy(false)} />}
 
+      {/* SITE-WIDE CLINICAL DISCLAIMER BANNER */}
+      <div className="disclaimer-banner">
+        <strong>CellTx Match is not a medical device.</strong> For decision support by licensed healthcare professionals only. Always verify against current FDA prescribing information.
+        <button
+          style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#b54a2c", borderBottom: "1px dotted #b54a2c80", fontFamily: "inherit", fontSize: "inherit", marginLeft: 6 }}
+          onClick={() => setView("disclaimer")}
+        >
+          Full clinical disclaimer →
+        </button>
+      </div>
+
       {/* FOOTER */}
       <footer className="footer">
         <div className="footer-brand">CellTx Match</div>
@@ -5319,13 +5910,31 @@ export default function App() {
             style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
             onClick={() => setShowAccuracy(true)}
           >
-            How accurate is this?
+            How accurate?
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("privacy")}
+          >
+            Privacy
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("terms")}
+          >
+            Terms
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("disclaimer")}
+          >
+            Disclaimer
           </button>
           <a href="https://biomarker-database.vercel.app" target="_blank" rel="noopener noreferrer" className="footer-link">
             OncoMarker →
-          </a>
-          <a href="https://clinicaltrials.gov" target="_blank" rel="noopener noreferrer" className="footer-link">
-            ClinicalTrials.gov
           </a>
         </div>
       </footer>
