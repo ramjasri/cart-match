@@ -2452,8 +2452,11 @@ const CSS = `
     margin-bottom: 12px; letter-spacing: -0.015em; line-height: 1.1;
   }
   .pricing-price {
-    font-family: 'Fraunces', serif; font-size: 34px; font-weight: 400;
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
     line-height: 1; margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .pricing-price.text-price {
+    font-size: 26px; /* "Custom" / "0–500" don't need huge type */
   }
   .pricing-price .currency {
     font-size: 16px; vertical-align: top; margin-right: 2px; opacity: 0.6;
@@ -6729,7 +6732,7 @@ const TIERS = [
   {
     id: "free",
     tier: "Free",
-    name: "Individual",
+    name: "Individual Clinician",
     price: "0",
     per: "forever · no card required",
     best: "Individual oncologists & trainees",
@@ -6742,47 +6745,48 @@ const TIERS = [
       "Shareable case URLs",
       "Bridging therapy guidance",
       "PDF referral reports (with sign-in)",
-      "Mobile-optimized",
+      "Mobile-optimized for phone use",
     ],
     cta: "Start analysis →",
     action: "screener",
   },
   {
-    id: "practice",
-    tier: "Practice",
-    name: "Community Oncology",
-    price: "299",
-    per: "per month · $2,990/yr (save 17%)",
-    best: "Practices & single CAR-T programs",
+    id: "pilot",
+    tier: "Pilot",
+    name: "3-Month Institutional Pilot",
+    price: "0–500",
+    per: "per month · 3-month scoped engagement",
+    best: "Reference sites · workflow validation",
     featured: false,
     features: [
-      "Everything in Free",
-      "Up to 5 named users",
-      "Persistent shared tumor board",
-      "Custom practice name on reports",
-      "Email support · 2 business day SLA",
-      "14-day free trial · no card required",
+      "Shared tumor board for your team",
+      "Referral workflows configured to your protocols",
+      "Audit-ready PDF report exports",
+      "Onboarding + clinical content briefing",
+      "Direct line to the founding team",
+      "Free for first 5 charter institutions (case study + reference rights)",
     ],
-    cta: "Start free trial →",
+    cta: "Request pilot →",
     action: "waitlist",
   },
   {
-    id: "institution",
-    tier: "Institution",
-    name: "Cancer Center",
-    price: "999",
-    per: "per month · $9,990/yr (save 17%)",
-    best: "CAR-T programs & academic centers",
+    id: "institutional",
+    tier: "Institutional",
+    name: "CAR-T Program",
+    price: "2,500",
+    per: "per month · starting · annual contract",
+    best: "Academic centers & CAR-T programs",
     featured: true,
     features: [
-      "Everything in Practice",
-      "Up to 25 named users",
-      "Multi-site shared tumor board",
-      "Custom institution branding on PDFs",
-      "Quarterly criteria update briefings",
-      "Read-only API access",
-      "Audit log (90-day retention)",
-      "Priority support · 1 business day SLA",
+      "Everything in the Pilot tier",
+      "Unlimited cases · unlimited team members",
+      "Coordinator Operations Dashboard",
+      "Longitudinal timeline + activity log audit trail",
+      "Outcomes analytics dashboard (QI-ready)",
+      "Custom institution branding on every report",
+      "Read-only API access · 90-day audit log",
+      "Quarterly clinical content briefings (live)",
+      "Onboarding · dedicated success contact · 1-business-day SLA",
     ],
     cta: "Request institutional demo →",
     action: "waitlist",
@@ -6790,20 +6794,21 @@ const TIERS = [
   {
     id: "enterprise",
     tier: "Enterprise",
-    name: "Health System",
-    price: "2,995",
-    per: "starting · annual contract only",
-    best: "Multi-site networks & systems",
+    name: "Health System / Network",
+    price: "Custom",
+    per: "annual contract · $25K–$150K+ ARR",
+    best: "Multi-site networks · pharma · payers",
     featured: false,
     features: [
-      "Everything in Institution",
-      "Unlimited users",
+      "Everything in Institutional",
       "SSO (SAML · Okta · Azure AD)",
       "HIPAA Business Associate Agreement",
-      "Full audit log + compliance reports",
+      "Full audit log + compliance reports + SOC 2",
       "Institution-specific criteria overrides",
-      "Dedicated account manager",
-      "99.9% uptime SLA · white-glove onboarding",
+      "Authenticated Criteria API + webhook notifications",
+      "FHIR / Redox / Epic integration (custom scope)",
+      "Dedicated account manager · 99.9% uptime SLA",
+      "Custom analytics + cohort reporting",
     ],
     cta: "Discuss deployment →",
     action: "waitlist",
@@ -6813,31 +6818,39 @@ const TIERS = [
 const FAQS = [
   {
     q: "Is patient data ever stored on your servers?",
-    a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free, Practice, or Institution tiers. Enterprise customers with a BAA can opt into encrypted server-side sync.",
+    a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free, Pilot, or Institutional tiers. Enterprise customers with a BAA can opt into encrypted server-side sync — required for SSO, full audit logging, and FHIR/EMR integration.",
   },
   {
-    q: "What's included in the 3-month pilot program?",
-    a: "A scoped, low-risk evaluation: a shared tumor board configured for your team, referral workflows aligned to your institutional protocols, audit-ready PDF report exports, a 60-minute onboarding session, a clinical content briefing covering the most recent FDA approvals relevant to your patient mix, custom institution branding, and a direct Slack/email channel to the clinical content team. Pricing depends on institution size — typically $5–15K all-in for 3 months. If you continue to a full Institution or Enterprise contract afterward, the pilot fee is credited toward your first year.",
+    q: "What's the difference between Pilot and Institutional?",
+    a: "Pilot is a 3-month scoped engagement designed for institutions that want to validate operational impact before signing a multi-year contract — fixed scope, documented outcomes, then decide. Free for the first 5 charter institutions; $0–500/mo otherwise depending on program size. Institutional is the long-term contract starting at $2,500/mo with unlimited cases, full audit trail, outcomes analytics, dedicated onboarding, and a 1-business-day SLA. Most customers move from Pilot → Institutional after demonstrating clinical and operational value.",
+  },
+  {
+    q: "Why is Institutional priced at $2,500/mo and up?",
+    a: "Because that's what it costs to run a CAR-T program management system that institutional medical directors will actually stake their compliance posture on. The platform includes the longitudinal timeline + audit trail, outcomes analytics for QI reporting, coordinator operations dashboard, dedicated onboarding, quarterly clinical content briefings, and direct support from the founding team. A single avoided late referral (cell therapy infusion = $500K–$1M revenue per patient) more than pays for the platform for a decade.",
+  },
+  {
+    q: "How does Enterprise pricing work?",
+    a: "Enterprise contracts are custom-scoped based on institution size, integration requirements (SSO, FHIR/Redox/Epic, custom criteria overrides), and audit/compliance needs. Most contracts land between $25,000 and $150,000 annual ARR. Includes everything in Institutional plus HIPAA Business Associate Agreement, SOC 2 reporting, authenticated Criteria API with webhook notifications, FHIR integration scope, dedicated account manager, 99.9% uptime SLA, and white-glove onboarding.",
   },
   {
     q: "Is there a discount for academic medical centers or safety-net hospitals?",
-    a: "Yes — 30% off Institution and Enterprise tiers for academic centers willing to be a published reference customer. 25% off for FQHCs and safety-net hospitals. Free unlimited use for medical residents and fellows (with institutional attestation). Charter pricing: 50% off Year 1 for the first 5 Institution signups in exchange for case study and reference call rights.",
+    a: "Yes — 30% off Institutional and Enterprise tiers for academic centers willing to be a published reference customer. 25% off for FQHCs and safety-net hospitals. Free unlimited use for medical residents and fellows (with institutional attestation). Charter pricing: free 3-month pilot + 50% off Year 1 for the first 5 institutions in exchange for co-authored case study and reference-call rights.",
   },
   {
     q: "Can I pay per-screen instead of subscribing?",
-    a: "Yes. For community practices, biotechs, advocacy groups, or pharma sales reps that don't fit the user-seat model, we offer volume pricing: $5/screen (pay-as-you-go, no minimum), $25/case (includes full tumor board persistence + PDF), or $10K/quarter unlimited with no SLA. Contact sales to set up.",
+    a: "Yes. For community practices, biotechs, advocacy groups, or pharma sales reps that don't fit the institutional model, we offer volume pricing: $5/screen (pay-as-you-go, no minimum), $25/case (includes full tumor board persistence + PDF), or $10K/quarter unlimited with no SLA. Contact sales to set up.",
   },
   {
-    q: "Can we try Practice or Institution before committing?",
-    a: "Yes — every paid tier comes with a 14-day free trial, no credit card required upfront. You get full access including shared tumor board, custom branding, and packet exports. Cancel anytime during the trial with one click.",
+    q: "Can we try Institutional before signing an annual contract?",
+    a: "Yes — that's exactly what the Pilot tier is for. Three months, scoped, with documented outcomes. If you continue to Institutional afterward, the pilot fee is credited toward your first year. For institutions that prefer to skip the pilot and start on Institutional directly, we offer a 14-day money-back guarantee on the first month.",
   },
   {
     q: "How quickly do you add new FDA approvals?",
-    a: "Within 30 days of approval. Criteria are reviewed against the published prescribing information and added to all tiers simultaneously. Institution customers receive a written change summary; Enterprise customers receive a live quarterly briefing with the clinical content team.",
+    a: "Within 30 days of approval. Criteria are reviewed against the published prescribing information and added to all tiers simultaneously. Institutional customers receive a written change summary; Enterprise customers receive a live quarterly briefing with the founding team.",
   },
   {
     q: "Do you offer a HIPAA Business Associate Agreement?",
-    a: "Yes, with Enterprise. Because no patient data leaves the browser on Free, Practice, or Institution tiers, a BAA is technically not required at those levels — but Enterprise customers using server-side sync, SSO, or audit logging receive a signed BAA as standard. We also support DPAs for international institutions.",
+    a: "Yes, with Enterprise. Because no patient data leaves the browser on Free, Pilot, or Institutional tiers, a BAA is technically not required at those levels — that's a deliberate architectural choice. Enterprise customers using server-side sync, SSO, or audit logging receive a signed BAA as standard. We also support DPAs for international institutions.",
   },
 ];
 
@@ -6850,8 +6863,9 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
           Built for <em>oncology teams</em>,<br />priced for institutions
         </h1>
         <p className="pricing-sub">
-          Start free for individual referral analysis. Upgrade when your tumor board
-          needs shared workflows, custom branding, or institutional security.
+          Free for individual clinicians. Institutional pricing starts at $2,500/mo
+          and is designed for CAR-T programs that need a daily-operations system.
+          Pilot before you commit. Enterprise built around your existing infrastructure.
         </p>
       </div>
 
@@ -6861,9 +6875,17 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
             {t.featured && <div className="pricing-badge">Most popular</div>}
             <div className="pricing-tier">{t.tier}</div>
             <div className="pricing-name">{t.name}</div>
-            <div className="pricing-price">
-              <span className="currency">$</span>{t.price}
-            </div>
+            {(() => {
+              const isCustom = t.price === "Custom";
+              const isRange  = t.price && t.price.includes("–");
+              const showCurrency = !isCustom;
+              const textPrice = isCustom || isRange;
+              return (
+                <div className={`pricing-price${textPrice ? " text-price" : ""}`}>
+                  {showCurrency && <span className="currency">$</span>}{t.price}
+                </div>
+              );
+            })()}
             <div className="pricing-per">{t.per}</div>
             <div className="pricing-best">{t.best}</div>
             <ul className="pricing-features">
@@ -6879,8 +6901,11 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
               onClick={async () => {
                 trackPricingCta(t.id);
                 if (t.action === "screener") { onBackToScreener(); return; }
-                // Try Stripe Checkout for paid tiers that have a Stripe price ID
-                if (t.id === "practice" || t.id === "institution") {
+                // Institutional is the only self-serve Stripe tier now — Pilot
+                // and Enterprise are both sales-led (custom contracts, charter
+                // qualification, BAA / SSO setup). Try Stripe first if Institutional;
+                // fall back to waitlist if Stripe not configured.
+                if (t.id === "institutional") {
                   try {
                     await startCheckout({ tier: t.id, interval: "monthly" });
                     return;
@@ -6900,39 +6925,42 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
         ))}
       </div>
 
-      {/* Pilot program — low-friction institutional evaluation */}
+      {/* Charter pricing callout — replaces the old standalone pilot panel,
+          since pilots are now a first-class tier above. This panel pitches
+          the charter-customer offer specifically. */}
       <div className="pilot-panel">
         <div className="pilot-text">
-          <div className="pilot-tag">Pilot program · For institutions</div>
+          <div className="pilot-tag">Charter program · First 5 institutions</div>
           <h3 className="pilot-title">
-            Evaluate the platform at <em>your institution</em> with no procurement risk.
+            Free pilot for the first <em>five charter institutions</em>.
           </h3>
           <p className="pilot-desc">
-            A 3-month institutional pilot designed for cancer centers, CAR-T programs, and
-            referral teams that want to validate operational impact before signing a contract.
-            Fixed scope. Real outcomes. Then decide.
+            The first five CAR-T programs to deploy CellTx Match get a fully waived 3-month pilot
+            in exchange for case-study and reference-call rights. After pilot, charter institutions
+            receive 50% off the first year of Institutional pricing. Limited to programs that
+            can begin a pilot before Q4 2026.
           </p>
           <ul className="pilot-included">
-            <li>Shared tumor board for your team</li>
-            <li>Referral workflows configured to your protocols</li>
-            <li>Audit-ready PDF report exports</li>
-            <li>Onboarding session + clinical content briefing</li>
-            <li>Custom institution branding</li>
-            <li>Direct line to the clinical content team</li>
+            <li>Free 3-month pilot deployment</li>
+            <li>50% off Year 1 Institutional pricing if continuing</li>
+            <li>Direct line to the founding team</li>
+            <li>Onboarding + clinical content briefing</li>
+            <li>Co-authored case study (published with your permission)</li>
+            <li>Logo placement on website (with your approval)</li>
           </ul>
         </div>
 
         <div className="pilot-cta-block">
-          <div className="pilot-price">3 months</div>
-          <div className="pilot-price-sub">Fixed-scope · documented outcomes</div>
+          <div className="pilot-price">Free</div>
+          <div className="pilot-price-sub">3-month charter pilot</div>
           <button
             className="pilot-cta"
             onClick={() => {
-              trackPricingCta("pilot-program");
+              trackPricingCta("charter-program");
               onRequestAccess();
             }}
           >
-            Request pilot inquiry →
+            Apply for charter slot →
           </button>
           <button
             className="pilot-cta secondary"

@@ -17,10 +17,10 @@ import Stripe from "stripe";
 import { verifyToken } from "@clerk/backend";
 
 const PRICE_MAP = {
-  "practice:monthly":    "STRIPE_PRICE_PRACTICE_MONTHLY",
-  "practice:yearly":     "STRIPE_PRICE_PRACTICE_YEARLY",
-  "institution:monthly": "STRIPE_PRICE_INSTITUTION_MONTHLY",
-  "institution:yearly":  "STRIPE_PRICE_INSTITUTION_YEARLY",
+  // The only self-serve Stripe Checkout tier — Pilot is sales-led
+  // (qualification needed), Enterprise is custom-contract.
+  "institutional:monthly": "STRIPE_PRICE_INSTITUTIONAL_MONTHLY",
+  "institutional:yearly":  "STRIPE_PRICE_INSTITUTIONAL_YEARLY",
 };
 
 export default async function handler(req, res) {
