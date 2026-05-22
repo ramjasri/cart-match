@@ -1,5 +1,5 @@
 // src/utils/generatePdf.js
-// Generates a "CAR-T Eligibility Report" PDF for tumor board packets
+// Generates a "Cell Therapy Referral Report" PDF for tumor board packets
 
 import { jsPDF } from "jspdf";
 
@@ -66,13 +66,13 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   setColor(doc, [244, 241, 234]);
-  doc.text("CAR-T ELIGIBILITY REPORT", ML, 29);
+  doc.text("CELL THERAPY REFERRAL REPORT", ML, 29);
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   setColor(doc, [180, 170, 155]);
   const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  doc.text(`Generated ${dateStr} · CAR-T Match · cart-match.vercel.app`, ML, 33);
+  doc.text(`Generated ${dateStr} · CellTx Match · cart-match.vercel.app`, ML, 33);
 
   y = 46;
 
@@ -148,7 +148,7 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   setColor(doc, COLORS.ink3);
-  doc.text("PRODUCT ELIGIBILITY", ML, y);
+  doc.text("CANDIDATE PRODUCTS", ML, y);
   rule(doc, ML, y + 2, CW);
   y += 8;
 
@@ -252,11 +252,11 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     setColor(doc, [180, 170, 155]);
-    doc.text("CAR-T Match · cart-match.vercel.app", ML, 293);
+    doc.text("CellTx Match · Cell Therapy Referral Intelligence · cart-match.vercel.app", ML, 293);
     doc.text(`Page ${i} of ${pages}`, W - MR, 293, { align: "right" });
   }
 
-  doc.save(grayscale ? "CellTx-Eligibility-Report-BW.pdf" : "CellTx-Eligibility-Report.pdf");
+  doc.save(grayscale ? "CellTx-Referral-Report-BW.pdf" : "CellTx-Referral-Report.pdf");
 }
 
 function hexToRgb(hex) {

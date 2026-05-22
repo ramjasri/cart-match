@@ -2000,16 +2000,16 @@ const TIERS = [
     best: "For individual oncologists & trainees",
     featured: false,
     features: [
-      "Screen unlimited patients",
+      "Unlimited referral analyses",
       "All 12 FDA-approved products (CAR-T + Bispecific)",
-      "CAR-T vs Bispecific comparison",
+      "CAR-T vs Bispecific candidate comparison",
       "Live ClinicalTrials.gov integration",
       "Shareable case URLs",
       "Bridging therapy guidance",
-      "PDF eligibility reports (color + B&W)",
+      "PDF referral reports (color + B&W)",
       "Mobile-optimized for phone use",
     ],
-    cta: "Start screening →",
+    cta: "Start analysis →",
     action: "screener",
   },
   {
@@ -2084,8 +2084,8 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
           Built for <em>oncology teams</em>,<br />priced for institutions
         </h1>
         <p className="pricing-sub">
-          Start free for individual screening. Upgrade when your tumor board needs
-          shared workflows, custom branding, or institutional security.
+          Start free for individual referral analysis. Upgrade when your tumor board
+          needs shared workflows, custom branding, or institutional security.
         </p>
       </div>
 
@@ -2167,15 +2167,15 @@ function WaitlistModal({ onClose }) {
             <div className="modal-success-title">You're on the list</div>
             <p className="modal-success-text">
               We'll be in touch when institutional access opens.<br />
-              In the meantime, the screener is fully free to use.
+              In the meantime, the platform is fully free to use.
             </p>
           </div>
         ) : (
           <div className="modal-body">
             <div className="modal-title">Request institutional access</div>
             <p className="modal-sub">
-              Early access for cancer centers and oncology practices.
-              Includes multi-user accounts, PDF report export, and ClinicalTrials.gov integration.
+              Cell therapy referral intelligence for cancer centers and oncology practices.
+              Includes multi-user accounts, shared tumor board, custom branding on referral reports, and audit-ready exports.
             </p>
             <form onSubmit={submit}>
               <div className="modal-field">
@@ -2396,7 +2396,7 @@ export default function App() {
             <div className="brand-glyph"><Dna size={18} strokeWidth={1.4} /></div>
             <div>
               <div className="brand-name">CELLTX MATCH</div>
-              <div className="brand-sub">CAR-T &amp; Bispecific Antibody Screener</div>
+              <div className="brand-sub">Cell Therapy Referral Intelligence Platform</div>
             </div>
           </div>
           <div className="hdr-meta">
@@ -2406,7 +2406,7 @@ export default function App() {
             </div>
             <div className="screen-counter">
               <div className="counter-dot" />
-              {screenCount.toLocaleString()} screened
+              {screenCount.toLocaleString()} cases analyzed
             </div>
             <nav className="hdr-nav">
               <button
@@ -2446,14 +2446,14 @@ export default function App() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-tag">CAR-T &amp; Bispecific Antibody Screener · May 2026</div>
+        <div className="hero-tag">Cell Therapy Referral Intelligence · May 2026</div>
         <h1 className="hero-h1">
-          Match patients to <em>eligible</em><br />cell &amp; bispecific therapies
+          Identify <em>cell therapy</em> candidates,<br />ready for tumor board
         </h1>
         <p className="hero-sub">
-          Enter a patient profile to screen eligibility across all 12 FDA-approved CAR-T and
-          bispecific antibody products simultaneously. Compare treatment pathways, see blocking
-          criteria, organ function requirements, and recruiting trials in one view.
+          Evaluate any patient against all 12 FDA-approved CAR-T and bispecific antibody
+          products simultaneously. Generate referral-ready intelligence in seconds — with the
+          criteria, recruiting trials, and bridging pathways your tumor board needs.
         </p>
         <div className="hero-pills">
           {ALL_PRODUCTS.map(p => (
@@ -2491,7 +2491,7 @@ export default function App() {
         <div className="case-banner">
           <div className="case-banner-inner">
             <Check size={12} />
-            Shared case loaded — review results below. Edit the form and re-screen to update.
+            Shared case loaded — review the analysis below. Edit the form and re-run to update.
           </div>
         </div>
       )}
@@ -2655,7 +2655,7 @@ export default function App() {
           )}
 
           <button className="run-btn" onClick={run} disabled={!canRun}>
-            Screen eligibility →
+            Run referral analysis →
           </button>
           </div>{/* end form-fields-wrap */}
         </div>
@@ -2667,7 +2667,7 @@ export default function App() {
               <div className="empty-glyph">⬤</div>
               <p className="empty-text">
                 Fill in the patient profile on the left<br />
-                and click <strong>Screen eligibility</strong> to see matched products.
+                and click <strong>Run referral analysis</strong> to identify candidate products.
               </p>
             </div>
           ) : (
@@ -2719,9 +2719,9 @@ export default function App() {
 
               <div className="results-hdr">
                 <div className="results-title">
-                  {viewMode === "cart" ? "CAR-T Products" : viewMode === "bispecific" ? "Bispecific Antibodies" : "All Products"}
+                  {viewMode === "cart" ? "CAR-T candidates" : viewMode === "bispecific" ? "Bispecific candidates" : "Referral analysis"}
                 </div>
-                <div className="results-count">{eligible} of {ALL_PRODUCTS.length} eligible</div>
+                <div className="results-count">{eligible} of {ALL_PRODUCTS.length} candidate products</div>
               </div>
               {sorted.map(p => (
                 <ProductCard key={p.id} product={p} result={results[p.id]} />
@@ -2761,7 +2761,7 @@ export default function App() {
                 onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS })}
               >
                 <Download size={13} />
-                Export PDF (color)
+                Export Referral Report (PDF)
               </button>
               <button
                 className="export-btn secondary"
@@ -2769,16 +2769,16 @@ export default function App() {
                 onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS, grayscale: true })}
               >
                 <FileText size={13} />
-                B&amp;W PDF
+                B&amp;W version
               </button>
             </>
           ) : (
             <>
-              <span className="export-signin-hint">Sign in to export PDF report</span>
+              <span className="export-signin-hint">Sign in to export referral report</span>
               <SignInButton mode="modal">
                 <button className="export-btn secondary">
                   <FileText size={13} />
-                  Sign in &amp; Export PDF
+                  Sign in &amp; Export Report
                 </button>
               </SignInButton>
             </>
@@ -2790,9 +2790,9 @@ export default function App() {
       <div className="cta-banner">
         <div className="cta-inner">
           <div className="cta-text">
-            <div className="cta-title">Want this for your <em>tumor board?</em></div>
+            <div className="cta-title">Bring referral intelligence to your <em>tumor board</em></div>
             <div className="cta-sub">
-              Institutional access includes multi-user accounts, PDF eligibility reports, live trial integration, and CAR-T vs bispecific comparison reports.
+              Institutional access includes multi-user accounts, shared tumor board packets, custom institution branding, audit-ready reports, and SSO + HIPAA BAA on Enterprise.
             </div>
           </div>
           <button className="cta-btn" onClick={() => setShowWaitlist(true)}>

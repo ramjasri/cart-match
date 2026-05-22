@@ -260,7 +260,7 @@ export function generateBoardPdf(cases) {
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     setColor(doc, COLORS.ink3);
-    doc.text("PRODUCT ELIGIBILITY", ML, y);
+    doc.text("CANDIDATE PRODUCTS", ML, y);
     rule(doc, ML, y + 2, CW);
     y += 8;
 
