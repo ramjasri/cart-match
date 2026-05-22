@@ -23,6 +23,7 @@ import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
 import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
+import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
@@ -1097,6 +1098,97 @@ const CSS = `
     text-transform: uppercase; letter-spacing: 0.12em; color: #3a5a2a;
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
+
+  /* WORKUP CHECKLIST */
+  .workup-panel {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .workup-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+    cursor: pointer; user-select: none; transition: background 0.12s;
+  }
+  .workup-hdr:hover { background: #2a2520; }
+  .workup-icon-bg {
+    width: 30px; height: 30px; background: #5a7a4a; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0; font-weight: 700;
+    font-size: 16px;
+  }
+  .workup-hdr-text { flex: 1; }
+  .workup-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .workup-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .workup-count-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    background: #5a7a4a; color: #f4f1ea;
+    padding: 4px 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .workup-body { padding: 18px 20px; }
+
+  .workup-section { margin-bottom: 18px; }
+  .workup-section:last-child { margin-bottom: 0; }
+  .workup-section-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid #1a181520;
+  }
+  .workup-section-icon {
+    font-family: 'Fraunces', serif; font-size: 14px; color: #5a7a4a;
+    flex-shrink: 0;
+  }
+  .workup-section-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #1a1815;
+    font-weight: 700;
+    flex: 1;
+  }
+  .workup-section-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; padding: 2px 6px;
+    border: 1px solid #1a181525;
+  }
+
+  .workup-item {
+    display: grid; grid-template-columns: 18px 76px 1fr;
+    gap: 10px; align-items: start;
+    padding: 7px 0; line-height: 1.5;
+  }
+  .workup-checkbox {
+    width: 14px; height: 14px; margin-top: 2px;
+    border: 1.5px solid #1a181555;
+    flex-shrink: 0;
+  }
+  .workup-priority {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 3px 6px; text-align: center;
+    border: 1px solid currentColor;
+    height: fit-content; margin-top: 1px;
+  }
+  .workup-priority.high   { color: #b54a2c; background: #b54a2c10; }
+  .workup-priority.medium { color: #7a5e10; background: #c4a66110; }
+  .workup-priority.low    { color: #4c6b8c; background: #4c6b8c10; }
+
+  .workup-item-body {}
+  .workup-item-text {
+    font-size: 13px; color: #1a1815; line-height: 1.55;
+    margin-bottom: 3px;
+  }
+  .workup-item-reason {
+    font-size: 11px; color: #6b645a; line-height: 1.5;
+    font-style: italic;
+  }
+  .workup-item-reason::before {
+    content: "→ ";
+    color: #c4a661; font-style: normal; font-weight: 600;
+  }
 
   /* DISEASE PATHWAY INTELLIGENCE */
   .pathway-panel {
@@ -2600,6 +2692,63 @@ function getBridgingKey(cancerType) {
   if (c.includes("follicular") || c.includes(" fl")) return "fl";
   if (c.includes("lymphoma") || c.includes("lbcl") || c.includes("dlbcl")) return "dlbcl";
   return null;
+}
+
+function WorkupPanel({ pt }) {
+  const [open, setOpen] = useState(true);
+  const workup = generateWorkup(pt);
+  if (!workup) return null;
+  const total = workupItemCount(workup);
+  if (total === 0) return null;
+
+  const orderedCategories = ["pathology", "labs", "imaging", "documentation", "consults", "administrative"];
+
+  return (
+    <div className="workup-panel">
+      <div className="workup-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="workup-icon-bg">▣</div>
+        <div className="workup-hdr-text">
+          <div className="workup-hdr-title">Recommended workup</div>
+          <div className="workup-hdr-sub">Pre-referral checklist · dynamic to patient profile</div>
+        </div>
+        <div className="workup-count-badge">{total} items</div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={16} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="workup-body">
+          {orderedCategories.map(cat => {
+            const arr = workup[cat];
+            if (!arr || arr.length === 0) return null;
+            const meta = CATEGORY_LABELS[cat];
+            return (
+              <div key={cat} className="workup-section">
+                <div className="workup-section-head">
+                  <span className="workup-section-icon">{meta.icon}</span>
+                  <span className="workup-section-title">{meta.label}</span>
+                  <span className="workup-section-count">{arr.length}</span>
+                </div>
+                {arr.map((item, i) => (
+                  <div key={i} className="workup-item">
+                    <div className="workup-checkbox" />
+                    <span className={`workup-priority ${item.priority}`}>
+                      {PRIORITY_META[item.priority].label}
+                    </span>
+                    <div className="workup-item-body">
+                      <div className="workup-item-text">{item.text}</div>
+                      <div className="workup-item-reason">{item.reason}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function BridgingPanel({ cancerType }) {
@@ -4232,6 +4381,9 @@ export default function App() {
                   </div>
                 );
               })()}
+
+              {/* Consolidated workup checklist — what to do to prepare for referral */}
+              <WorkupPanel pt={pt} />
 
               {/* Disease pathway intelligence — NCCN-aware */}
               {(() => {

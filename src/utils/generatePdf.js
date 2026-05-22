@@ -4,6 +4,7 @@
 import { jsPDF } from "jspdf";
 import { findAction, getPathToEligibility, getReferralSteps } from "./actions.js";
 import { calculateUrgency } from "./urgency.js";
+import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./workup.js";
 
 const COLORS = {
   ink:     [26, 24, 21],
@@ -171,6 +172,72 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
     doc.text(String(val), col + 28, y);
   });
   y += 10;
+
+  // ── Recommended Workup ────────────────────────────────────────────────────
+  const workup = generateWorkup(patient);
+  if (workup && workupItemCount(workup) > 0) {
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    setColor(doc, COLORS.ink3);
+    doc.text("RECOMMENDED WORKUP", ML, y);
+    rule(doc, ML, y + 2, CW);
+    y += 8;
+
+    const orderedCats = ["pathology", "labs", "imaging", "documentation", "consults", "administrative"];
+    orderedCats.forEach(cat => {
+      const arr = workup[cat] || [];
+      if (arr.length === 0) return;
+      if (y > 268) { doc.addPage(); y = 20; }
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      setColor(doc, COLORS.ink3);
+      doc.text(`${CATEGORY_LABELS[cat].label.toUpperCase()} · ${arr.length}`, ML, y);
+      y += 5;
+
+      arr.forEach(item => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const pmeta = PRIORITY_META[item.priority] || PRIORITY_META.medium;
+        const pColor = grayscale
+          ? (item.priority === "high" ? [50, 50, 50] : item.priority === "medium" ? [95, 95, 95] : [130, 130, 130])
+          : (item.priority === "high" ? COLORS.red : item.priority === "medium" ? COLORS.amber : COLORS.blue);
+
+        // Checkbox
+        setDraw(doc, COLORS.ink3);
+        doc.setLineWidth(0.3);
+        doc.rect(ML + 2, y - 3, 3, 3, "D");
+
+        // Priority tag
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "bold");
+        setColor(doc, pColor);
+        doc.text(pmeta.label.toUpperCase(), ML + 8, y);
+
+        // Task text
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        setColor(doc, COLORS.ink);
+        const taskLines = doc.splitTextToSize(item.text, CW - 32);
+        doc.text(taskLines, ML + 27, y);
+        y += taskLines.length * 3.5;
+
+        // Reason
+        if (item.reason) {
+          if (y > 272) { doc.addPage(); y = 20; }
+          doc.setFontSize(6.5);
+          doc.setFont("helvetica", "italic");
+          setColor(doc, COLORS.ink3);
+          const reasonLines = doc.splitTextToSize(`→ ${item.reason}`, CW - 32);
+          doc.text(reasonLines, ML + 27, y);
+          y += reasonLines.length * 3 + 1;
+        }
+        y += 1;
+      });
+      y += 2;
+    });
+    y += 4;
+  }
 
   // ── Summary counts ────────────────────────────────────────────────────────
   const eligible  = products.filter(p => results[p.id]?.eligible).length;
