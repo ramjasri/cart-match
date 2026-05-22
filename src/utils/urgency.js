@@ -4,6 +4,8 @@
 // Inputs: patient state (existing fields + new disease-activity fields)
 // Output: { score, level, label, color, timeline, factors } or null if undeterminable
 
+import { evaluatePathway } from "./pathways.js";
+
 export function calculateUrgency(pt) {
   let score = 0;
   const factors = [];
@@ -66,6 +68,19 @@ export function calculateUrgency(pt) {
   if (isMM && pt.priorImid && pt.priorPi && pt.priorAntiCd38 && lines >= 3) {
     score += 2;
     factors.push("Triple-class exposed MM (IMiD + PI + anti-CD38)");
+  }
+
+  // ─── Disease-specific high-risk features (from pathway evaluator) ─────────
+  const pathway = evaluatePathway(pt);
+  if (pathway?.highRisk?.length > 0) {
+    pathway.highRisk.forEach(r => {
+      // Don't double-count if pathway risk overlaps with already-counted factors
+      const already = factors.some(f => f.toLowerCase().includes(r.toLowerCase().slice(0, 12)));
+      if (!already) {
+        score += 2;
+        factors.push(`High-risk feature: ${r}`);
+      }
+    });
   }
 
   // ─── Organ function deterioration (if lab values given) ───────────────────

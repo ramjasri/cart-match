@@ -18,6 +18,7 @@ import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
 import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
 import { calculateUrgency } from "./utils/urgency.js";
+import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS } from "./utils/pathways.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
@@ -1091,6 +1092,65 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* DISEASE PATHWAY INTELLIGENCE */
+  .pathway-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .pathway-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+  }
+  .pathway-icon-bg {
+    width: 30px; height: 30px; background: #4c6b8c; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .pathway-hdr-text { flex: 1; }
+  .pathway-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .pathway-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .pathway-body { padding: 18px 20px; }
+  .pathway-section { margin-bottom: 16px; }
+  .pathway-section:last-child { margin-bottom: 0; }
+  .pathway-section-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+  .pathway-nccn {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 12.5px; color: #1a1815; padding: 6px 0 6px 12px;
+    border-left: 2px solid #4c6b8c; line-height: 1.55; margin-bottom: 6px;
+  }
+  .pathway-nccn::before {
+    content: 'NCCN'; flex-shrink: 0; font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em;
+    color: #4c6b8c; padding: 1px 5px; border: 1px solid #4c6b8c45;
+    margin-top: 1px; height: fit-content;
+  }
+  .pathway-pref {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; color: #3a352e; padding: 6px 0;
+    border-bottom: 1px solid #1a181510; line-height: 1.5;
+  }
+  .pathway-pref:last-child { border-bottom: none; }
+  .pathway-pref-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #1a1815;
+    min-width: 80px; flex-shrink: 0;
+  }
+  .pathway-caveat {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12px; color: #7a5e10; padding: 6px 0;
+    line-height: 1.5; font-style: italic;
+  }
+  .pathway-caveat::before { content: '⚠'; flex-shrink: 0; }
+
   /* URGENCY BANNER */
   .urgency-banner {
     border: 2px solid; padding: 18px 22px; margin-bottom: 20px;
@@ -1813,6 +1873,13 @@ const INIT = {
   priorImid: false, priorPi: false, priorAntiCd38: false,
   // Disease activity — drives urgency score
   diseaseTempo: "", primaryRefractory: false, bSymptoms: false, elevatedLdh: false,
+  // Disease-specific pathway factors — drive NCCN-aware logic
+  earlyRelapse: false, doubleHit: false, transformedFromIndolent: false,
+  pod24: false, flGrade3b: false, transformedToDlbcl: false,
+  btkiExposed: false, btkiRefractory: false, blastoidVariant: false, tp53Mutated: false,
+  btkiVenetoclaxExposed: false, richtersTransformation: false,
+  age25OrYounger: false, phPositive: false,
+  lenalidomideRefractory: false, extramedullaryDisease: false, highRiskCytogenetics: false,
   // Lab values — all optional
   labAlt: "", labAst: "", labCreat: "", labCrcl: "",
   labBil: "", labLvef: "", labSpo2: "",
@@ -2835,6 +2902,30 @@ export default function App() {
             </>
           )}
 
+          {/* DISEASE-SPECIFIC PATHWAY FACTORS — conditional on cancer type */}
+          {(() => {
+            const fields = getDiseaseFields(pt.cancerType);
+            if (fields.length === 0) return null;
+            return (
+              <>
+                <div className="sec-head">
+                  Disease-specific factors
+                  <span style={{ fontSize: 8.5, color: "#4c6b8c", letterSpacing: "0.1em", marginLeft: 6 }}>
+                    · NCCN-aware
+                  </span>
+                </div>
+                {fields.map(f => (
+                  <Checkbox
+                    key={f}
+                    checked={pt[f]}
+                    onChange={() => tog(f)}
+                    label={DISEASE_FIELD_LABELS[f]}
+                  />
+                ))}
+              </>
+            );
+          })()}
+
           {/* LAB VALUES */}
           <div className="sec-head" style={{ cursor: "pointer", borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}
             onClick={() => setShowLab(x => !x)}>
@@ -2928,6 +3019,65 @@ export default function App() {
                         <span className="urgency-timeline-label">Recommended timeline</span>
                         {urgency.timeline}
                       </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Disease pathway intelligence — NCCN-aware */}
+              {(() => {
+                const pathway = evaluatePathway(pt);
+                if (!pathway) return null;
+                const hasContent = pathway.nccnContext.length > 0
+                  || pathway.productPreferences.length > 0
+                  || pathway.caveats.length > 0;
+                if (!hasContent) return null;
+                return (
+                  <div className="pathway-panel">
+                    <div className="pathway-hdr">
+                      <div className="pathway-icon-bg">
+                        <Dna size={16} strokeWidth={1.6} />
+                      </div>
+                      <div className="pathway-hdr-text">
+                        <div className="pathway-hdr-title">{pathway.disease} pathway</div>
+                        <div className="pathway-hdr-sub">NCCN-aware · label-aware intelligence</div>
+                      </div>
+                    </div>
+                    <div className="pathway-body">
+                      {pathway.nccnContext.length > 0 && (
+                        <div className="pathway-section">
+                          <div className="pathway-section-head">Clinical context</div>
+                          {pathway.nccnContext.map((c, i) => (
+                            <div key={i} className="pathway-nccn">{c}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {pathway.productPreferences.length > 0 && (
+                        <div className="pathway-section">
+                          <div className="pathway-section-head">Preferred products for this presentation</div>
+                          {pathway.productPreferences.map((p, i) => {
+                            const prod = ALL_PRODUCTS.find(x => x.id === p.id);
+                            return (
+                              <div key={i} className="pathway-pref">
+                                <span className="pathway-pref-name" style={{ color: prod?.color || "#1a1815" }}>
+                                  {prod?.name || p.id}
+                                </span>
+                                <span>{p.reason}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {pathway.caveats.length > 0 && (
+                        <div className="pathway-section">
+                          <div className="pathway-section-head">Pathway caveats</div>
+                          {pathway.caveats.map((c, i) => (
+                            <div key={i} className="pathway-caveat">{c}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
