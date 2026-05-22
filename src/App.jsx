@@ -7405,7 +7405,8 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO */}
+      {/* HERO + WHO-STRIP — only on the screener landing */}
+      {view === "screener" && <>
       <section className="hero">
         <div className="hero-tag">Cell Therapy Referral Intelligence · May 2026</div>
         <h1 className="hero-h1">
@@ -7469,6 +7470,7 @@ export default function App() {
           </div>
         </div>
       </section>
+      </>}{/* end hero + who-strip — screener only */}
 
       {/* TUMOR BOARD VIEW */}
       {view === "board" && (
