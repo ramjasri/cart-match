@@ -1089,6 +1089,122 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* PRICING PAGE */
+  .pricing-view {
+    max-width: 1200px; margin: 0 auto; padding: 60px 40px 80px;
+  }
+  @media (max-width: 860px) { .pricing-view { padding: 40px 20px 60px; } }
+  .pricing-hdr { text-align: center; margin-bottom: 48px; }
+  .pricing-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 14px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .pricing-tag::before { content: ''; width: 24px; height: 1px; background: #6b645a; }
+  .pricing-tag::after { content: ''; width: 24px; height: 1px; background: #6b645a; }
+  .pricing-h1 {
+    font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .pricing-h1 em { font-style: italic; color: #b54a2c; }
+  .pricing-sub {
+    font-size: 15px; color: #6b645a; margin: 14px auto 0;
+    max-width: 580px; line-height: 1.65;
+  }
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 56px;
+  }
+  @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+  .pricing-card {
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 32px 26px;
+    display: flex; flex-direction: column; position: relative;
+  }
+  .pricing-card.featured {
+    background: #1a1815; color: #f4f1ea; transform: translateY(-8px);
+    box-shadow: 0 12px 40px -10px rgba(26,24,21,0.25);
+  }
+  @media (max-width: 860px) { .pricing-card.featured { transform: none; } }
+  .pricing-badge {
+    position: absolute; top: -11px; right: 22px;
+    background: #b54a2c; color: #f4f1ea;
+    padding: 5px 11px; font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em;
+  }
+  .pricing-tier {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 10px;
+  }
+  .featured .pricing-tier { color: #c4a661; }
+  .pricing-name {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+    margin-bottom: 14px; letter-spacing: -0.015em; line-height: 1;
+  }
+  .pricing-price {
+    font-family: 'Fraunces', serif; font-size: 40px; font-weight: 400;
+    line-height: 1; margin-bottom: 6px;
+  }
+  .pricing-price .currency {
+    font-size: 18px; vertical-align: top; margin-right: 2px; opacity: 0.6;
+    position: relative; top: 6px;
+  }
+  .pricing-per {
+    font-size: 12px; color: #6b645a; font-style: italic; margin-bottom: 18px;
+  }
+  .featured .pricing-per { color: #98908399; }
+  .pricing-best {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    padding-bottom: 16px; margin-bottom: 18px; border-bottom: 1px solid #1a181520;
+  }
+  .featured .pricing-best { color: #c4a661; border-bottom-color: #f4f1ea1f; }
+  .pricing-features {
+    list-style: none; padding: 0; margin: 0 0 24px; flex: 1;
+  }
+  .pricing-feature {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 12.5px; color: #3a352e; line-height: 1.5;
+    padding: 5px 0;
+  }
+  .featured .pricing-feature { color: #f4f1ea; }
+  .pricing-feature svg { flex-shrink: 0; margin-top: 1px; color: #5a7a4a; }
+  .featured .pricing-feature svg { color: #c4a661; }
+  .pricing-cta {
+    padding: 13px 16px; cursor: pointer; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    border: 1px solid #1a1815; background: transparent; color: #1a1815;
+    transition: all 0.12s; text-decoration: none;
+  }
+  .pricing-cta:hover { background: #1a1815; color: #f4f1ea; }
+  .featured .pricing-cta {
+    background: #b54a2c; color: #f4f1ea; border-color: #b54a2c;
+  }
+  .featured .pricing-cta:hover {
+    background: #c4a661; color: #1a1815; border-color: #c4a661;
+  }
+
+  /* FAQ */
+  .pricing-faq {
+    max-width: 720px; margin: 0 auto; padding-top: 32px;
+    border-top: 1px solid #1a181520;
+  }
+  .pricing-faq-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400;
+    text-align: center; color: #1a1815; margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+  .faq-item { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #1a181515; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500;
+    color: #1a1815; margin-bottom: 6px; letter-spacing: -0.005em;
+  }
+  .faq-a { font-size: 13px; color: #6b645a; line-height: 1.65; }
+
   /* SCREEN COUNTER BADGE */
   .screen-counter {
     font-family: 'JetBrains Mono', monospace; font-size: 10px;
@@ -1873,6 +1989,148 @@ function AccuracyModal({ onClose }) {
   );
 }
 
+// ── Pricing page ───────────────────────────────────────────────────────────
+const TIERS = [
+  {
+    id: "free",
+    tier: "Free",
+    name: "Solo Clinician",
+    price: "0",
+    per: "forever · no card required",
+    best: "For individual oncologists & trainees",
+    featured: false,
+    features: [
+      "Screen unlimited patients",
+      "All 12 FDA-approved products (CAR-T + Bispecific)",
+      "CAR-T vs Bispecific comparison",
+      "Live ClinicalTrials.gov integration",
+      "Shareable case URLs",
+      "Bridging therapy guidance",
+      "PDF eligibility reports (color + B&W)",
+      "Mobile-optimized for phone use",
+    ],
+    cta: "Start screening →",
+    action: "screener",
+  },
+  {
+    id: "institution",
+    tier: "Institution",
+    name: "Cancer Center",
+    price: "500",
+    per: "per month · 14-day free trial",
+    best: "For CAR-T programs & tumor boards",
+    featured: true,
+    features: [
+      "Everything in Free",
+      "Up to 25 named users",
+      "Shared tumor board across team",
+      "Tumor board packet PDF exports",
+      "Custom institution branding on reports",
+      "Cross-device shared case retention",
+      "Quarterly criteria update alerts",
+      "Priority email support · 1 business day SLA",
+    ],
+    cta: "Request access →",
+    action: "waitlist",
+  },
+  {
+    id: "enterprise",
+    tier: "Enterprise",
+    name: "Health System",
+    price: "2,000",
+    per: "per month · annual contract",
+    best: "For multi-site networks & systems",
+    featured: false,
+    features: [
+      "Everything in Institution",
+      "Unlimited users",
+      "SSO (SAML · Okta · Azure AD)",
+      "HIPAA Business Associate Agreement",
+      "Audit log + compliance reports",
+      "Institution-specific criteria overrides",
+      "Dedicated account manager",
+      "99.9% uptime SLA · white-glove onboarding",
+    ],
+    cta: "Contact sales →",
+    action: "waitlist",
+  },
+];
+
+const FAQS = [
+  {
+    q: "Is patient data ever stored on your servers?",
+    a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free or Institution tiers. Enterprise customers with a BAA can opt into encrypted server-side sync.",
+  },
+  {
+    q: "Can we try Institution before committing?",
+    a: "Yes — every Institution plan comes with a 14-day free trial, no credit card required upfront. You get full access including the shared tumor board, custom branding, and packet exports. Cancel anytime during the trial.",
+  },
+  {
+    q: "How quickly do you add new FDA approvals?",
+    a: "Within 30 days of approval. Criteria are reviewed against the published prescribing information and added to all tiers simultaneously. Institution and Enterprise customers receive an email notification with a change summary.",
+  },
+  {
+    q: "Do you offer a HIPAA Business Associate Agreement?",
+    a: "Yes, with Enterprise. Because no patient data leaves the browser on Free and Institution tiers, a BAA is technically not required at those levels — but Enterprise customers using server-side sync, SSO, or audit logging receive a signed BAA as standard.",
+  },
+];
+
+function PricingView({ onBackToScreener, onRequestAccess }) {
+  return (
+    <div className="pricing-view">
+      <div className="pricing-hdr">
+        <div className="pricing-tag">Pricing</div>
+        <h1 className="pricing-h1">
+          Built for <em>oncology teams</em>,<br />priced for institutions
+        </h1>
+        <p className="pricing-sub">
+          Start free for individual screening. Upgrade when your tumor board needs
+          shared workflows, custom branding, or institutional security.
+        </p>
+      </div>
+
+      <div className="pricing-grid">
+        {TIERS.map(t => (
+          <div key={t.id} className={`pricing-card${t.featured ? " featured" : ""}`}>
+            {t.featured && <div className="pricing-badge">Most popular</div>}
+            <div className="pricing-tier">{t.tier}</div>
+            <div className="pricing-name">{t.name}</div>
+            <div className="pricing-price">
+              <span className="currency">$</span>{t.price}
+            </div>
+            <div className="pricing-per">{t.per}</div>
+            <div className="pricing-best">{t.best}</div>
+            <ul className="pricing-features">
+              {t.features.map((f, i) => (
+                <li key={i} className="pricing-feature">
+                  <CheckCircle size={13} />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              className="pricing-cta"
+              onClick={t.action === "screener" ? onBackToScreener : onRequestAccess}
+            >
+              {t.cta}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="pricing-faq">
+        <div className="pricing-faq-title">Frequently asked</div>
+        {FAQS.map((f, i) => (
+          <div key={i} className="faq-item">
+            <div className="faq-q">{f.q}</div>
+            <div className="faq-a">{f.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Waitlist modal ─────────────────────────────────────────────────────────
 function WaitlistModal({ onClose }) {
   const [form, setForm] = useState({ name: "", email: "", institution: "", role: "" });
@@ -1965,7 +2223,13 @@ export default function App() {
   const [shareCopied, setShareCopied] = useState(false);
   const [caseLoaded, setCaseLoaded] = useState(false);
   const [viewMode, setViewMode] = useState("all"); // "all" | "cart" | "bispecific"
-  const [view, setView] = useState("screener"); // "screener" | "board"
+  const [view, setView] = useState(() => {
+    if (typeof window === "undefined") return "screener";
+    const p = window.location.pathname;
+    if (p === "/pricing") return "pricing";
+    if (p === "/board") return "board";
+    return "screener";
+  }); // "screener" | "board" | "pricing"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -1986,6 +2250,26 @@ export default function App() {
     try { localStorage.setItem("celltx-board", JSON.stringify(board)); }
     catch { /* storage full — ignore */ }
   }, [board]);
+
+  // Sync view → URL path (preserves hash for shared cases)
+  useEffect(() => {
+    const target = view === "pricing" ? "/pricing" : view === "board" ? "/board" : "/";
+    if (window.location.pathname !== target) {
+      window.history.pushState({}, "", target + window.location.hash);
+    }
+  }, [view]);
+
+  // Sync URL → view on back/forward
+  useEffect(() => {
+    const onPop = () => {
+      const p = window.location.pathname;
+      if (p === "/pricing") setView("pricing");
+      else if (p === "/board") setView("board");
+      else setView("screener");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const { isSignedIn, isLoaded } = useAuth();
 
@@ -2124,15 +2408,14 @@ export default function App() {
               <div className="counter-dot" />
               {screenCount.toLocaleString()} screened
             </div>
-            {/* Nav tabs — only shown when signed in */}
-            {isSignedIn && (
-              <nav className="hdr-nav">
-                <button
-                  className={`hdr-nav-btn${view === "screener" ? " active" : ""}`}
-                  onClick={() => setView("screener")}
-                >
-                  Screener
-                </button>
+            <nav className="hdr-nav">
+              <button
+                className={`hdr-nav-btn${view === "screener" ? " active" : ""}`}
+                onClick={() => setView("screener")}
+              >
+                Screener
+              </button>
+              {isSignedIn && (
                 <button
                   className={`hdr-nav-btn${view === "board" ? " active" : ""}`}
                   onClick={() => setView("board")}
@@ -2140,8 +2423,14 @@ export default function App() {
                   Tumor Board
                   {board.length > 0 && <span className="hdr-nav-count">({board.length})</span>}
                 </button>
-              </nav>
-            )}
+              )}
+              <button
+                className={`hdr-nav-btn${view === "pricing" ? " active" : ""}`}
+                onClick={() => setView("pricing")}
+              >
+                Pricing
+              </button>
+            </nav>
             <div className="hdr-auth">
               {isLoaded && (
                 isSignedIn
@@ -2187,7 +2476,15 @@ export default function App() {
         />
       )}
 
-      {view !== "board" && <>
+      {/* PRICING VIEW */}
+      {view === "pricing" && (
+        <PricingView
+          onBackToScreener={() => setView("screener")}
+          onRequestAccess={() => setShowWaitlist(true)}
+        />
+      )}
+
+      {view === "screener" && <>
 
       {/* CASE LOADED BANNER */}
       {caseLoaded && (
@@ -2514,11 +2811,11 @@ export default function App() {
         </div>
       </div>
 
-      {/* WAITLIST MODAL */}
+      </>}{/* end screener view */}
+
+      {/* MODALS — available on all views */}
       {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
       {showAccuracy && <AccuracyModal onClose={() => setShowAccuracy(false)} />}
-
-      </> /* end screener view */}
 
       {/* FOOTER */}
       <footer className="footer">
