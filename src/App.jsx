@@ -3347,11 +3347,31 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
 
           <div className="api-code">
             <span className="api-method">GET</span>
-            <span className="api-path">https://cart-match.vercel.app/api/criteria/v1.json</span>
+            <a
+              href="/api/criteria/v1.json"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="api-path"
+              style={{ color: "#f4f1ea", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationColor: "#c4a66180" }}
+            >
+              https://cart-match.vercel.app/api/criteria/v1.json
+            </a>
             <button
               className="api-copy-btn"
-              onClick={() => {
-                navigator.clipboard.writeText("https://cart-match.vercel.app/api/criteria/v1.json");
+              onClick={(e) => {
+                e.preventDefault();
+                navigator.clipboard
+                  .writeText("https://cart-match.vercel.app/api/criteria/v1.json")
+                  .then(() => {
+                    const btn = e.currentTarget;
+                    const orig = btn.textContent;
+                    btn.textContent = "✓ Copied";
+                    setTimeout(() => { btn.textContent = orig; }, 1500);
+                  })
+                  .catch(() => {
+                    // Fallback for browsers that block clipboard
+                    prompt("Copy this URL:", "https://cart-match.vercel.app/api/criteria/v1.json");
+                  });
               }}
             >
               Copy URL
