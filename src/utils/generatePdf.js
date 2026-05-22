@@ -2,6 +2,7 @@
 // Generates a "Cell Therapy Referral Report" PDF for tumor board packets
 
 import { jsPDF } from "jspdf";
+import { findAction, getPathToEligibility, getReferralSteps } from "./actions.js";
 
 const COLORS = {
   ink:     [26, 24, 21],
@@ -201,15 +202,15 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
 
     y += 10;
 
-    // Criteria items
-    const allItems = [
-      ...r.blocks.map(b => ({ text: b, type: "block" })),
-      ...r.warnings.map(w => ({ text: w, type: "warn" })),
-      ...r.passes.map(p => ({ text: p, type: "pass" })),
+    // Criteria items — blocks + warnings with inline actions, then passes
+    const itemsWithActions = [
+      ...r.blocks.map(b => ({ text: b, type: "block", action: findAction(b, "block") })),
+      ...r.warnings.map(w => ({ text: w, type: "warn",  action: findAction(w, "warning") })),
+      ...r.passes.map(p => ({ text: p, type: "pass",  action: null })),
     ];
 
-    allItems.forEach(({ text, type }) => {
-      if (y > 270) { doc.addPage(); y = 20; }
+    itemsWithActions.forEach(({ text, type, action }) => {
+      if (y > 268) { doc.addPage(); y = 20; }
       const color = type === "block" ? COLORS.red : type === "warn" ? COLORS.amber : COLORS.green;
       const sym = type === "block" ? "✗" : type === "warn" ? "!" : "✓";
       doc.setFontSize(7.5);
@@ -221,7 +222,57 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
       const lines = doc.splitTextToSize(text, CW - 16);
       doc.text(lines, ML + 10, y);
       y += lines.length * 4 + 1;
+
+      // Inline action beneath the criterion (only for blocks/warnings)
+      if (action) {
+        if (y > 268) { doc.addPage(); y = 20; }
+        doc.setFontSize(6.8);
+        doc.setFont("helvetica", "bold");
+        setColor(doc, COLORS.amber);
+        doc.text("ACTION", ML + 12, y);
+        doc.setFont("helvetica", "italic");
+        setColor(doc, COLORS.ink3);
+        const aLines = doc.splitTextToSize(action, CW - 36);
+        doc.text(aLines, ML + 26, y);
+        y += aLines.length * 3.5 + 2;
+      }
     });
+
+    // Consolidated path-to-eligibility or referral steps
+    const path = !r.eligible ? getPathToEligibility(r) : [];
+    const refs = r.eligible ? getReferralSteps(product) : [];
+    const summarySteps = path.length > 0 ? path : refs;
+    const summaryLabel = path.length > 0 ? "PATH TO POTENTIAL ELIGIBILITY" : "RECOMMENDED REFERRAL STEPS";
+    const summaryColor = path.length > 0 ? COLORS.amber : COLORS.green;
+
+    if (summarySteps.length > 0) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      y += 2;
+      setFill(doc, [summaryColor[0], summaryColor[1], summaryColor[2], 0.08]);
+      const blockHeight = 6 + summarySteps.length * 4 + 2;
+      doc.rect(ML, y, CW, blockHeight, "F");
+      setFill(doc, summaryColor);
+      doc.rect(ML, y, 2, blockHeight, "F");
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      setColor(doc, summaryColor);
+      doc.text(summaryLabel, ML + 5, y + 4);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      setColor(doc, COLORS.ink);
+      summarySteps.forEach(s => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFontSize(7);
+        setColor(doc, summaryColor);
+        doc.text("→", ML + 6, y);
+        setColor(doc, COLORS.ink);
+        const sLines = doc.splitTextToSize(s, CW - 16);
+        doc.text(sLines, ML + 11, y);
+        y += sLines.length * 4;
+      });
+      y += 3;
+    }
 
     y += 4;
     rule(doc, ML, y, CW, COLORS.paper2);

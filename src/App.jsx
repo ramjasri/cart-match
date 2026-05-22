@@ -16,6 +16,7 @@ function useAuth() {
 }
 import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
+import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
@@ -1089,6 +1090,76 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* ACTION-AWARE RESULTS */
+  .result-section { margin-bottom: 18px; }
+  .result-section-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    padding-bottom: 8px; margin-bottom: 10px;
+    border-bottom: 1px solid currentColor;
+  }
+  .result-section-head.blocked { color: #b54a2c; border-bottom-color: #b54a2c30; }
+  .result-section-head.review  { color: #7a5e10; border-bottom-color: #c4a66135; }
+  .result-section-head.passed  { color: #5a7a4a; border-bottom-color: #5a7a4a30; }
+
+  .crit-block, .crit-warn { margin-bottom: 10px; }
+  .crit-text {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: #1a1815; line-height: 1.45;
+  }
+  .crit-text svg { flex-shrink: 0; margin-top: 1.5px; }
+  .crit-action {
+    font-size: 11.5px; color: #3a352e; line-height: 1.55;
+    margin-left: 20px; margin-top: 5px;
+    padding: 7px 10px; background: #c4a66110;
+    border-left: 2px solid #c4a66180;
+  }
+  .crit-action::before {
+    content: '→ '; color: #c4a661; font-weight: 600; margin-right: 2px;
+  }
+  .crit-action strong {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #7a5e10;
+    display: block; margin-bottom: 3px;
+  }
+
+  /* Path to eligibility / referral steps panels */
+  .next-steps-panel {
+    margin: 14px 0 16px;
+    padding: 14px 16px;
+    background: #c4a66110; border-left: 3px solid #c4a661;
+  }
+  .next-steps-panel.referral {
+    background: #5a7a4a10; border-left-color: #5a7a4a;
+  }
+  .next-steps-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    margin-bottom: 10px; color: #7a5e10;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .next-steps-panel.referral .next-steps-head { color: #4a6a3a; }
+  .next-step {
+    font-size: 12.5px; color: #1a1815; padding: 3px 0 3px 18px;
+    position: relative; line-height: 1.55;
+  }
+  .next-step::before {
+    content: '→'; position: absolute; left: 0; color: #c4a661; font-weight: 600;
+  }
+  .next-steps-panel.referral .next-step::before { color: #5a7a4a; }
+
+  /* Passes shown as compact 2-column grid */
+  .passes-grid {
+    columns: 2; column-gap: 18px; margin-top: 4px;
+  }
+  @media (max-width: 700px) { .passes-grid { columns: 1; } }
+  .pass-item {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 12px; color: #3a352e; line-height: 1.45;
+    padding: 3px 0; break-inside: avoid;
+  }
+  .pass-item svg { flex-shrink: 0; margin-top: 1px; }
+
   /* PRICING PAGE */
   .pricing-view {
     max-width: 1200px; margin: 0 auto; padding: 60px 40px 80px;
@@ -1509,34 +1580,101 @@ function ProductCard({ product, result }) {
 
       {open && (
         <div className="card-body">
-          {result && (
-            <div className="body-grid">
-              {result.blocks.length > 0 && (
-                <div>
-                  <div className="body-section-head" style={{ color: "#b54a2c" }}>Blocking ({result.blocks.length})</div>
-                  {result.blocks.map((b, i) => (
-                    <div key={i} className="crit-item"><XCircle size={12} color="#b54a2c" />{b}</div>
-                  ))}
-                </div>
-              )}
-              {result.warnings.length > 0 && (
-                <div>
-                  <div className="body-section-head" style={{ color: "#7a5e10" }}>Review ({result.warnings.length})</div>
-                  {result.warnings.map((w, i) => (
-                    <div key={i} className="crit-item"><AlertTriangle size={12} color="#c4a661" />{w}</div>
-                  ))}
-                </div>
-              )}
-              {result.passes.length > 0 && (
-                <div>
-                  <div className="body-section-head" style={{ color: "#5a7a4a" }}>Passed ({result.passes.length})</div>
-                  {result.passes.map((p, i) => (
-                    <div key={i} className="crit-item"><CheckCircle size={12} color="#5a7a4a" />{p}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {result && (() => {
+            const pathSteps = !result.eligible ? getPathToEligibility(result) : [];
+            const referralSteps = result.eligible ? getReferralSteps(product) : [];
+            return (
+              <>
+                {/* Blockers + per-item actions */}
+                {result.blocks.length > 0 && (
+                  <div className="result-section">
+                    <div className="result-section-head blocked">
+                      Not currently eligible — {result.blocks.length} blocker{result.blocks.length === 1 ? "" : "s"}
+                    </div>
+                    {result.blocks.map((b, i) => {
+                      const action = findAction(b, "block");
+                      return (
+                        <div key={i} className="crit-block">
+                          <div className="crit-text"><XCircle size={13} color="#b54a2c" />{b}</div>
+                          {action && (
+                            <div className="crit-action">
+                              <strong>Action</strong>
+                              {action}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Warnings (missing data / soft issues) + actions */}
+                {result.warnings.length > 0 && (
+                  <div className="result-section">
+                    <div className="result-section-head review">
+                      Action needed before referral — {result.warnings.length} item{result.warnings.length === 1 ? "" : "s"}
+                    </div>
+                    {result.warnings.map((w, i) => {
+                      const action = findAction(w, "warning");
+                      return (
+                        <div key={i} className="crit-warn">
+                          <div className="crit-text"><AlertTriangle size={13} color="#c4a661" />{w}</div>
+                          {action && (
+                            <div className="crit-action">
+                              <strong>Action</strong>
+                              {action}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Path to eligibility (for ineligible) */}
+                {pathSteps.length > 0 && (
+                  <div className="next-steps-panel">
+                    <div className="next-steps-head">
+                      <AlertTriangle size={11} />
+                      Path to potential eligibility
+                    </div>
+                    {pathSteps.map((s, i) => (
+                      <div key={i} className="next-step">{s}</div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Referral steps (for eligible) */}
+                {referralSteps.length > 0 && (
+                  <div className="next-steps-panel referral">
+                    <div className="next-steps-head">
+                      <CheckCircle size={11} />
+                      Recommended referral steps
+                    </div>
+                    {referralSteps.map((s, i) => (
+                      <div key={i} className="next-step">{s}</div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Passes — compact 2-column */}
+                {result.passes.length > 0 && (
+                  <div className="result-section">
+                    <div className="result-section-head passed">
+                      Meets criteria ({result.passes.length})
+                    </div>
+                    <div className="passes-grid">
+                      {result.passes.map((p, i) => (
+                        <div key={i} className="pass-item">
+                          <CheckCircle size={11} color="#5a7a4a" />{p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           <div className="body-grid">
             <div>
