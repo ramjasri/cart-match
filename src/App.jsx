@@ -2,7 +2,7 @@
 // 6 FDA-approved products: Yescarta, Kymriah, Breyanzi, Tecartus, Abecma, Carvykti
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText, Link2, Check, Zap, BarChart3 } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ExternalLink, Dna, X, Download, FileText, Link2, Check, Zap, BarChart3, Flame, Clock } from "lucide-react";
 import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 
 // Safe hook — returns sensible defaults if Clerk isn't configured
@@ -17,6 +17,7 @@ function useAuth() {
 import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
 import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
+import { calculateUrgency } from "./utils/urgency.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 
 // Replace with your Formspree endpoint after signing up at formspree.io
@@ -1090,6 +1091,74 @@ const CSS = `
   }
   @media (max-width: 860px) { .case-banner { padding: 12px 20px 0; } }
 
+  /* URGENCY BANNER */
+  .urgency-banner {
+    border: 2px solid; padding: 18px 22px; margin-bottom: 20px;
+    display: flex; align-items: flex-start; gap: 18px;
+  }
+  .urgency-banner.high   { border-color: #b54a2c; background: #b54a2c0c; }
+  .urgency-banner.medium { border-color: #c4a661; background: #c4a66114; }
+  .urgency-banner.low    { border-color: #5a7a4a; background: #5a7a4a0d; }
+
+  .urgency-icon-wrap {
+    width: 52px; height: 52px; flex-shrink: 0;
+    display: grid; place-items: center;
+    border: 2px solid currentColor;
+  }
+  .urgency-banner.high   .urgency-icon-wrap { color: #b54a2c; }
+  .urgency-banner.medium .urgency-icon-wrap { color: #c4a661; }
+  .urgency-banner.low    .urgency-icon-wrap { color: #5a7a4a; }
+
+  .urgency-content { flex: 1; min-width: 0; }
+  .urgency-level {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    margin-bottom: 3px; font-weight: 700;
+  }
+  .urgency-banner.high   .urgency-level { color: #b54a2c; }
+  .urgency-banner.medium .urgency-level { color: #7a5e10; }
+  .urgency-banner.low    .urgency-level { color: #4a6a3a; }
+
+  .urgency-title {
+    font-family: 'Fraunces', serif; font-size: 21px; font-weight: 500;
+    color: #1a1815; line-height: 1.2; margin-bottom: 12px;
+    letter-spacing: -0.012em;
+  }
+  .urgency-factors {
+    list-style: none; padding: 0; margin: 0 0 12px;
+  }
+  .urgency-factor {
+    font-size: 12.5px; color: #3a352e; padding: 3px 0 3px 14px;
+    line-height: 1.5; position: relative;
+  }
+  .urgency-factor::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+  }
+  .urgency-banner.high   .urgency-factor::before { color: #b54a2c; }
+  .urgency-banner.medium .urgency-factor::before { color: #c4a661; }
+  .urgency-banner.low    .urgency-factor::before { color: #5a7a4a; }
+
+  .urgency-timeline {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding-top: 12px; line-height: 1.55;
+    color: #1a1815; font-weight: 600;
+    border-top: 1px solid;
+  }
+  .urgency-banner.high   .urgency-timeline { border-top-color: #b54a2c30; }
+  .urgency-banner.medium .urgency-timeline { border-top-color: #c4a66135; }
+  .urgency-banner.low    .urgency-timeline { border-top-color: #5a7a4a30; }
+  .urgency-timeline-label {
+    display: block; font-size: 9px; letter-spacing: 0.2em;
+    margin-bottom: 4px; opacity: 0.6;
+  }
+
+  @media (max-width: 600px) {
+    .urgency-banner { flex-direction: column; gap: 12px; }
+    .urgency-icon-wrap { width: 40px; height: 40px; }
+    .urgency-title { font-size: 18px; }
+  }
+
   /* ACTION-AWARE RESULTS */
   .result-section { margin-bottom: 18px; }
   .result-section-head {
@@ -1742,6 +1811,8 @@ const INIT = {
   activeCns: false, activeAutoimmune: false,
   alloSct: false, alloSctMonths: "",
   priorImid: false, priorPi: false, priorAntiCd38: false,
+  // Disease activity — drives urgency score
+  diseaseTempo: "", primaryRefractory: false, bSymptoms: false, elevatedLdh: false,
   // Lab values — all optional
   labAlt: "", labAst: "", labCreat: "", labCrcl: "",
   labBil: "", labLvef: "", labSpo2: "",
@@ -2739,6 +2810,31 @@ export default function App() {
             </>
           )}
 
+          {/* DISEASE ACTIVITY — drives urgency score */}
+          <div className="sec-head">Disease activity <span style={{ fontSize: 8.5, color: "#98908380", letterSpacing: "0.1em" }}>· drives urgency</span></div>
+
+          <div className="field">
+            <label className="lbl">Disease tempo</label>
+            <RadioGroup value={pt.diseaseTempo}
+              options={[
+                { value: "indolent", label: "Indolent" },
+                { value: "stable", label: "Stable" },
+                { value: "rapid", label: "Rapid" },
+              ]}
+              onChange={v => set("diseaseTempo", v)} />
+          </div>
+
+          <Checkbox checked={pt.primaryRefractory} onChange={() => tog("primaryRefractory")}
+            label="Primary refractory disease (no response to 1L)" />
+          {isLymphoma && (
+            <>
+              <Checkbox checked={pt.bSymptoms} onChange={() => tog("bSymptoms")}
+                label="B symptoms (fever, night sweats, weight loss)" />
+              <Checkbox checked={pt.elevatedLdh} onChange={() => tog("elevatedLdh")}
+                label="Elevated LDH" />
+            </>
+          )}
+
           {/* LAB VALUES */}
           <div className="sec-head" style={{ cursor: "pointer", borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}
             onClick={() => setShowLab(x => !x)}>
@@ -2810,6 +2906,33 @@ export default function App() {
             </div>
           ) : (
             <>
+              {/* Urgency banner — drives referral triage */}
+              {(() => {
+                const urgency = calculateUrgency(pt);
+                if (!urgency) return null;
+                const IconComp = urgency.level === "high" ? Flame : urgency.level === "medium" ? Clock : Clock;
+                return (
+                  <div className={`urgency-banner ${urgency.level}`}>
+                    <div className="urgency-icon-wrap">
+                      <IconComp size={24} strokeWidth={1.8} />
+                    </div>
+                    <div className="urgency-content">
+                      <div className="urgency-level">{urgency.label}</div>
+                      <div className="urgency-title">{urgency.sub}</div>
+                      {urgency.factors.length > 0 && (
+                        <ul className="urgency-factors">
+                          {urgency.factors.map((f, i) => <li key={i} className="urgency-factor">{f}</li>)}
+                        </ul>
+                      )}
+                      <div className="urgency-timeline">
+                        <span className="urgency-timeline-label">Recommended timeline</span>
+                        {urgency.timeline}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Comparison summary */}
               <div className="compare-panel">
                 <div className="compare-col">

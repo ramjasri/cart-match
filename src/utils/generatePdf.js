@@ -3,6 +3,7 @@
 
 import { jsPDF } from "jspdf";
 import { findAction, getPathToEligibility, getReferralSteps } from "./actions.js";
+import { calculateUrgency } from "./urgency.js";
 
 const COLORS = {
   ink:     [26, 24, 21],
@@ -76,6 +77,60 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
   doc.text(`Generated ${dateStr} · CellTx Match · cart-match.vercel.app`, ML, 33);
 
   y = 46;
+
+  // ── Urgency banner ────────────────────────────────────────────────────────
+  const urgency = calculateUrgency(patient);
+  if (urgency) {
+    const uRgb = grayscale
+      ? (urgency.level === "high" ? [50, 50, 50] : urgency.level === "medium" ? [110, 110, 110] : [60, 60, 60])
+      : (urgency.level === "high" ? COLORS.red : urgency.level === "medium" ? COLORS.amber : COLORS.green);
+
+    // Compute banner height based on factors count
+    const factorsCount = urgency.factors.length;
+    const bannerH = 22 + factorsCount * 3.5 + 8;
+
+    setDraw(doc, uRgb);
+    doc.setLineWidth(0.8);
+    doc.rect(ML, y, CW, bannerH, "D");
+    setFill(doc, [uRgb[0], uRgb[1], uRgb[2], 0.06]);
+    doc.rect(ML, y, CW, bannerH, "F");
+
+    // Level label
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    setColor(doc, uRgb);
+    doc.text(urgency.label, ML + 4, y + 6);
+
+    // Subhead
+    doc.setFontSize(11);
+    setColor(doc, COLORS.ink);
+    doc.text(urgency.sub, ML + 4, y + 12);
+
+    // Factors
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    setColor(doc, COLORS.ink3);
+    urgency.factors.forEach((f, i) => {
+      doc.text(`· ${f}`, ML + 6, y + 17 + i * 3.5);
+    });
+
+    // Timeline
+    const tY = y + 19 + factorsCount * 3.5;
+    setDraw(doc, [uRgb[0], uRgb[1], uRgb[2]]);
+    doc.setLineWidth(0.2);
+    doc.line(ML + 4, tY, ML + CW - 4, tY);
+    doc.setFontSize(6.8);
+    doc.setFont("helvetica", "bold");
+    setColor(doc, COLORS.ink3);
+    doc.text("RECOMMENDED TIMELINE", ML + 4, tY + 3);
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    setColor(doc, COLORS.ink);
+    const tLines = doc.splitTextToSize(urgency.timeline, CW - 8);
+    doc.text(tLines, ML + 4, tY + 6.5);
+
+    y += bannerH + 8;
+  }
 
   // ── Patient summary ───────────────────────────────────────────────────────
   doc.setFontSize(8);
