@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { name, email, institution, role } = req.body || {};
+  const { name, email, institution, role, volume, workflow } = req.body || {};
   if (!name || !email || !institution) {
     return res.status(400).json({ error: "name, email, institution required" });
   }
@@ -51,6 +51,10 @@ export default async function handler(req, res) {
       `Email:        ${email}`,
       `Institution:  ${institution}`,
       `Role:         ${role || "(not provided)"}`,
+      `Volume:       ${volume || "(not provided)"}`,
+      ``,
+      `Workflow pain point:`,
+      `${workflow || "(none provided)"}`,
       ``,
       `Reply directly to this email to respond to the prospect.`,
     ].join("\n"),

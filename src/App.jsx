@@ -648,8 +648,60 @@ const CSS = `
 
   /* HERO */
   .hero {
-    max-width: 1200px; margin: 0 auto; padding: 52px 40px 40px;
+    max-width: 1200px; margin: 0 auto; padding: 52px 40px 36px;
     border-bottom: 1px solid #1a181520;
+  }
+  /* Hero CTA row */
+  .hero-cta-row {
+    display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    transition: all 0.12s; text-decoration: none; border: 1px solid;
+  }
+  .hero-cta.primary {
+    background: #1a1815; color: #f4f1ea; border-color: #1a1815;
+  }
+  .hero-cta.primary:hover {
+    background: #b54a2c; border-color: #b54a2c;
+  }
+  .hero-cta.secondary {
+    background: transparent; color: #1a1815; border-color: #1a181550;
+  }
+  .hero-cta.secondary:hover {
+    background: #1a181508; border-color: #1a1815;
+  }
+
+  /* "Who this is for" strip */
+  .who-strip {
+    max-width: 1200px; margin: 0 auto; padding: 24px 40px;
+    border-bottom: 1px solid #1a181520;
+  }
+  @media (max-width: 860px) { .who-strip { padding: 20px 20px; } }
+  .who-strip-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #6b645a;
+    margin-bottom: 12px;
+  }
+  .who-strip-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  @media (max-width: 700px) { .who-strip-grid { grid-template-columns: repeat(2, 1fr); } }
+  .who-item {
+    border-left: 2px solid #b54a2c;
+    padding: 4px 0 4px 12px;
+  }
+  .who-item-label {
+    font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500;
+    color: #1a1815; line-height: 1.3; letter-spacing: -0.005em;
+    margin-bottom: 2px;
+  }
+  .who-item-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #6b645a;
   }
   .hero-tag {
     font-family: 'JetBrains Mono', monospace; font-size: 10px;
@@ -2091,6 +2143,70 @@ const CSS = `
     background: #c4a661; color: #1a1815; border-color: #c4a661;
   }
 
+  /* PILOT PROGRAM */
+  .pilot-panel {
+    border: 2px solid #1a1815; background: #1a1815; color: #f4f1ea;
+    padding: 32px 36px; margin: 0 0 24px;
+    display: grid; grid-template-columns: 1fr 320px; gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 860px) { .pilot-panel { grid-template-columns: 1fr; gap: 22px; } }
+
+  .pilot-text {}
+  .pilot-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    margin-bottom: 12px;
+  }
+  .pilot-title {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+    color: #f4f1ea; line-height: 1.15; letter-spacing: -0.018em;
+    margin: 0 0 14px;
+  }
+  .pilot-title em { font-style: italic; color: #c4a661; }
+  .pilot-desc {
+    font-size: 14px; color: #f4f1eacc; line-height: 1.65; margin: 0 0 18px;
+  }
+  .pilot-included {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px;
+  }
+  @media (max-width: 600px) { .pilot-included { grid-template-columns: 1fr; } }
+  .pilot-included li {
+    font-size: 13px; color: #f4f1ea; padding: 4px 0 4px 18px;
+    position: relative; line-height: 1.55;
+  }
+  .pilot-included li::before {
+    content: '✓'; position: absolute; left: 0; color: #c4a661;
+    font-weight: 700;
+  }
+
+  .pilot-cta-block {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .pilot-price {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #c4a661; line-height: 1; margin-bottom: 4px;
+  }
+  .pilot-price-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #f4f1ea88;
+    margin-bottom: 8px;
+  }
+  .pilot-cta {
+    padding: 14px 18px; cursor: pointer; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    background: #b54a2c; color: #f4f1ea; border: none;
+    transition: background 0.12s;
+  }
+  .pilot-cta:hover { background: #c4a661; color: #1a1815; }
+  .pilot-cta.secondary {
+    background: transparent; color: #c4a661;
+    border: 1px solid #c4a66150;
+  }
+  .pilot-cta.secondary:hover { background: #c4a66115; }
+
   /* ALTERNATIVE / VOLUME PRICING */
   .pricing-alt-panel {
     border: 1px solid #1a1815; background: #ebe6dc;
@@ -2652,7 +2768,7 @@ const STATUS_OPTIONS = [
   { value: "not-indicated", label: "Not indicated",        dot: "#b54a2c" },
 ];
 
-function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport }) {
+function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo }) {
   const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
@@ -2690,9 +2806,20 @@ function TumorBoardView({ board, onUpdateCase, onRemoveCase, onLoadCase, onGoToS
             No cases in the tumor board yet.<br />
             Screen a patient and click <strong>Add to tumor board</strong> to queue them here.
           </p>
-          <button className="board-empty-cta" onClick={onGoToScreener}>
-            Start screening →
-          </button>
+          <div style={{ marginTop: 18, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="board-empty-cta" onClick={onGoToScreener}>
+              Start screening →
+            </button>
+            {onRequestDemo && (
+              <button
+                className="board-empty-cta"
+                style={{ background: "transparent", color: "#1a1815", border: "1px solid #1a181550" }}
+                onClick={onRequestDemo}
+              >
+                See shared workflow demo →
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         board.map(c => {
@@ -3956,7 +4083,7 @@ const TIERS = [
       "Audit log (90-day retention)",
       "Priority support · 1 business day SLA",
     ],
-    cta: "Request access →",
+    cta: "Request institutional demo →",
     action: "waitlist",
   },
   {
@@ -3977,7 +4104,7 @@ const TIERS = [
       "Dedicated account manager",
       "99.9% uptime SLA · white-glove onboarding",
     ],
-    cta: "Contact sales →",
+    cta: "Discuss deployment →",
     action: "waitlist",
   },
 ];
@@ -3986,6 +4113,10 @@ const FAQS = [
   {
     q: "Is patient data ever stored on your servers?",
     a: "No. Cases live entirely in your browser (localStorage) and shareable URLs are encoded client-side as base64 in the URL hash. We never see patient data on the Free, Practice, or Institution tiers. Enterprise customers with a BAA can opt into encrypted server-side sync.",
+  },
+  {
+    q: "What's included in the 3-month pilot program?",
+    a: "A scoped, low-risk evaluation: a shared tumor board configured for your team, referral workflows aligned to your institutional protocols, audit-ready PDF report exports, a 60-minute onboarding session, a clinical content briefing covering the most recent FDA approvals relevant to your patient mix, custom institution branding, and a direct Slack/email channel to the clinical content team. Pricing depends on institution size — typically $5–15K all-in for 3 months. If you continue to a full Institution or Enterprise contract afterward, the pilot fee is credited toward your first year.",
   },
   {
     q: "Is there a discount for academic medical centers or safety-net hospitals?",
@@ -4068,6 +4199,52 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
         ))}
       </div>
 
+      {/* Pilot program — low-friction institutional evaluation */}
+      <div className="pilot-panel">
+        <div className="pilot-text">
+          <div className="pilot-tag">Pilot program · For institutions</div>
+          <h3 className="pilot-title">
+            Evaluate the platform at <em>your institution</em> with no procurement risk.
+          </h3>
+          <p className="pilot-desc">
+            A 3-month institutional pilot designed for cancer centers, CAR-T programs, and
+            referral teams that want to validate operational impact before signing a contract.
+            Fixed scope. Real outcomes. Then decide.
+          </p>
+          <ul className="pilot-included">
+            <li>Shared tumor board for your team</li>
+            <li>Referral workflows configured to your protocols</li>
+            <li>Audit-ready PDF report exports</li>
+            <li>Onboarding session + clinical content briefing</li>
+            <li>Custom institution branding</li>
+            <li>Direct line to the clinical content team</li>
+          </ul>
+        </div>
+
+        <div className="pilot-cta-block">
+          <div className="pilot-price">3 months</div>
+          <div className="pilot-price-sub">Fixed-scope · documented outcomes</div>
+          <button
+            className="pilot-cta"
+            onClick={() => {
+              trackPricingCta("pilot-program");
+              onRequestAccess();
+            }}
+          >
+            Request pilot inquiry →
+          </button>
+          <button
+            className="pilot-cta secondary"
+            onClick={() => {
+              trackPricingCta("workflow-review");
+              onRequestAccess();
+            }}
+          >
+            Schedule workflow review →
+          </button>
+        </div>
+      </div>
+
       {/* Alternative / volume pricing — for non-seat-based buyers */}
       <div className="pricing-alt-panel">
         <div className="pricing-alt-head">
@@ -4124,7 +4301,10 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
 
 // ── Waitlist modal ─────────────────────────────────────────────────────────
 function WaitlistModal({ onClose }) {
-  const [form, setForm] = useState({ name: "", email: "", institution: "", role: "" });
+  const [form, setForm] = useState({
+    name: "", email: "", institution: "", role: "",
+    volume: "", workflow: "",
+  });
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
 
   const setF = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -4204,8 +4384,35 @@ function WaitlistModal({ onClose }) {
               </div>
               <div className="modal-field">
                 <label className="modal-lbl">Role</label>
-                <input className="modal-inp" type="text" placeholder="Oncologist / Pharmacist / APP"
+                <input className="modal-inp" type="text" placeholder="Coordinator / Lymphoma service lead / BMT admin / Oncologist"
                   value={form.role} onChange={e => setF("role", e.target.value)} />
+              </div>
+              <div className="modal-field">
+                <label className="modal-lbl">Patient volume — referred/screened per month</label>
+                <select
+                  className="modal-inp"
+                  value={form.volume}
+                  onChange={e => setF("volume", e.target.value)}
+                  style={{ appearance: "none", paddingRight: 30 }}
+                >
+                  <option value="">Select range…</option>
+                  <option value="1-5">1–5 patients / month</option>
+                  <option value="5-20">5–20 patients / month</option>
+                  <option value="20-50">20–50 patients / month</option>
+                  <option value="50+">50+ patients / month</option>
+                  <option value="n/a">Not applicable / pre-program</option>
+                </select>
+              </div>
+              <div className="modal-field">
+                <label className="modal-lbl">Current workflow pain point (optional)</label>
+                <textarea
+                  className="modal-inp"
+                  rows={2}
+                  placeholder="What slows your referral process today?"
+                  value={form.workflow}
+                  onChange={e => setF("workflow", e.target.value)}
+                  style={{ resize: "vertical", minHeight: 50, fontFamily: "'Inter Tight', sans-serif" }}
+                />
               </div>
               {status === "error" && (
                 <p style={{ fontSize: 12, color: "#b54a2c", marginBottom: 8 }}>
@@ -4507,6 +4714,51 @@ export default function App() {
             </span>
           ))}
         </div>
+
+        {/* Primary + secondary CTAs — institutional positioning */}
+        <div className="hero-cta-row">
+          <button
+            className="hero-cta primary"
+            onClick={() => {
+              trackPricingCta("hero-institutional");
+              setShowWaitlist(true);
+            }}
+          >
+            Request institutional access →
+          </button>
+          <button
+            className="hero-cta secondary"
+            onClick={() => {
+              const formEl = document.querySelector(".form-panel");
+              if (formEl) formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          >
+            Start free analysis ↓
+          </button>
+        </div>
+      </section>
+
+      {/* WHO THIS IS FOR */}
+      <section className="who-strip">
+        <div className="who-strip-head">Built for</div>
+        <div className="who-strip-grid">
+          <div className="who-item">
+            <div className="who-item-label">Community oncology</div>
+            <div className="who-item-sub">Decide when to refer · early</div>
+          </div>
+          <div className="who-item">
+            <div className="who-item-label">CAR-T referral teams</div>
+            <div className="who-item-sub">Eligibility · coordination</div>
+          </div>
+          <div className="who-item">
+            <div className="who-item-label">Tumor boards</div>
+            <div className="who-item-sub">Shared workflow · packet PDF</div>
+          </div>
+          <div className="who-item">
+            <div className="who-item-label">Transplant programs</div>
+            <div className="who-item-sub">Sequencing · bridging plans</div>
+          </div>
+        </div>
       </section>
 
       {/* TUMOR BOARD VIEW */}
@@ -4518,6 +4770,7 @@ export default function App() {
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
           onExport={() => { generateBoardPdf(board); trackBoardPacketExport(board.length); }}
+          onRequestDemo={() => { trackPricingCta("board-workflow-demo"); setShowWaitlist(true); }}
         />
       )}
 
