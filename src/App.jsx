@@ -44,6 +44,10 @@ import {
   daysFromNow, relativeDateLabel, todayISO,
   computeTimelineInsights,
 } from "./utils/timeline.js";
+import {
+  computePendingItems, groupByUrgency, summarizeOps,
+  filterByAssignee, uniqueAssignees, URGENCY_META,
+} from "./utils/operations.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -2802,6 +2806,179 @@ const CSS = `
   }
   .board-stat.active .board-stat-label { color: #c4a661; }
 
+  /* OPERATIONS DASHBOARD — /today */
+  .ops-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .ops-view { padding: 36px 20px 60px; } }
+
+  .ops-hero { margin-bottom: 28px; }
+  .ops-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #b54a2c;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .ops-tag::before { content: ''; width: 24px; height: 1px; background: #b54a2c; }
+  .ops-h1 {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.022em; margin: 0;
+  }
+  .ops-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    margin-top: 10px;
+  }
+
+  /* Counts row */
+  .ops-counts {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 2px solid #1a1815; margin-bottom: 24px;
+  }
+  @media (max-width: 700px) { .ops-counts { grid-template-columns: repeat(2, 1fr); } }
+  .ops-count {
+    padding: 18px 22px; border-right: 1px solid #1a181530;
+  }
+  .ops-count:last-child { border-right: none; }
+  @media (max-width: 700px) {
+    .ops-count:nth-child(2n) { border-right: none; }
+    .ops-count:nth-child(-n+2) { border-bottom: 1px solid #1a181530; }
+  }
+  .ops-count.overdue { border-left: 4px solid #b54a2c; padding-left: 18px; }
+  .ops-count.due_today { border-left: 4px solid #c4a661; padding-left: 18px; }
+  .ops-count.due_this_week { border-left: 4px solid #4c6b8c; padding-left: 18px; }
+  .ops-count.escalated { border-left: 4px solid #1a1815; padding-left: 18px; background: #b54a2c08; }
+  .ops-count-num {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+    line-height: 1; color: #1a1815;
+  }
+  .ops-count.overdue .ops-count-num { color: #b54a2c; }
+  .ops-count.due_today .ops-count-num { color: #7a5e10; }
+  .ops-count.escalated .ops-count-num { color: #b54a2c; }
+  .ops-count-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #6b645a;
+    margin-top: 6px; line-height: 1.4;
+  }
+
+  /* Filter bar */
+  .ops-filters {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .ops-filter-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+  }
+  .ops-filter-select {
+    padding: 7px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #1a181540; background: #f4f1ea; color: #1a1815;
+    cursor: pointer; appearance: none;
+  }
+
+  /* Section */
+  .ops-section { margin-bottom: 24px; }
+  .ops-section-hdr {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 2px solid;
+  }
+  .ops-section-hdr.overdue { border-bottom-color: #b54a2c; }
+  .ops-section-hdr.due_today { border-bottom-color: #c4a661; }
+  .ops-section-hdr.due_this_week { border-bottom-color: #4c6b8c; }
+  .ops-section-hdr.escalated { border-bottom-color: #1a1815; }
+  .ops-section-title {
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em; margin: 0; flex: 1;
+  }
+  .ops-section-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: #6b645a; font-weight: 700;
+  }
+
+  /* Item row */
+  .ops-item {
+    display: grid; grid-template-columns: 28px 1fr auto; gap: 12px;
+    align-items: start; padding: 12px 14px; background: #f4f1ea;
+    border: 1px solid #1a181520; border-left: 3px solid;
+    margin-bottom: 6px;
+  }
+  .ops-item.overdue { border-left-color: #b54a2c; }
+  .ops-item.due_today { border-left-color: #c4a661; background: #c4a66108; }
+  .ops-item.due_this_week { border-left-color: #4c6b8c; }
+  .ops-item.escalated { border-left-color: #b54a2c; background: #b54a2c08; }
+  .ops-item-icon { font-size: 18px; line-height: 1.2; padding-top: 2px; }
+  .ops-item-body {}
+  .ops-item-label {
+    font-size: 14px; color: #1a1815; line-height: 1.45;
+    font-weight: 500;
+  }
+  .ops-item-case {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; margin-top: 4px;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .ops-item-case strong {
+    color: #1a1815; font-family: 'Fraunces', serif; font-size: 13px;
+    font-weight: 500;
+  }
+  .ops-assigned-pill {
+    background: #4c6b8c20; color: #4c6b8c; padding: 2px 7px;
+    font-size: 9px; letter-spacing: 0.1em;
+  }
+  .ops-item-actions {
+    display: flex; gap: 5px; flex-shrink: 0;
+  }
+  .ops-item-btn {
+    padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #1a181540; background: transparent; color: #1a1815;
+    cursor: pointer; white-space: nowrap;
+  }
+  .ops-item-btn:hover { background: #1a1815; color: #f4f1ea; }
+
+  /* Empty state */
+  .ops-empty {
+    background: #ebe6dc; border: 1px dashed #1a181540;
+    padding: 60px 32px; text-align: center;
+  }
+  .ops-empty-glyph {
+    font-family: 'Fraunces', serif; font-size: 48px; color: #5a7a4a;
+    margin-bottom: 14px; line-height: 1;
+  }
+
+  /* Case-card additions: assignment + escalation */
+  .case-meta-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; flex-wrap: wrap;
+    border-bottom: 1px solid #1a181515; margin-bottom: 12px;
+  }
+  .case-assign-input {
+    padding: 5px 9px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    border: 1px solid #1a181530; background: transparent; color: #1a1815;
+    border-radius: 0; min-width: 160px;
+  }
+  .case-assign-input:focus { outline: none; border-color: #1a1815; }
+  .escalate-btn {
+    padding: 6px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #b54a2c40; background: transparent; color: #b54a2c;
+    cursor: pointer;
+  }
+  .escalate-btn:hover { background: #b54a2c; color: #f4f1ea; }
+  .escalate-btn.active { background: #b54a2c; color: #f4f1ea; border-color: #b54a2c; }
+  .escalation-note {
+    background: #b54a2c0a; border: 1px solid #b54a2c40; border-left: 3px solid #b54a2c;
+    padding: 10px 12px; margin-bottom: 12px;
+  }
+  .escalation-note-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #b54a2c;
+    font-weight: 700; margin-bottom: 4px;
+  }
+  .escalation-note-text {
+    font-size: 12.5px; color: #1a1815; line-height: 1.5;
+  }
+
   /* LONGITUDINAL TIMELINE — per case */
   .timeline-panel {
     background: #ebe6dc; border: 1px solid #1a181530;
@@ -3554,7 +3731,7 @@ function todayPlusDays(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
 
@@ -3861,6 +4038,40 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline,
                     })}
                   </div>
                 </div>
+
+                {/* Assignment + escalation controls (only on active cases) */}
+                {!isTerminal && (
+                  <div className="case-meta-row">
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.14em", color: "#6b645a" }}>
+                      Assigned to
+                    </span>
+                    <input
+                      type="text"
+                      className="case-assign-input"
+                      placeholder="Coordinator name…"
+                      value={c.assignedTo || ""}
+                      onChange={e => onAssignCase(c.id, e.target.value)}
+                    />
+                    <button
+                      className={`escalate-btn${c.escalated ? " active" : ""}`}
+                      onClick={() => {
+                        if (c.escalated) { onEscalateCase(c.id, null); return; }
+                        const reason = prompt("Reason for escalation (e.g., insurance denied, organ function declining):");
+                        if (reason !== null) onEscalateCase(c.id, reason.trim() || null);
+                      }}
+                    >
+                      {c.escalated ? "🚩 Unflag" : "🚩 Escalate"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Escalation note shown when flagged */}
+                {c.escalated && c.escalationReason && (
+                  <div className="escalation-note">
+                    <div className="escalation-note-head">🚩 Escalated for physician review</div>
+                    <div className="escalation-note-text">{c.escalationReason}</div>
+                  </div>
+                )}
 
                 {/* Longitudinal timeline — referral, labs, insurance, apheresis, mfg, infusion */}
                 {!isTerminal && (
@@ -4645,6 +4856,215 @@ function AccuracyModal({ onClose }) {
             {" "}— CellTx Match is for educational and research purposes only. Always confirm eligibility against current labeling, institutional protocols, and individual clinical assessment.
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Operations dashboard (/today) ──────────────────────────────────────────
+function OperationsView({ board, onGoToBoard, onAssignCase, onEscalateCase, onUpdateTimeline, onSetPendingLabs, onSetCaseStage, currentUserName }) {
+  const [assigneeFilter, setAssigneeFilter] = useState("__all__");
+
+  const allItems = computePendingItems(board);
+  const items    = filterByAssignee(allItems, assigneeFilter);
+  const grouped  = groupByUrgency(items);
+  const summary  = summarizeOps(items);
+  const assignees = uniqueAssignees(allItems);
+
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+
+  const totalActive = board.filter(c => !["closed", "deferred", "not_indicated"].includes(c.stage)).length;
+
+  // Quick-action handlers
+  const handleSnooze = (caseId) => {
+    const newDate = new Date();
+    newDate.setDate(newDate.getDate() + 7);
+    onUpdateTimeline && onUpdateTimeline(caseId, "_root", { nextActionDate: newDate.toISOString().slice(0, 10) });
+  };
+
+  const handleMarkLabComplete = (caseId, labId) => {
+    const c = board.find(x => x.id === caseId);
+    if (!c) return;
+    const labs = (c.timeline?.pendingLabs || []).map(l =>
+      l.id === labId ? { ...l, status: "complete", completedAt: new Date().toISOString().slice(0, 10) } : l
+    );
+    onSetPendingLabs(caseId, labs);
+  };
+
+  const handleAdvanceFromOverdue = (caseId) => {
+    // Mark the case as still progressing — refresh the reassessment to next week
+    handleSnooze(caseId);
+  };
+
+  // Render an item with the appropriate quick-action button(s)
+  const renderItem = (it) => {
+    let quickAction = null;
+    switch (it.type) {
+      case "lab_overdue":
+        quickAction = (
+          <button className="ops-item-btn" onClick={() => handleMarkLabComplete(it.caseId, it.payload.labId)}>
+            Mark complete
+          </button>
+        );
+        break;
+      case "reassessment_overdue":
+      case "reassessment_today":
+      case "reassessment_week":
+        quickAction = (
+          <button className="ops-item-btn" onClick={() => handleSnooze(it.caseId)}>
+            Snooze 1w
+          </button>
+        );
+        break;
+      case "escalated":
+        quickAction = (
+          <button className="ops-item-btn" onClick={() => onEscalateCase(it.caseId, null)}>
+            Resolve
+          </button>
+        );
+        break;
+      default: break;
+    }
+    return (
+      <div key={it.id} className={`ops-item ${it.urgency}`}>
+        <div className="ops-item-icon">{it.icon}</div>
+        <div className="ops-item-body">
+          <div className="ops-item-label">{it.label}</div>
+          <div className="ops-item-case">
+            <strong>{it.caseLabel}</strong>
+            <span>· {it.caseSummary}</span>
+            {it.assignedTo && <span className="ops-assigned-pill">{it.assignedTo}</span>}
+          </div>
+        </div>
+        <div className="ops-item-actions">
+          {quickAction}
+          <button className="ops-item-btn" onClick={onGoToBoard} title="Open in tumor board">Open</button>
+        </div>
+      </div>
+    );
+  };
+
+  if (board.length === 0) {
+    return (
+      <div className="ops-view">
+        <div className="ops-hero">
+          <div className="ops-tag">Operations · Today</div>
+          <h1 className="ops-h1">No active cases</h1>
+          <div className="ops-sub">Add patients to the tumor board to populate the operations queue</div>
+        </div>
+        <div className="ops-empty">
+          <div className="ops-empty-glyph">○</div>
+          <p style={{ fontSize: 14, color: "#6b645a", lineHeight: 1.65, maxWidth: 480, margin: "0 auto" }}>
+            The operations dashboard pulls together every pending item across your tumor board — overdue
+            labs, insurance decisions, manufacturing arrivals, infusion scheduling, escalations.
+            Once cases are added, this becomes your daily-morning queue.
+          </p>
+          <button className="board-empty-cta" style={{ marginTop: 18 }} onClick={onGoToBoard}>Open tumor board →</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ops-view">
+      <div className="ops-hero">
+        <div className="ops-tag">Operations · Today</div>
+        <h1 className="ops-h1">Coordinator queue</h1>
+        <div className="ops-sub">{dateStr} · {totalActive} active case{totalActive !== 1 ? "s" : ""} · {summary.total} item{summary.total !== 1 ? "s" : ""} on the queue</div>
+      </div>
+
+      {/* Headline counts */}
+      <div className="ops-counts">
+        <div className="ops-count overdue">
+          <div className="ops-count-num">{summary.overdue}</div>
+          <div className="ops-count-label">Overdue</div>
+        </div>
+        <div className="ops-count due_today">
+          <div className="ops-count-num">{summary.due_today}</div>
+          <div className="ops-count-label">Due today</div>
+        </div>
+        <div className="ops-count due_this_week">
+          <div className="ops-count-num">{summary.due_this_week}</div>
+          <div className="ops-count-label">This week</div>
+        </div>
+        <div className="ops-count escalated">
+          <div className="ops-count-num">{summary.escalated}</div>
+          <div className="ops-count-label">Escalated</div>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <div className="ops-filters">
+        <span className="ops-filter-label">Assigned to</span>
+        <select className="ops-filter-select" value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)}>
+          <option value="__all__">Anyone</option>
+          {assignees.map(a => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+          <option value="__unassigned__">Unassigned</option>
+        </select>
+        <span style={{ marginLeft: "auto", fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#6b645a" }}>
+          {items.length} of {allItems.length} item{allItems.length !== 1 ? "s" : ""} shown
+        </span>
+      </div>
+
+      {/* All-clear empty state */}
+      {summary.total === 0 && (
+        <div className="ops-empty">
+          <div className="ops-empty-glyph">✓</div>
+          <p style={{ fontSize: 14, color: "#6b645a", lineHeight: 1.65, maxWidth: 480, margin: "0 auto" }}>
+            <strong>No pending items.</strong> Your queue is clear. New items will appear here as
+            cases progress through the pipeline.
+          </p>
+        </div>
+      )}
+
+      {/* Escalations — always shown first if present */}
+      {grouped.escalated.length > 0 && (
+        <div className="ops-section">
+          <div className="ops-section-hdr escalated">
+            <h2 className="ops-section-title">🚩 Escalations</h2>
+            <span className="ops-section-count">{grouped.escalated.length}</span>
+          </div>
+          {grouped.escalated.map(renderItem)}
+        </div>
+      )}
+
+      {grouped.overdue.length > 0 && (
+        <div className="ops-section">
+          <div className="ops-section-hdr overdue">
+            <h2 className="ops-section-title">Overdue · needs action now</h2>
+            <span className="ops-section-count">{grouped.overdue.length}</span>
+          </div>
+          {grouped.overdue.map(renderItem)}
+        </div>
+      )}
+
+      {grouped.due_today.length > 0 && (
+        <div className="ops-section">
+          <div className="ops-section-hdr due_today">
+            <h2 className="ops-section-title">Due today</h2>
+            <span className="ops-section-count">{grouped.due_today.length}</span>
+          </div>
+          {grouped.due_today.map(renderItem)}
+        </div>
+      )}
+
+      {grouped.due_this_week.length > 0 && (
+        <div className="ops-section">
+          <div className="ops-section-hdr due_this_week">
+            <h2 className="ops-section-title">This week</h2>
+            <span className="ops-section-count">{grouped.due_this_week.length}</span>
+          </div>
+          {grouped.due_this_week.map(renderItem)}
+        </div>
+      )}
+
+      <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button className="board-btn primary" onClick={onGoToBoard}>← Open tumor board</button>
+        <button className="board-btn" onClick={() => window.print()}>Print queue</button>
       </div>
     </div>
   );
@@ -6565,8 +6985,9 @@ export default function App() {
     if (p === "/terms") return "terms";
     if (p === "/disclaimer") return "disclaimer";
     if (p === "/analytics") return "analytics";
+    if (p === "/today") return "today";
     return "screener";
-  }); // "screener" | "board" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics"
+  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -6601,6 +7022,7 @@ export default function App() {
       : view === "terms" ? "/terms"
       : view === "disclaimer" ? "/disclaimer"
       : view === "analytics" ? "/analytics"
+      : view === "today" ? "/today"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -6645,6 +7067,7 @@ export default function App() {
       else if (p === "/terms") setView("terms");
       else if (p === "/disclaimer") setView("disclaimer");
       else if (p === "/analytics") setView("analytics");
+      else if (p === "/today") setView("today");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -6792,6 +7215,26 @@ export default function App() {
   const setPendingLabs = (id, labs) =>
     setBoard(b => b.map(c => c.id === id ? { ...c, timeline: { ...(c.timeline || emptyTimeline()), pendingLabs: labs } } : c));
 
+  // Assign / unassign a case to a coordinator (free-text)
+  const assignBoardCase = (id, assignee) =>
+    setBoard(b => b.map(c => c.id === id ? { ...c, assignedTo: assignee || "" } : c));
+
+  // Toggle escalation flag with optional reason
+  const escalateBoardCase = (id, reason) =>
+    setBoard(b => b.map(c => {
+      if (c.id !== id) return c;
+      if (c.escalated) {
+        // Toggle OFF: clear escalation
+        return { ...c, escalated: false, escalationReason: "", escalationFlaggedAt: null };
+      }
+      return {
+        ...c,
+        escalated: true,
+        escalationReason: reason || "Escalated for physician review",
+        escalationFlaggedAt: new Date().toISOString(),
+      };
+    }));
+
   const loadBoardCase = (c) => {
     setPt({ ...INIT, ...c.patient });
     const res = {};
@@ -6898,6 +7341,22 @@ export default function App() {
               </button>
               {isSignedIn && (
                 <>
+                  {(() => {
+                    // Surface a count badge of overdue + due-today items
+                    const items = computePendingItems(board);
+                    const urgent = items.filter(i => i.urgency === "overdue" || i.urgency === "due_today" || i.urgency === "escalated").length;
+                    return (
+                      <button
+                        className={`hdr-nav-btn${view === "today" ? " active" : ""}`}
+                        onClick={() => setView("today")}
+                        title="Today's coordinator queue"
+                        style={urgent > 0 && view !== "today" ? { color: "#b54a2c", borderColor: "#b54a2c", background: "#b54a2c08" } : {}}
+                      >
+                        Today
+                        {urgent > 0 && <span className="hdr-nav-count">⚠ {urgent}</span>}
+                      </button>
+                    );
+                  })()}
                   <button
                     className={`hdr-nav-btn${view === "board" ? " active" : ""}`}
                     onClick={() => setView("board")}
@@ -7019,6 +7478,8 @@ export default function App() {
           onSetCaseStage={setBoardCaseStage}
           onUpdateTimeline={updateBoardCaseTimeline}
           onSetPendingLabs={setPendingLabs}
+          onAssignCase={assignBoardCase}
+          onEscalateCase={escalateBoardCase}
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
@@ -7028,6 +7489,20 @@ export default function App() {
           digestEnabled={digestEnabled}
           onToggleDigest={toggleDigest}
           userEmail={userEmail}
+        />
+      )}
+
+      {/* TODAY / OPERATIONS DASHBOARD (signed-in only) */}
+      {view === "today" && (
+        <OperationsView
+          board={board}
+          onGoToBoard={() => setView("board")}
+          onAssignCase={assignBoardCase}
+          onEscalateCase={escalateBoardCase}
+          onUpdateTimeline={updateBoardCaseTimeline}
+          onSetPendingLabs={setPendingLabs}
+          onSetCaseStage={setBoardCaseStage}
+          currentUserName={userName}
         />
       )}
 
