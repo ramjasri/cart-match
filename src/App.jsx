@@ -2794,6 +2794,66 @@ const CSS = `
   }
   .board-stat.active .board-stat-label { color: #c4a661; }
 
+  /* REMINDER ROW (per case) */
+  .reminder-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: #f4f1ea;
+    border: 1px solid #1a181530; border-left: 3px solid #4c6b8c;
+    margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .reminder-row.overdue {
+    border-left-color: #b54a2c; background: #b54a2c08;
+  }
+  .reminder-row.due-soon {
+    border-left-color: #c4a661; background: #c4a66108;
+  }
+  .reminder-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    flex-shrink: 0;
+  }
+  .reminder-row.overdue .reminder-label { color: #b54a2c; font-weight: 700; }
+  .reminder-input {
+    padding: 6px 10px; border: 1px solid #1a181530; background: #f4f1ea;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1a1815;
+    border-radius: 0;
+  }
+  .reminder-input:focus { outline: none; border-color: #1a1815; }
+  .reminder-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; flex: 1;
+  }
+  .reminder-status.overdue { color: #b54a2c; font-weight: 600; }
+  .reminder-status.due-soon { color: #7a5e10; font-weight: 600; }
+  .reminder-snooze-btn {
+    padding: 5px 9px; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid #1a181530;
+    background: transparent; color: #1a1815; cursor: pointer;
+  }
+  .reminder-snooze-btn:hover { background: #1a181508; }
+  .reminder-suggest-btn {
+    padding: 5px 9px; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid #4c6b8c40;
+    background: transparent; color: #4c6b8c; cursor: pointer;
+  }
+  .reminder-suggest-btn:hover { background: #4c6b8c10; }
+
+  /* Overdue badge on case header */
+  .overdue-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #b54a2c; color: #f4f1ea;
+    padding: 3px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
+  }
+  .due-soon-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #c4a661; color: #1a1815;
+    padding: 3px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
+  }
+
   /* PIPELINE STEPPER (per case) */
   .stage-row {
     background: #ebe6dc; border: 1px solid #1a181530;
@@ -3296,6 +3356,59 @@ function nextStageAfter(currentStageId) {
   return LINEAR_PIPELINE[idx + 1];
 }
 
+// ── Reminder helpers ──────────────────────────────────────────────────────
+// Suggested "next action" intervals per stage, derived from typical CAR-T
+// referral workflow timing. Returns days from "now" to set the reminder.
+const SUGGESTED_REMINDER_DAYS = {
+  pending_review:  3,   // tumor board meets weekly — review within 3 days
+  discussed:       7,   // decision should follow within a week
+  approved:        7,   // referral should be initiated within a week
+  referred:       14,   // insurance auth typical 2 weeks
+  apheresis:      10,   // apheresis scheduling
+  manufacturing:  28,   // 4 weeks for typical CAR-T manufacturing
+  infused:        30,   // first follow-up at 30 days
+  follow_up_30:   60,   // day 90 follow-up
+  follow_up_90:   90,   // long-term surveillance
+  // terminal stages get no auto-suggestion
+};
+
+function suggestReminderDate(stage) {
+  const days = SUGGESTED_REMINDER_DAYS[stage];
+  if (!days) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+// Format a date string for display + classify urgency
+function reminderStatus(dateStr) {
+  if (!dateStr) return { state: "none", label: "No reminder set" };
+  const due = new Date(dateStr + "T00:00:00");
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((due - now) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) {
+    const overdueDays = Math.abs(diffDays);
+    return {
+      state: "overdue",
+      label: overdueDays === 1 ? "Overdue by 1 day" : `Overdue by ${overdueDays} days`,
+      diffDays,
+    };
+  }
+  if (diffDays === 0) return { state: "due-soon", label: "Due today", diffDays };
+  if (diffDays === 1) return { state: "due-soon", label: "Due tomorrow", diffDays };
+  if (diffDays <= 3) return { state: "due-soon", label: `Due in ${diffDays} days`, diffDays };
+  if (diffDays <= 7) return { state: "upcoming", label: `Due in ${diffDays} days`, diffDays };
+  return { state: "upcoming", label: `Due ${due.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`, diffDays };
+}
+
+// Add N days to today's date, return YYYY-MM-DD
+function todayPlusDays(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
@@ -3315,22 +3428,30 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  // Compute aggregate stats by lifecycle phase
+  // Compute aggregate stats by lifecycle phase + overdue count
+  const TERMINAL_STAGES = ["closed", "deferred", "not_indicated"];
+  const isOverdue = c => {
+    if (TERMINAL_STAGES.includes(c.stage)) return false;
+    if (!c.nextActionDate) return false;
+    return reminderStatus(c.nextActionDate).state === "overdue";
+  };
   const phaseCounts = {
+    overdue:      board.filter(isOverdue).length,
     awaiting:     board.filter(c => ["pending_review", "discussed"].includes(c.stage)).length,
     active:       board.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(c.stage)).length,
     infused:      board.filter(c => c.stage === "infused").length,
     followup:     board.filter(c => ["follow_up_30", "follow_up_90"].includes(c.stage)).length,
-    closed:       board.filter(c => ["closed", "deferred", "not_indicated"].includes(c.stage)).length,
+    closed:       board.filter(c => TERMINAL_STAGES.includes(c.stage)).length,
   };
 
   // Apply filter
   const filteredBoard = filter === "all" ? board
+    : filter === "overdue"   ? board.filter(isOverdue)
     : filter === "awaiting"  ? board.filter(c => ["pending_review", "discussed"].includes(c.stage))
     : filter === "active"    ? board.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(c.stage))
     : filter === "infused"   ? board.filter(c => c.stage === "infused")
     : filter === "followup"  ? board.filter(c => ["follow_up_30", "follow_up_90"].includes(c.stage))
-    : filter === "closed"    ? board.filter(c => ["closed", "deferred", "not_indicated"].includes(c.stage))
+    : filter === "closed"    ? board.filter(c => TERMINAL_STAGES.includes(c.stage))
     : board;
 
   return (
@@ -3383,28 +3504,51 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
 
       {/* Aggregate stats by lifecycle phase (also act as filter chips) */}
       {board.length > 0 && (
-        <div className="board-stats">
-          <div className={`board-stat${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>
-            <div className="board-stat-num">{board.length}</div>
-            <div className="board-stat-label">All cases</div>
+        <>
+          {phaseCounts.overdue > 0 && (
+            <div
+              className={`board-stats`}
+              style={{ gridTemplateColumns: "1fr", marginBottom: 12, borderColor: "#b54a2c", background: "#b54a2c0a" }}
+              onClick={() => setFilter(filter === "overdue" ? "all" : "overdue")}
+            >
+              <div
+                className={`board-stat${filter === "overdue" ? " active" : ""}`}
+                style={{ cursor: "pointer", padding: "14px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", borderRight: "none" }}
+              >
+                <div>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 500, color: filter === "overdue" ? "#c4a661" : "#b54a2c", lineHeight: 1 }}>
+                    ⚠ {phaseCounts.overdue} case{phaseCounts.overdue !== 1 ? "s" : ""} overdue
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.14em", color: filter === "overdue" ? "#c4a66199" : "#6b645a", marginTop: 5 }}>
+                    {filter === "overdue" ? "Showing overdue only — click to show all" : "Click to filter to overdue cases"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="board-stats">
+            <div className={`board-stat${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>
+              <div className="board-stat-num">{board.length}</div>
+              <div className="board-stat-label">All cases</div>
+            </div>
+            <div className={`board-stat${filter === "awaiting" ? " active" : ""}`} onClick={() => setFilter("awaiting")}>
+              <div className="board-stat-num">{phaseCounts.awaiting}</div>
+              <div className="board-stat-label">Awaiting decision</div>
+            </div>
+            <div className={`board-stat${filter === "active" ? " active" : ""}`} onClick={() => setFilter("active")}>
+              <div className="board-stat-num">{phaseCounts.active}</div>
+              <div className="board-stat-label">Active referrals</div>
+            </div>
+            <div className={`board-stat${filter === "followup" ? " active" : ""}`} onClick={() => setFilter("followup")}>
+              <div className="board-stat-num">{phaseCounts.followup + phaseCounts.infused}</div>
+              <div className="board-stat-label">Infused / follow-up</div>
+            </div>
+            <div className={`board-stat${filter === "closed" ? " active" : ""}`} onClick={() => setFilter("closed")}>
+              <div className="board-stat-num">{phaseCounts.closed}</div>
+              <div className="board-stat-label">Closed</div>
+            </div>
           </div>
-          <div className={`board-stat${filter === "awaiting" ? " active" : ""}`} onClick={() => setFilter("awaiting")}>
-            <div className="board-stat-num">{phaseCounts.awaiting}</div>
-            <div className="board-stat-label">Awaiting decision</div>
-          </div>
-          <div className={`board-stat${filter === "active" ? " active" : ""}`} onClick={() => setFilter("active")}>
-            <div className="board-stat-num">{phaseCounts.active}</div>
-            <div className="board-stat-label">Active referrals</div>
-          </div>
-          <div className={`board-stat${filter === "followup" ? " active" : ""}`} onClick={() => setFilter("followup")}>
-            <div className="board-stat-num">{phaseCounts.followup + phaseCounts.infused}</div>
-            <div className="board-stat-label">Infused / follow-up</div>
-          </div>
-          <div className={`board-stat${filter === "closed" ? " active" : ""}`} onClick={() => setFilter("closed")}>
-            <div className="board-stat-num">{phaseCounts.closed}</div>
-            <div className="board-stat-label">Closed</div>
-          </div>
-        </div>
+        </>
       )}
 
       {board.length === 0 ? (
@@ -3448,6 +3592,12 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
                   value={c.patientLabel}
                   onChange={e => onUpdateCase(c.id, { patientLabel: e.target.value })}
                 />
+                {!isTerminal && (() => {
+                  const s = reminderStatus(c.nextActionDate);
+                  if (s.state === "overdue") return <span className="overdue-badge">⚠ {s.label}</span>;
+                  if (s.state === "due-soon") return <span className="due-soon-badge">⏱ {s.label}</span>;
+                  return null;
+                })()}
                 <div className="board-case-summary">
                   {[
                     c.patient.cancerType ? c.patient.cancerType.split("(")[0].trim() : null,
@@ -3525,6 +3675,50 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onRemoveCase, onL
                     })}
                   </div>
                 </div>
+
+                {/* Reminder row — date picker + status */}
+                {!isTerminal && (() => {
+                  const status = reminderStatus(c.nextActionDate);
+                  return (
+                    <div className={`reminder-row${status.state === "overdue" ? " overdue" : status.state === "due-soon" ? " due-soon" : ""}`}>
+                      <span className="reminder-label">Next action</span>
+                      <input
+                        type="date"
+                        className="reminder-input"
+                        value={c.nextActionDate || ""}
+                        onChange={e => onUpdateCase(c.id, { nextActionDate: e.target.value || null })}
+                      />
+                      <span className={`reminder-status ${status.state}`}>{status.label}</span>
+                      {!c.nextActionDate && SUGGESTED_REMINDER_DAYS[c.stage] && (
+                        <button
+                          className="reminder-suggest-btn"
+                          onClick={() => onUpdateCase(c.id, { nextActionDate: suggestReminderDate(c.stage) })}
+                          title={`Set reminder for ${SUGGESTED_REMINDER_DAYS[c.stage]} days from now`}
+                        >
+                          Suggest +{SUGGESTED_REMINDER_DAYS[c.stage]}d
+                        </button>
+                      )}
+                      {c.nextActionDate && (
+                        <>
+                          <button
+                            className="reminder-snooze-btn"
+                            onClick={() => onUpdateCase(c.id, { nextActionDate: todayPlusDays(7) })}
+                            title="Snooze reminder 1 week"
+                          >
+                            Snooze 1w
+                          </button>
+                          <button
+                            className="reminder-snooze-btn"
+                            onClick={() => onUpdateCase(c.id, { nextActionDate: null })}
+                            title="Clear reminder"
+                          >
+                            ✕
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Outcome row — visible only when terminal */}
                 {isTerminal && (
@@ -5955,12 +6149,14 @@ export default function App() {
   const updateBoardCase = (id, patch) =>
     setBoard(b => b.map(c => c.id === id ? { ...c, ...patch } : c));
 
-  // Advance to a specific stage, with history tracking
+  // Advance to a specific stage, with history tracking.
+  // Auto-suggests a nextActionDate based on stage timing rules (only if
+  // the case has no reminder set OR the existing reminder is already past).
   const setBoardCaseStage = (id, newStage) =>
     setBoard(b => b.map(c => {
       if (c.id !== id) return c;
       if (c.stage === newStage) return c;
-      return {
+      const next = {
         ...c,
         stage: newStage,
         stageHistory: [
@@ -5968,6 +6164,13 @@ export default function App() {
           { stage: newStage, at: new Date().toISOString() },
         ],
       };
+      const existing = c.nextActionDate;
+      const existingPast = existing && new Date(existing + "T23:59:59") < new Date();
+      if (!existing || existingPast) {
+        const suggested = suggestReminderDate(newStage);
+        if (suggested) next.nextActionDate = suggested;
+      }
+      return next;
     }));
 
   const removeBoardCase = (id) =>

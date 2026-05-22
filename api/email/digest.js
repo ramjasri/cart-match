@@ -44,8 +44,11 @@ export default async function handler(req, res) {
   const fromAddress = process.env.RESEND_FROM || "CellTx Match <onboarding@resend.dev>";
 
   const totalActive = (summary.awaiting || 0) + (summary.active || 0);
+  const overdueCount = summary.overdue || 0;
   const subjectCount = cases.length === 0 ? "your tumor board" : `${cases.length} case${cases.length !== 1 ? "s" : ""}`;
-  const urgencyTag = totalActive >= 3 ? " · review needed" : "";
+  const urgencyTag = overdueCount > 0
+    ? ` · ${overdueCount} overdue`
+    : totalActive >= 3 ? " · review needed" : "";
 
   try {
     const result = await resend.emails.send({
@@ -103,10 +106,27 @@ function digestHtml({ toName, dateStr, summary, cases }) {
 
   const summaryHtml = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px;">
+      ${(summary.overdue || 0) > 0 ? stat(summary.overdue, "Overdue", "#b54a2c") : ""}
       ${stat(summary.awaiting || 0, "Awaiting", "#6b645a")}
       ${stat(summary.active   || 0, "Active",   "#5a7a4a")}
       ${stat((summary.infused || 0) + (summary.followup || 0), "Infused / FU", "#4c6b8c")}
       ${stat(summary.closed   || 0, "Closed",   "#1a1815")}
+    </div>
+  `;
+
+  // Overdue items pulled to the top for visibility
+  const overdueCases = cases.filter(c => c.reminderState === "overdue");
+  const overdueBlockHtml = overdueCases.length === 0 ? "" : `
+    <div style="background:#b54a2c0a;border:2px solid #b54a2c;padding:14px 18px;margin:18px 0;">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:0.18em;color:#b54a2c;font-weight:700;margin-bottom:8px;">
+        ⚠ ${overdueCases.length} overdue · action needed
+      </div>
+      ${overdueCases.map(c => `
+        <div style="padding:6px 0;border-bottom:1px solid #b54a2c20;font-size:13px;color:#1a1815;">
+          <strong>${escapeHtml(c.label)}</strong> — ${escapeHtml(c.cancerCategory || "—")} · ${escapeHtml(c.stageLabel)}
+          <span style="color:#b54a2c;font-weight:600;font-family:ui-monospace,Menlo,monospace;font-size:11px;"> · ${escapeHtml(c.reminderLabel || "Overdue")}</span>
+        </div>
+      `).join("")}
     </div>
   `;
 
@@ -160,7 +180,9 @@ function digestHtml({ toName, dateStr, summary, cases }) {
 
           ${summaryHtml}
 
-          <h2 style="font-family:Georgia,serif;font-size:16px;font-weight:500;color:#1a1815;margin:28px 0 0;padding-bottom:6px;border-bottom:1px solid #1a181530;">Cases</h2>
+          ${overdueBlockHtml}
+
+          <h2 style="font-family:Georgia,serif;font-size:16px;font-weight:500;color:#1a1815;margin:28px 0 0;padding-bottom:6px;border-bottom:1px solid #1a181530;">All cases</h2>
           ${caseRowsHtml}
 
           <!-- CTA -->

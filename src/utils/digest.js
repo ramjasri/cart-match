@@ -80,12 +80,20 @@ function markDigestSent() {
 // ─── Payload composition (PHI-safe) ────────────────────────────────────────
 function summarizeBoard(board) {
   const stageOf = c => c.stage || "pending_review";
+  const TERMINAL = ["closed", "deferred", "not_indicated"];
+  const isOverdue = c => {
+    if (TERMINAL.includes(stageOf(c)) || !c.nextActionDate) return false;
+    const due = new Date(c.nextActionDate + "T00:00:00");
+    const now = new Date(); now.setHours(0,0,0,0);
+    return (due - now) < 0;
+  };
   return {
+    overdue:  board.filter(isOverdue).length,
     awaiting: board.filter(c => ["pending_review", "discussed"].includes(stageOf(c))).length,
     active:   board.filter(c => ["approved", "referred", "apheresis", "manufacturing"].includes(stageOf(c))).length,
     infused:  board.filter(c => stageOf(c) === "infused").length,
     followup: board.filter(c => ["follow_up_30", "follow_up_90"].includes(stageOf(c))).length,
-    closed:   board.filter(c => ["closed", "deferred", "not_indicated"].includes(stageOf(c))).length,
+    closed:   board.filter(c => TERMINAL.includes(stageOf(c))).length,
   };
 }
 
@@ -99,6 +107,22 @@ function projectCase(c) {
   // Strip parenthetical detail (e.g., "DLBCL (Large B-cell lymphoma)" → "DLBCL")
   const cancerCategory = cancerType.split("(")[0].trim().substring(0, 40);
 
+  // Compute reminder status (PHI-safe — just a date and a status string)
+  let reminderState = null;
+  let reminderLabel = null;
+  if (c.nextActionDate) {
+    const due = new Date(c.nextActionDate + "T00:00:00");
+    const now = new Date(); now.setHours(0,0,0,0);
+    const diffDays = Math.round((due - now) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      reminderState = "overdue";
+      reminderLabel = Math.abs(diffDays) === 1 ? "Overdue 1 day" : `Overdue ${Math.abs(diffDays)} days`;
+    } else if (diffDays <= 3) {
+      reminderState = "due-soon";
+      reminderLabel = diffDays === 0 ? "Due today" : diffDays === 1 ? "Due tomorrow" : `Due in ${diffDays} days`;
+    }
+  }
+
   return {
     label:           c.patientLabel || "Patient",
     cancerCategory,
@@ -107,6 +131,8 @@ function projectCase(c) {
     phase:           PHASE_OF[stage] || "decision",
     eligibleCount,
     totalCount,
+    reminderState,
+    reminderLabel,
   };
 }
 
