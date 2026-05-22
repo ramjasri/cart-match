@@ -25,6 +25,12 @@ import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
+import {
+  trackPageview, trackScreenRun, trackAddToBoard, trackPdfExport,
+  trackBoardPacketExport, trackCopyShareLink, trackWaitlistSubmit,
+  trackPricingCta, trackCriteriaApiAccess, trackEarlyReferralRun,
+} from "./utils/analytics.js";
+import { startCheckout } from "./utils/billing.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -3067,7 +3073,11 @@ function CommunityReferralView({ pt, setPt, set, tog, onSeeFullAnalysis, onLoadI
 
           <button
             className="run-btn"
-            onClick={() => setRan(true)}
+            onClick={() => {
+              setRan(true);
+              const d = calculateReferralDecision(pt);
+              if (d) trackEarlyReferralRun(d.decision);
+            }}
             disabled={!pt.cancerType || pt.priorLines === ""}
           >
             Check referral decision →
@@ -3554,6 +3564,7 @@ function CriteriaView({ products, bispecifics, onBackToScreener }) {
               target="_blank"
               rel="noopener noreferrer"
               className="api-path"
+              onClick={() => trackCriteriaApiAccess()}
               style={{ color: "#f4f1ea", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationColor: "#c4a66180" }}
             >
               https://cart-match.vercel.app/api/criteria/v1.json
@@ -3781,7 +3792,23 @@ function PricingView({ onBackToScreener, onRequestAccess }) {
             </ul>
             <button
               className="pricing-cta"
-              onClick={t.action === "screener" ? onBackToScreener : onRequestAccess}
+              onClick={async () => {
+                trackPricingCta(t.id);
+                if (t.action === "screener") { onBackToScreener(); return; }
+                // Try Stripe Checkout for paid tiers that have a Stripe price ID
+                if (t.id === "practice" || t.id === "institution") {
+                  try {
+                    await startCheckout({ tier: t.id, interval: "monthly" });
+                    return;
+                  } catch (err) {
+                    if (err.code !== "STRIPE_NOT_CONFIGURED") {
+                      console.warn("Checkout failed, falling back to waitlist:", err.message);
+                    }
+                    // Fall through to waitlist
+                  }
+                }
+                onRequestAccess();
+              }}
             >
               {t.cta}
             </button>
@@ -3854,14 +3881,32 @@ function WaitlistModal({ onClose }) {
   const submit = async (e) => {
     e.preventDefault();
     setStatus("sending");
+    // Try Resend first (our preferred path — better deliverability, branded welcome email)
+    try {
+      const res = await fetch("/api/email/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("done");
+        trackWaitlistSubmit(form.role, form.institution);
+        return;
+      }
+      // 503 = Resend not configured yet; any other error = fall through to Formspree
+    } catch { /* network error — fall through to Formspree */ }
+
+    // Fallback: Formspree (works without any env var setup)
     try {
       const res = await fetch(FORMSPREE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) setStatus("done");
-      else setStatus("error");
+      if (res.ok) {
+        setStatus("done");
+        trackWaitlistSubmit(form.role, form.institution);
+      } else setStatus("error");
     } catch {
       setStatus("error");
     }
@@ -3965,7 +4010,7 @@ export default function App() {
     catch { /* storage full — ignore */ }
   }, [board]);
 
-  // Sync view → URL path (preserves hash for shared cases)
+  // Sync view → URL path (preserves hash for shared cases) + analytics pageview
   useEffect(() => {
     const target = view === "pricing" ? "/pricing"
       : view === "board" ? "/board"
@@ -3975,6 +4020,7 @@ export default function App() {
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
     }
+    trackPageview(target);
   }, [view]);
 
   // Sync URL → view on back/forward
@@ -4034,6 +4080,7 @@ export default function App() {
     setBoard(b => [...b, newCase]);
     setBoardAdded(true);
     setTimeout(() => setBoardAdded(false), 2500);
+    trackAddToBoard(board.length + 1);
   };
 
   const updateBoardCase = (id, patch) =>
@@ -4073,6 +4120,8 @@ export default function App() {
     // Write case to URL hash so it's shareable immediately
     const encoded = encodeCase(pt);
     if (encoded) window.history.replaceState(null, "", `#case=${encoded}`);
+    // Analytics
+    trackScreenRun(pt);
   };
 
   const copyShareLink = () => {
@@ -4087,6 +4136,7 @@ export default function App() {
       // Fallback for browsers that block clipboard
       prompt("Copy this link to share the case:", url);
     });
+    trackCopyShareLink();
   };
 
   const cartEligible  = results ? PRODUCTS.filter(p => results[p.id]?.eligible).length : 0;
@@ -4206,7 +4256,7 @@ export default function App() {
           onRemoveCase={removeBoardCase}
           onLoadCase={loadBoardCase}
           onGoToScreener={() => setView("screener")}
-          onExport={() => generateBoardPdf(board)}
+          onExport={() => { generateBoardPdf(board); trackBoardPacketExport(board.length); }}
         />
       )}
 
@@ -4658,7 +4708,10 @@ export default function App() {
             <>
               <button
                 className="export-btn"
-                onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS })}
+                onClick={() => {
+                  generatePdf({ patient: pt, results, products: ALL_PRODUCTS });
+                  trackPdfExport("referral", false);
+                }}
               >
                 <Download size={13} />
                 Export Referral Report (PDF)
@@ -4666,7 +4719,10 @@ export default function App() {
               <button
                 className="export-btn secondary"
                 title="Grayscale version for fax/B&W printing"
-                onClick={() => generatePdf({ patient: pt, results, products: ALL_PRODUCTS, grayscale: true })}
+                onClick={() => {
+                  generatePdf({ patient: pt, results, products: ALL_PRODUCTS, grayscale: true });
+                  trackPdfExport("referral", true);
+                }}
               >
                 <FileText size={13} />
                 B&amp;W version

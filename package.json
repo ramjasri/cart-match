@@ -12,11 +12,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/backend": "^3.4.12",
     "@clerk/clerk-react": "^5.61.6",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "resend": "^6.12.3",
+    "stripe": "^22.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
