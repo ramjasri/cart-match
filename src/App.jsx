@@ -16,6 +16,7 @@ function useAuth() {
 }
 import { generatePdf } from "./utils/generatePdf.js";
 import { generateBoardPdf } from "./utils/generateBoardPdf.js";
+import { generateReferralPacket } from "./utils/generateReferralPacket.js";
 import { findAction, getPathToEligibility, getReferralSteps } from "./utils/actions.js";
 import { calculateUrgency } from "./utils/urgency.js";
 import { evaluatePathway, getDiseaseFields, DISEASE_FIELD_LABELS, PATHWAY_CATALOG } from "./utils/pathways.js";
@@ -58,6 +59,9 @@ import {
   taskStatusMeta, taskPriorityMeta, taskCategoryMeta,
   suggestStarterTasks,
 } from "./utils/tasks.js";
+import {
+  parseCSV, runRetrospective, analyzeRow, toCSV, SAMPLE_CSV,
+} from "./utils/retrospective.js";
 import TrialsPanel from "./components/TrialsPanel.jsx";
 import TrialMatcher from "./components/TrialMatcher.jsx";
 
@@ -3035,6 +3039,148 @@ const CSS = `
     padding: 12px 0;
   }
 
+  /* RETROSPECTIVE ANALYSIS — /retrospective */
+  .retro-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .retro-view { padding: 36px 20px 60px; } }
+
+  .retro-hero { margin-bottom: 32px; }
+  .retro-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #4c6b8c;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .retro-tag::before { content: ''; width: 24px; height: 1px; background: #4c6b8c; }
+  .retro-h1 {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.022em; margin: 0;
+  }
+  .retro-h1 em { font-style: italic; color: #4c6b8c; }
+  .retro-sub {
+    font-size: 14.5px; color: #6b645a; max-width: 720px;
+    margin: 14px 0 0; line-height: 1.65;
+  }
+
+  .retro-input-section {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    padding: 24px 26px; margin-bottom: 24px;
+  }
+  .retro-input-hdr {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 14px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .retro-input-title {
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+    color: #1a1815; margin: 0; letter-spacing: -0.012em;
+  }
+  .retro-input-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .retro-btn {
+    padding: 9px 16px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.13em;
+    border: 1px solid #1a181550; background: transparent; color: #1a1815;
+    cursor: pointer; transition: all 0.12s;
+  }
+  .retro-btn:hover { background: #1a1815; color: #f4f1ea; }
+  .retro-btn.primary { background: #1a1815; color: #f4f1ea; border-color: #1a1815; }
+  .retro-btn.primary:hover { background: #4c6b8c; border-color: #4c6b8c; }
+
+  .retro-textarea {
+    width: 100%; min-height: 180px; padding: 12px 14px;
+    border: 1px solid #1a181530; background: #ebe6dc;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: #1a1815; border-radius: 0; resize: vertical; line-height: 1.5;
+    box-sizing: border-box;
+  }
+  .retro-textarea:focus { outline: none; border-color: #1a1815; }
+
+  .retro-schema-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+    margin-top: 10px; display: inline-block;
+  }
+  .retro-schema-link:hover { color: #1a1815; }
+
+  /* Endpoints */
+  .retro-endpoints {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+    border: 2px solid #1a1815; margin-bottom: 24px;
+  }
+  @media (max-width: 700px) { .retro-endpoints { grid-template-columns: 1fr; } }
+  .retro-endpoint {
+    padding: 20px 22px; border-right: 1px solid #1a181530;
+  }
+  .retro-endpoint:last-child { border-right: none; }
+  @media (max-width: 700px) {
+    .retro-endpoint { border-right: none; border-bottom: 1px solid #1a181530; }
+    .retro-endpoint:last-child { border-bottom: none; }
+  }
+  .retro-endpoint.bad { border-left: 4px solid #b54a2c; }
+  .retro-endpoint.good { border-left: 4px solid #5a7a4a; }
+  .retro-endpoint.neutral { border-left: 4px solid #4c6b8c; }
+  .retro-endpoint-num {
+    font-family: 'Fraunces', serif; font-size: 30px; font-weight: 500;
+    color: #1a1815; line-height: 1;
+  }
+  .retro-endpoint.bad .retro-endpoint-num { color: #b54a2c; }
+  .retro-endpoint.good .retro-endpoint-num { color: #5a7a4a; }
+  .retro-endpoint-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    margin-top: 8px; line-height: 1.5;
+  }
+
+  /* Distribution chart */
+  .retro-dist {
+    background: #f4f1ea; border: 1px solid #1a181530;
+    padding: 18px 22px; margin-bottom: 24px;
+  }
+  .retro-dist-hdr {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: #6b645a;
+    margin-bottom: 12px;
+  }
+  .retro-dist-row {
+    display: grid; grid-template-columns: 220px 1fr 50px 60px; gap: 12px;
+    padding: 6px 0; align-items: center;
+    font-size: 13px;
+  }
+  @media (max-width: 700px) {
+    .retro-dist-row { grid-template-columns: 1fr 50px; }
+    .retro-dist-row > :nth-child(2), .retro-dist-row > :last-child { display: none; }
+  }
+  .retro-dist-label { color: #1a1815; }
+  .retro-dist-bar { background: #ebe6dc; height: 14px; position: relative; }
+  .retro-dist-fill { height: 100%; }
+  .retro-dist-count { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #1a1815; text-align: right; }
+  .retro-dist-pct { font-family: 'JetBrains Mono', monospace; color: #6b645a; text-align: right; }
+
+  /* Results table */
+  .retro-results-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    margin-top: 12px;
+  }
+  .retro-results-table th, .retro-results-table td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid #1a181515;
+    line-height: 1.5;
+  }
+  .retro-results-table th {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #6b645a; font-weight: 600;
+    border-bottom: 2px solid #1a181540; background: #ebe6dc;
+  }
+  .retro-cell-class {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 3px 7px; display: inline-block;
+  }
+  .retro-cell-class.bad { color: #b54a2c; background: #b54a2c12; }
+  .retro-cell-class.warn { color: #7a5e10; background: #c4a66115; }
+  .retro-cell-class.good { color: #5a7a4a; background: #5a7a4a12; }
+  .retro-cell-class.neutral { color: #4c6b8c; background: #4c6b8c12; }
+
   /* OPERATIONS DASHBOARD — /today */
   .ops-view {
     max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
@@ -3960,7 +4106,7 @@ function todayPlusDays(n) {
   return d.toISOString().slice(0, 10);
 }
 
-function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onAddNote, onAddTask, onUpdateTask, onRemoveTask, onAddStarterTasks, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail }) {
+function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline, onSetPendingLabs, onAssignCase, onEscalateCase, onAddNote, onAddTask, onUpdateTask, onRemoveTask, onAddStarterTasks, onRemoveCase, onLoadCase, onGoToScreener, onExport, onRequestDemo, onSendDigest, digestEnabled, onToggleDigest, userEmail, userName }) {
   const [filter, setFilter] = useState("all");
   const [digestStatus, setDigestStatus] = useState("idle"); // idle | sending | sent | error
 
@@ -4418,6 +4564,21 @@ function TumorBoardView({ board, onUpdateCase, onSetCaseStage, onUpdateTimeline,
                     rows={2}
                   />
                   <div className="board-btn-row">
+                    <button
+                      className="board-btn primary"
+                      onClick={() => generateReferralPacket({
+                        patient: c.patient,
+                        results: c.results || {},
+                        products: ALL_PRODUCTS,
+                        caseData: c,
+                        referringInstitution: "",
+                        referringCoordinator: c.assignedTo || userName || "",
+                        referringContact: userEmail || "",
+                      })}
+                      title="Generate one-page referral packet PDF for the receiving CAR-T center"
+                    >
+                      📨 Referral packet
+                    </button>
                     <button className="board-btn" onClick={() => onLoadCase(c)}>Re-screen</button>
                     <button className="board-btn danger" onClick={() => onRemoveCase(c.id)}>Remove</button>
                   </div>
@@ -5378,6 +5539,252 @@ function AccuracyModal({ onClose }) {
             {" "}— CellTx Match is for educational and research purposes only. Always confirm eligibility against current labeling, institutional protocols, and individual clinical assessment.
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Retrospective Validation Tool (/retrospective) ────────────────────────
+function RetrospectiveView({ onGoToScreener }) {
+  const [csvText, setCsvText] = useState("");
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [showSchema, setShowSchema] = useState(false);
+
+  const runAnalysis = () => {
+    setError(null);
+    setResult(null);
+    if (!csvText.trim()) {
+      setError("Paste CSV data above or click 'Load sample data' to begin.");
+      return;
+    }
+    try {
+      const { rows } = parseCSV(csvText);
+      if (rows.length === 0) {
+        setError("No data rows detected. Check that the CSV has a header row followed by data.");
+        return;
+      }
+      const analysis = runRetrospective(rows);
+      setResult(analysis);
+    } catch (err) {
+      setError(`Parse error: ${err.message}`);
+    }
+  };
+
+  const loadSample = () => {
+    setCsvText(SAMPLE_CSV);
+    setError(null);
+    setResult(null);
+  };
+
+  const clearAll = () => {
+    setCsvText("");
+    setResult(null);
+    setError(null);
+  };
+
+  const downloadCSV = () => {
+    if (!result) return;
+    const csv = toCSV(result.rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `celltx-retrospective-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Classification display metadata
+  const classMeta = {
+    missed_never_referred: { label: "Missed · never referred", tone: "bad", color: "#b54a2c" },
+    missed_early_referral: { label: "Missed early referral", tone: "bad", color: "#b54a2c" },
+    delayed_referral:      { label: "Delayed referral", tone: "warn", color: "#c4a661" },
+    timely_referral:       { label: "Timely referral", tone: "good", color: "#5a7a4a" },
+    pre_emptive:           { label: "Pre-emptive (before threshold)", tone: "good", color: "#5a7a4a" },
+    monitor_correct:       { label: "Monitor — appropriate", tone: "neutral", color: "#4c6b8c" },
+    not_yet_indicated:     { label: "Not yet indicated", tone: "neutral", color: "#6b645a" },
+    unknown:               { label: "Unknown", tone: "neutral", color: "#98908380" },
+  };
+
+  return (
+    <div className="retro-view">
+      <div className="retro-hero">
+        <div className="retro-tag">Research · Retrospective validation</div>
+        <h1 className="retro-h1">
+          Compare <em>actual referral timing</em> against<br />
+          CellTx-recommended timing
+        </h1>
+        <p className="retro-sub">
+          Paste a CSV of de-identified historical referrals. CellTx runs each row through the eligibility
+          engine + urgency rubric and compares against the actual referral timing in your data.
+          Output is the four study endpoints — missed early referrals, delayed referrals,
+          timely referrals, median referral delay — formatted for publication or IRB submission.
+        </p>
+      </div>
+
+      {/* Input section */}
+      <div className="retro-input-section">
+        <div className="retro-input-hdr">
+          <h2 className="retro-input-title">Input data · CSV with required headers</h2>
+          <div className="retro-input-actions">
+            <button className="retro-btn" onClick={() => setShowSchema(s => !s)}>
+              {showSchema ? "Hide" : "View"} schema
+            </button>
+            <button className="retro-btn" onClick={loadSample}>Load sample data</button>
+            <button className="retro-btn" onClick={clearAll}>Clear</button>
+            <button className="retro-btn primary" onClick={runAnalysis}>Run analysis →</button>
+          </div>
+        </div>
+
+        {showSchema && (
+          <div style={{ background: "#ebe6dc", padding: "14px 16px", marginBottom: 12, fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#1a1815", lineHeight: 1.65 }}>
+            <strong>Required columns:</strong> patient_id, cancer_type, prior_lines, ecog, index_date, referral_date<br />
+            <strong>Optional:</strong> cd19, bcma, cd20, gprc5d, primary_refractory, b_symptoms, elevated_ldh, pod24, double_hit, btki_exposed, btki_refractory, lenalidomide_refractory, extramedullary_disease, high_risk_cytogenetics, infused_date<br />
+            <strong>Booleans</strong> as 1/0 or yes/no. <strong>Dates</strong> as YYYY-MM-DD. <strong>cancer_type</strong> values: DLBCL, Follicular lymphoma, Mantle cell lymphoma, CLL/SLL, ALL, Multiple myeloma, PMBCL.<br /><br />
+            <strong>De-identification:</strong> use anonymous patient_id values (P001, P002, …). Do NOT include patient names, MRNs, DOBs, or any direct identifiers.
+          </div>
+        )}
+
+        <textarea
+          className="retro-textarea"
+          placeholder={`Paste CSV data here. Example:\n\npatient_id,cancer_type,prior_lines,ecog,primary_refractory,index_date,referral_date,infused_date\nP001,DLBCL,2,1,1,2024-03-15,2024-05-22,2024-07-08\nP002,DLBCL,3,2,0,2024-04-02,2024-04-15,2024-05-29\n...`}
+          value={csvText}
+          onChange={e => setCsvText(e.target.value)}
+        />
+
+        {error && (
+          <div style={{ marginTop: 10, padding: "10px 14px", background: "#b54a2c10", border: "1px solid #b54a2c40", color: "#b54a2c", fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+      </div>
+
+      {/* Results */}
+      {result && (
+        <>
+          {/* Headline endpoints */}
+          <div className="retro-endpoints">
+            <div className="retro-endpoint bad">
+              <div className="retro-endpoint-num">{Math.round(result.endpoints.missedEarlyReferralRate * 100)}%</div>
+              <div className="retro-endpoint-label">Missed early referrals<br />(REFER NOW · delayed &gt; 30 days)</div>
+            </div>
+            <div className="retro-endpoint" style={{ borderLeft: "4px solid #c4a661" }}>
+              <div className="retro-endpoint-num" style={{ color: "#7a5e10" }}>{Math.round(result.endpoints.delayedReferralRate * 100)}%</div>
+              <div className="retro-endpoint-label">Delayed referrals<br />(HIGH urgency · 14-30 day delay)</div>
+            </div>
+            <div className="retro-endpoint good">
+              <div className="retro-endpoint-num">{Math.round(result.endpoints.timelyReferralRate * 100)}%</div>
+              <div className="retro-endpoint-label">Timely referrals<br />(within 14 days of index)</div>
+            </div>
+          </div>
+
+          {/* Secondary metrics */}
+          <div className="retro-endpoints" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+            <div className="retro-endpoint neutral">
+              <div className="retro-endpoint-num">
+                {result.endpoints.medianReferralDelay === null ? "—" : `${Math.round(result.endpoints.medianReferralDelay)}d`}
+              </div>
+              <div className="retro-endpoint-label">Median referral delay<br />(index date → actual referral)</div>
+            </div>
+            <div className="retro-endpoint neutral">
+              <div className="retro-endpoint-num">
+                {result.endpoints.medianReferralToInfusion === null ? "—" : `${Math.round(result.endpoints.medianReferralToInfusion)}d`}
+              </div>
+              <div className="retro-endpoint-label">Median referral-to-infusion<br />(actual operational throughput)</div>
+            </div>
+          </div>
+
+          {/* Classification distribution */}
+          <div className="retro-dist">
+            <div className="retro-dist-hdr">Classification distribution · n = {result.total}</div>
+            {Object.entries(result.counts)
+              .filter(([, count]) => count > 0)
+              .sort(([, a], [, b]) => b - a)
+              .map(([key, count]) => {
+                const meta = classMeta[key] || classMeta.unknown;
+                const pct = result.total > 0 ? (count / result.total) * 100 : 0;
+                return (
+                  <div key={key} className="retro-dist-row">
+                    <div className="retro-dist-label">{meta.label}</div>
+                    <div className="retro-dist-bar">
+                      <div className="retro-dist-fill" style={{ width: `${pct}%`, background: meta.color }} />
+                    </div>
+                    <div className="retro-dist-count">{count}</div>
+                    <div className="retro-dist-pct">{pct.toFixed(0)}%</div>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Per-row results table */}
+          <div className="retro-input-section">
+            <div className="retro-input-hdr">
+              <h2 className="retro-input-title">Per-patient results · n = {result.total}</h2>
+              <div className="retro-input-actions">
+                <button className="retro-btn" onClick={downloadCSV}>↓ Export CSV</button>
+                <button className="retro-btn" onClick={() => window.print()}>Print summary</button>
+              </div>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table className="retro-results-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Cancer</th>
+                    <th>Lines</th>
+                    <th>ECOG</th>
+                    <th>CellTx urgency</th>
+                    <th>CellTx decision</th>
+                    <th>Delay (d)</th>
+                    <th>Classification</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.rows.map(r => {
+                    const cm = classMeta[r.classification] || classMeta.unknown;
+                    return (
+                      <tr key={r.patientId}>
+                        <td><strong>{r.patientId}</strong></td>
+                        <td>{(r.patient.cancerType || "—").split("(")[0].trim()}</td>
+                        <td>{r.patient.priorLines}</td>
+                        <td>{r.patient.ecog}</td>
+                        <td>
+                          <span className={`retro-cell-class ${r.urgency === "high" ? "bad" : r.urgency === "medium" ? "warn" : r.urgency === "low" ? "good" : "neutral"}`}>
+                            {r.urgency.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{r.decision}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: r.referralDelta > 14 ? "#b54a2c" : r.referralDelta === null ? "#98908380" : "#5a7a4a" }}>
+                          {r.referralDelta === null ? "—" : r.referralDelta}
+                        </td>
+                        <td>
+                          <span className={`retro-cell-class ${cm.tone}`}>
+                            {cm.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ marginTop: 24, padding: "16px 20px", background: "#ebe6dc", fontSize: 12, color: "#6b645a", lineHeight: 1.65 }}>
+            <strong style={{ color: "#1a1815" }}>How to use these results:</strong> Export the CSV for further analysis in R / Stata / Python.
+            Cite the methodology as "Retrospective comparison of actual referral timing against CellTx Match
+            (cart-match.vercel.app) eligibility engine recommendations, using FDA prescribing information criteria
+            current as of May 2026 and NCCN-aligned disease pathways for {result.total} historical referrals."
+            Pair with your institution's IRB-approved data extraction for publication.
+          </div>
+        </>
+      )}
+
+      <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button className="board-btn" onClick={onGoToScreener}>← Back to screener</button>
       </div>
     </div>
   );
@@ -7542,8 +7949,9 @@ export default function App() {
     if (p === "/disclaimer") return "disclaimer";
     if (p === "/analytics") return "analytics";
     if (p === "/today") return "today";
+    if (p === "/retrospective") return "retrospective";
     return "screener";
-  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics"
+  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics" | "retrospective"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -7579,6 +7987,7 @@ export default function App() {
       : view === "disclaimer" ? "/disclaimer"
       : view === "analytics" ? "/analytics"
       : view === "today" ? "/today"
+      : view === "retrospective" ? "/retrospective"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -7624,6 +8033,7 @@ export default function App() {
       else if (p === "/disclaimer") setView("disclaimer");
       else if (p === "/analytics") setView("analytics");
       else if (p === "/today") setView("today");
+      else if (p === "/retrospective") setView("retrospective");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -8182,7 +8592,13 @@ export default function App() {
           digestEnabled={digestEnabled}
           onToggleDigest={toggleDigest}
           userEmail={userEmail}
+          userName={userName}
         />
+      )}
+
+      {/* RETROSPECTIVE VALIDATION TOOL (public — research/credibility surface) */}
+      {view === "retrospective" && (
+        <RetrospectiveView onGoToScreener={() => setView("screener")} />
       )}
 
       {/* TODAY / OPERATIONS DASHBOARD (signed-in only) */}
@@ -8764,6 +9180,13 @@ export default function App() {
             onClick={() => setView("criteria")}
           >
             Criteria Library →
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onClick={() => setView("retrospective")}
+          >
+            Retrospective Tool →
           </button>
           <button
             className="footer-link"
