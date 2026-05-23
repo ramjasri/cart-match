@@ -26,6 +26,7 @@ import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
 import { generateMolecularSummary, ESCAT_TIERS } from "./utils/resistance.js";
+import { rankTherapyOptions, basisUrl } from "./utils/evidenceEngine.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -1587,6 +1588,172 @@ const CSS = `
     font-size: 10.5px; color: #6b645a; line-height: 1.5;
     margin: 6px 0 0; font-style: italic;
   }
+
+  /* EVIDENCE-RANKED OPTIONS PANEL — Layer 1 (the evidence engine) */
+  .evidence-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .evidence-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+    cursor: pointer; user-select: none;
+  }
+  .evidence-icon-bg {
+    width: 30px; height: 30px; background: #c4a661; color: #1a1815;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 18px; line-height: 1; font-weight: 700;
+  }
+  .evidence-hdr-text { flex: 1; min-width: 0; }
+  .evidence-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .evidence-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .evidence-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #c4a661; letter-spacing: 0.1em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .evidence-body { padding: 14px 18px; }
+
+  .evidence-row {
+    background: #fff; border: 1px solid #1a181520; padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .evidence-row:last-of-type { margin-bottom: 0; }
+  .evidence-row.blocked { opacity: 0.62; background: #fafaf7; }
+
+  .evidence-row-hdr {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 10px; margin-bottom: 6px;
+  }
+  .evidence-tier-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #f4f1ea; padding: 3px 8px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    flex-shrink: 0;
+  }
+  .evidence-prod-name {
+    font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .evidence-prod-generic {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; letter-spacing: 0.05em;
+  }
+  .evidence-nccn-pref {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+    background: #5a7a4a; color: #f4f1ea; padding: 2px 7px;
+  }
+  .evidence-blocked-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+    background: #b54a2c; color: #f4f1ea; padding: 2px 7px;
+    margin-left: auto;
+  }
+
+  .evidence-context {
+    font-size: 12px; color: #3a352e; line-height: 1.5; margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .evidence-basis {
+    background: #1a181508; border-left: 3px solid #c4a661;
+    padding: 8px 10px; margin-bottom: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .evidence-basis-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    font-weight: 700;
+  }
+  .evidence-basis-trial {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: #1a1815; font-weight: 700;
+  }
+  .evidence-basis-link {
+    color: #4c6b8c; text-decoration: none;
+    border-bottom: 1px dotted #4c6b8c80;
+  }
+  .evidence-basis-link:hover {
+    color: #1a1815; border-bottom-color: #1a1815;
+  }
+  .evidence-basis-finding {
+    font-size: 11.5px; color: #3a352e; line-height: 1.5;
+  }
+
+  .evidence-annotations {
+    display: flex; flex-direction: column; gap: 6px;
+    margin: 8px 0;
+  }
+  .evidence-annotation {
+    display: flex; gap: 10px;
+    padding: 8px 10px;
+    border-left: 3px solid;
+  }
+  .evidence-annotation.caution  { border-color: #c4a661; background: #c4a66110; }
+  .evidence-annotation.warning  { border-color: #b54a2c; background: #b54a2c0c; }
+  .evidence-annotation.block    { border-color: #b54a2c; background: #b54a2c1a; }
+  .evidence-annotation.upgrade  { border-color: #5a7a4a; background: #5a7a4a10; }
+  .evidence-annotation-sev {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    flex-shrink: 0; padding-top: 2px;
+    min-width: 80px;
+  }
+  .evidence-annotation.caution  .evidence-annotation-sev { color: #7a5e10; }
+  .evidence-annotation.warning  .evidence-annotation-sev { color: #b54a2c; }
+  .evidence-annotation.block    .evidence-annotation-sev { color: #b54a2c; }
+  .evidence-annotation.upgrade  .evidence-annotation-sev { color: #4a6a3a; }
+  .evidence-annotation-body { flex: 1; min-width: 0; }
+  .evidence-annotation-label {
+    font-size: 12px; color: #1a1815; font-weight: 600;
+    line-height: 1.4; margin-bottom: 2px;
+  }
+  .evidence-annotation-detail {
+    font-size: 11.5px; color: #3a352e; line-height: 1.55;
+  }
+  .evidence-annotation-source {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; margin-top: 4px;
+  }
+
+  .evidence-blocks {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid #1a181510;
+  }
+  .evidence-blocks-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: #b54a2c; font-weight: 700;
+  }
+  .evidence-blocks-list {
+    list-style: none; padding: 0; margin: 4px 0 0;
+  }
+  .evidence-blocks-list li {
+    font-size: 11px; color: #3a352e; padding: 2px 0 2px 12px;
+    line-height: 1.5; position: relative;
+  }
+  .evidence-blocks-list li::before {
+    content: '✕'; position: absolute; left: 0; color: #b54a2c;
+    font-weight: 700; font-size: 9px;
+  }
+  .evidence-blocks-more {
+    font-style: italic; color: #6b645a !important;
+  }
+  .evidence-blocks-more::before { content: '…' !important; color: #6b645a !important; }
+
+  .evidence-footer {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid #1a181520;
+    font-size: 11px; color: #6b645a; line-height: 1.6;
+  }
+  .evidence-footer strong { color: #1a1815; font-weight: 600; }
 
   /* MOLECULAR & RESISTANCE INTELLIGENCE PANEL */
   .molecular-panel {
@@ -6166,6 +6333,140 @@ function WorkupPanel({ pt }) {
   );
 }
 
+// ── EvidenceRankedOptionsPanel ─────────────────────────────────────────────
+// Layer 1 of the three-layer platform: the Evidence engine.
+//
+// Renders therapy options ranked by ESCAT tier, with the specific trial that
+// supports each tier, NCCN preference flags, and patient-specific annotations
+// (e.g. TP53 → reduced durability signal · prior CD19 → consider antigen
+// escape). This is the "evidence-ranked options for clinician review"
+// surface — explicitly framed as evidence summarization, not prediction.
+function EvidenceRankedOptionsPanel({ pt, results }) {
+  const [open, setOpen] = useState(true);
+  if (!results) return null;
+
+  // Build the input array for the ranker
+  const productInputs = ALL_PRODUCTS.map(product => ({
+    product,
+    score: results[product.id],
+    eligible: results[product.id]?.eligible || false,
+  }));
+
+  const ranked = rankTherapyOptions(pt, productInputs);
+
+  // Only show products that have any matching evidence tier OR are eligible
+  // (eligible but no tier rule → still shown so clinician sees they pass criteria)
+  const visible = ranked.filter(r => r.tier !== "X" || r.eligible);
+  if (visible.length === 0) return null;
+
+  const annotationsByProduct = visible.map(r => r.annotations).flat();
+  const hasAnyAnnotation = annotationsByProduct.length > 0;
+
+  return (
+    <div className="evidence-panel">
+      <div className="evidence-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="evidence-icon-bg">≡</div>
+        <div className="evidence-hdr-text">
+          <div className="evidence-hdr-title">Evidence-ranked options</div>
+          <div className="evidence-hdr-sub">ESCAT-tiered · NCCN-aware · evidence summary (not a prediction)</div>
+        </div>
+        <div className="evidence-count">
+          {visible.filter(r => r.eligible).length} of {visible.length} eligible
+        </div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={16} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="evidence-body">
+          {visible.map(row => {
+            const { product, tier, tierMeta, context, basis, nccnPreferred, annotations, eligible, blocks, warnings } = row;
+            const ctUrl = basisUrl(basis);
+            return (
+              <div key={product.id} className={`evidence-row${eligible ? "" : " blocked"}`}>
+                <div className="evidence-row-hdr">
+                  <span className="evidence-tier-badge" style={{ background: tierMeta.color }}>
+                    {tierMeta.label}
+                  </span>
+                  <div className="evidence-prod-name" style={{ color: product.color }}>
+                    {product.name}
+                  </div>
+                  <span className="evidence-prod-generic">{product.generic}</span>
+                  {nccnPreferred && (
+                    <span className="evidence-nccn-pref">NCCN preferred</span>
+                  )}
+                  {!eligible && (
+                    <span className="evidence-blocked-pill">Blocked</span>
+                  )}
+                </div>
+
+                <div className="evidence-context">{context}</div>
+
+                {basis && (
+                  <div className="evidence-basis">
+                    <span className="evidence-basis-label">Evidence basis</span>
+                    <span className="evidence-basis-trial">
+                      {ctUrl ? (
+                        <a href={ctUrl} target="_blank" rel="noopener noreferrer" className="evidence-basis-link">
+                          {basis.trial} · {basis.nctId} ↗
+                        </a>
+                      ) : (
+                        <>{basis.trial}</>
+                      )}
+                    </span>
+                    <span className="evidence-basis-finding">{basis.finding}</span>
+                  </div>
+                )}
+
+                {annotations.length > 0 && (
+                  <div className="evidence-annotations">
+                    {annotations.map(a => (
+                      <div key={a.id} className={`evidence-annotation ${a.severity}`}>
+                        <span className="evidence-annotation-sev">
+                          {a.severity === "upgrade" ? "↑ Preferred"
+                            : a.severity === "block"   ? "✕ Blocked"
+                            : a.severity === "warning" ? "⚠ Warning"
+                            : "ⓘ Caveat"}
+                        </span>
+                        <div className="evidence-annotation-body">
+                          <div className="evidence-annotation-label">{a.label}</div>
+                          <div className="evidence-annotation-detail">{a.detail}</div>
+                          <div className="evidence-annotation-source">{a.source}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!eligible && blocks.length > 0 && (
+                  <div className="evidence-blocks">
+                    <span className="evidence-blocks-label">Eligibility blocks</span>
+                    <ul className="evidence-blocks-list">
+                      {blocks.slice(0, 3).map((b, i) => <li key={i}>{b}</li>)}
+                      {blocks.length > 3 && <li className="evidence-blocks-more">+ {blocks.length - 3} more — see product card below</li>}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="evidence-footer">
+            <strong>Evidence summary, not a prediction.</strong> Tiers per ESCAT framework
+            (Mateo et al. <em>Annals of Oncology</em> 2018). Tier IA = randomized superiority
+            in this exact context · IB = regulatory approval · IIA = accelerated approval / single-arm.
+            Annotations surface published subgroup signals — they do not modify the
+            baseline evidence tier. Final therapeutic decisions require treating-physician
+            judgment.
+            {hasAnyAnnotation && " Patient-specific annotations shown above are derived from published subgroup analyses and the NGS / risk factors entered."}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── MolecularIntelligencePanel ─────────────────────────────────────────────
 // Renders detected biomarkers (grouped by category) + ESCAT tier badges +
 // resistance flags + cell therapy nonresponse risk score. The defensible
@@ -10633,7 +10934,10 @@ export default function App() {
                 );
               })()}
 
-              {/* Molecular & resistance intelligence — defensible moat layer */}
+              {/* Evidence-ranked options — Layer 1 (the evidence engine) */}
+              <EvidenceRankedOptionsPanel pt={pt} results={results} />
+
+              {/* Molecular & resistance intelligence — Layer 2 (resistance/escalation) */}
               <MolecularIntelligencePanel pt={pt} />
 
               {/* Consolidated workup checklist — what to do to prepare for referral */}
