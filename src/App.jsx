@@ -3272,6 +3272,257 @@ const CSS = `
     padding: 12px 0;
   }
 
+  /* CENTERS PAGE — /centers (cell therapy center pitch + pilot offer) */
+  .centers-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .centers-view { padding: 36px 20px 60px; } }
+
+  .centers-hero { margin-bottom: 48px; }
+  .centers-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #b54a2c;
+    margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .centers-tag::before { content: ''; width: 24px; height: 1px; background: #b54a2c; }
+  .centers-h1 {
+    font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.1; color: #1a1815; letter-spacing: -0.025em; margin: 0;
+  }
+  .centers-h1 em { font-style: italic; color: #b54a2c; }
+  .centers-sub {
+    font-size: 16px; color: #6b645a; max-width: 700px;
+    margin: 18px 0 28px; line-height: 1.65;
+  }
+  .centers-hero-cta-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .centers-hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 22px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    transition: all 0.15s; text-decoration: none; border: 1px solid;
+  }
+  .centers-hero-cta.primary {
+    background: #b54a2c; color: #f4f1ea; border-color: #b54a2c;
+  }
+  .centers-hero-cta.primary:hover {
+    background: #c4a661; color: #1a1815; border-color: #c4a661;
+    transform: translateY(-2px);
+  }
+  .centers-hero-cta.secondary {
+    background: transparent; color: #1a1815; border-color: #1a181550;
+  }
+  .centers-hero-cta.secondary:hover {
+    background: #1a181508; border-color: #1a1815;
+  }
+
+  /* Two-column problem/solution section */
+  .ps-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid #1a1815; margin-bottom: 36px;
+  }
+  @media (max-width: 860px) { .ps-section { grid-template-columns: 1fr; } }
+  .ps-col {
+    padding: 28px 30px;
+  }
+  .ps-col.problem {
+    background: #b54a2c0a; border-right: 1px solid #1a181530;
+  }
+  .ps-col.solution {
+    background: #5a7a4a0a;
+  }
+  @media (max-width: 860px) {
+    .ps-col.problem { border-right: none; border-bottom: 1px solid #1a181530; }
+  }
+  .ps-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    margin-bottom: 14px; font-weight: 700;
+  }
+  .ps-col.problem .ps-eyebrow { color: #b54a2c; }
+  .ps-col.solution .ps-eyebrow { color: #5a7a4a; }
+  .ps-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; line-height: 1.25; letter-spacing: -0.015em;
+    margin: 0 0 16px;
+  }
+  .ps-list { list-style: none; padding: 0; margin: 0; }
+  .ps-list li {
+    font-size: 14px; color: #1a1815; padding: 6px 0 6px 18px;
+    position: relative; line-height: 1.55;
+  }
+  .ps-list.problem li::before {
+    content: "✗"; position: absolute; left: 0; color: #b54a2c; font-weight: 700;
+  }
+  .ps-list.solution li::before {
+    content: "→"; position: absolute; left: 0; color: #5a7a4a; font-weight: 700;
+  }
+
+  /* Pilot offer banner */
+  .pilot-offer {
+    background: #1a1815; color: #f4f1ea;
+    padding: 40px 44px; margin-bottom: 36px;
+    position: relative; overflow: hidden;
+  }
+  .pilot-offer::before {
+    content: ""; position: absolute; top: 0; left: 0; height: 4px; width: 100%;
+    background: linear-gradient(90deg, #b54a2c 0%, #c4a661 50%, #5a7a4a 100%);
+  }
+  .pilot-offer-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    margin-bottom: 14px;
+  }
+  .pilot-offer-title {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+    color: #f4f1ea; line-height: 1.2; letter-spacing: -0.018em;
+    margin: 0 0 14px;
+  }
+  .pilot-offer-title em { font-style: italic; color: #c4a661; }
+  .pilot-offer-sub {
+    font-size: 15px; color: #f4f1eacc; line-height: 1.65;
+    margin: 0 0 28px; max-width: 720px;
+  }
+  .pilot-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 860px) { .pilot-grid { grid-template-columns: 1fr; } }
+  .pilot-block {}
+  .pilot-block-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #c4a661;
+    margin-bottom: 10px;
+  }
+  .pilot-block ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .pilot-block li {
+    font-size: 13.5px; color: #f4f1ea; padding: 4px 0 4px 16px;
+    position: relative; line-height: 1.5;
+  }
+  .pilot-block li::before {
+    content: "·"; position: absolute; left: 4px; color: #c4a661; font-weight: 700;
+  }
+  .pilot-cta-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding-top: 24px; border-top: 1px solid #f4f1ea20;
+  }
+  .pilot-charter {
+    background: #b54a2c; color: #f4f1ea;
+    padding: 11px 20px; border: none; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    transition: background 0.12s;
+  }
+  .pilot-charter:hover { background: #c4a661; color: #1a1815; }
+  .pilot-info {
+    color: #c4a661; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    padding: 11px 0; align-self: center;
+  }
+  .pilot-info strong { color: #f4f1ea; }
+
+  /* Metrics dashboard preview */
+  .metrics-preview {
+    background: #f4f1ea; border: 1px solid #1a1815;
+    padding: 28px 30px; margin-bottom: 36px;
+  }
+  .metrics-preview-hdr {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+  .metrics-preview-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.015em; margin: 0;
+  }
+  .metrics-preview-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #6b645a;
+    background: #ebe6dc; padding: 4px 10px;
+  }
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  @media (max-width: 860px) { .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
+  @media (max-width: 500px) { .metrics-grid { grid-template-columns: 1fr; } }
+  .metric-card {
+    background: #ebe6dc; padding: 16px 18px;
+    border-left: 3px solid #4c6b8c;
+  }
+  .metric-num {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #1a1815; line-height: 1; letter-spacing: -0.015em;
+  }
+  .metric-num em { font-style: normal; color: #5a7a4a; }
+  .metric-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: #6b645a;
+    margin-top: 8px; line-height: 1.45;
+  }
+  .metric-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #5a7a4a; margin-top: 4px;
+  }
+
+  /* Pricing section for centers */
+  .centers-pricing {
+    background: #ebe6dc; padding: 32px 36px; margin-bottom: 36px;
+  }
+  .centers-pricing-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.015em; margin: 0 0 22px;
+  }
+  .centers-pricing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 860px) { .centers-pricing-grid { grid-template-columns: 1fr; } }
+  .centers-pricing-card {
+    background: #f4f1ea; border: 1px solid #1a181530;
+    padding: 22px 24px;
+  }
+  .centers-pricing-card.featured {
+    border-color: #b54a2c; border-width: 2px;
+  }
+  .centers-pricing-stage {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+  .centers-pricing-card.featured .centers-pricing-stage { color: #b54a2c; }
+  .centers-pricing-amount {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #1a1815; line-height: 1; letter-spacing: -0.018em;
+    margin-bottom: 6px;
+  }
+  .centers-pricing-amount em { font-style: normal; color: #b54a2c; }
+  .centers-pricing-period {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; letter-spacing: 0.08em; margin-bottom: 12px;
+  }
+  .centers-pricing-desc {
+    font-size: 13px; color: #3a352e; line-height: 1.55;
+  }
+
+  /* Final CTA */
+  .centers-final-cta {
+    background: #1a1815; color: #f4f1ea;
+    padding: 38px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .centers-final-text { flex: 1; min-width: 280px; }
+  .centers-final-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    margin: 0 0 6px; letter-spacing: -0.015em; line-height: 1.2;
+  }
+  .centers-final-title em { font-style: italic; color: #c4a661; }
+  .centers-final-sub {
+    font-size: 13.5px; color: #f4f1eaaa; line-height: 1.6;
+  }
+
   /* RESEARCH / PARTNERSHIPS — /research */
   .research-view {
     max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
@@ -5896,6 +6147,214 @@ function AccuracyModal({ onClose }) {
             {" "}— CellTx Match is for educational and research purposes only. Always confirm eligibility against current labeling, institutional protocols, and individual clinical assessment.
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Centers page (/centers) — pitch + 90-day pilot offer ──────────────────
+function CentersView({ onRequestPilot }) {
+  return (
+    <div className="centers-view">
+      {/* Hero */}
+      <div className="centers-hero">
+        <div className="centers-tag">For certified cell therapy centers</div>
+        <h1 className="centers-h1">
+          Better-qualified <em>inbound CAR-T referrals</em><br />
+          from community oncology practices.
+        </h1>
+        <p className="centers-sub">
+          CellTx Match runs as a free decision-support tool in the community oncology
+          practices that refer to your center. Every referral arrives screened against all 12
+          FDA-approved products, with a standardized packet, completed workup checklist, and
+          eligibility flagged in advance. Your referral office spends less time on intake
+          back-and-forth and more time on patient consultation.
+        </p>
+        <div className="centers-hero-cta-row">
+          <button className="centers-hero-cta primary" onClick={onRequestPilot}>
+            Request 90-day charter pilot →
+          </button>
+          <a href="/api/fhir/example.json" target="_blank" rel="noopener noreferrer" className="centers-hero-cta secondary">
+            See sample referral packet
+          </a>
+        </div>
+      </div>
+
+      {/* Problem / Solution split */}
+      <div className="ps-section">
+        <div className="ps-col problem">
+          <div className="ps-eyebrow">⚠ The referral-office reality today</div>
+          <h2 className="ps-title">Community referrals arrive incomplete, late, or inappropriate.</h2>
+          <ul className="ps-list problem">
+            <li>Missing IHC, outside records, recent imaging — referral office calls the practice multiple times before triage</li>
+            <li>Patients deteriorate during workup; eligibility window closes before consult is scheduled</li>
+            <li>Up to 30% of referrals turn out to be ineligible on arrival — wasted consult slot, lost goodwill</li>
+            <li>Community practices under-refer because the workflow is opaque and the criteria feel uncertain</li>
+            <li>Manual completeness checks and chase-down cost coordinator hours every week</li>
+          </ul>
+        </div>
+        <div className="ps-col solution">
+          <div className="ps-eyebrow">✓ With CellTx Match in your community practices</div>
+          <h2 className="ps-title">Pre-qualified referrals with the workup already in motion.</h2>
+          <ul className="ps-list solution">
+            <li>Standardized referral packets — every patient arrives with complete intake</li>
+            <li>Eligibility verified against your product list before the referral is even sent</li>
+            <li>Urgency triage flags HIGH-priority patients automatically — refer earlier, not later</li>
+            <li>Workup checklist visible to both sides — coordinator knows what's still pending</li>
+            <li>Per-center custom intake requirements supported — your protocols, your branding</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* The pilot offer */}
+      <div className="pilot-offer">
+        <div className="pilot-offer-tag">Charter pilot · Limited to first 5 centers</div>
+        <h2 className="pilot-offer-title">
+          90-day pilot with <em>your center</em>, free for charter institutions.
+        </h2>
+        <p className="pilot-offer-sub">
+          A scoped, low-risk evaluation focused on a single disease area
+          (relapsed/refractory LBCL or multiple myeloma) at one center. Custom intake
+          requirements built to your protocols. Monthly metrics report. After 90 days,
+          decide whether to continue under Institutional pricing — pilot fee is credited
+          toward your first year if you continue.
+        </p>
+
+        <div className="pilot-grid">
+          <div className="pilot-block">
+            <div className="pilot-block-label">Scope</div>
+            <ul>
+              <li>One disease area (R/R LBCL or MM)</li>
+              <li>One center · one disease team</li>
+              <li>90-day fixed engagement</li>
+              <li>Custom intake configuration</li>
+              <li>Branded referral packets</li>
+            </ul>
+          </div>
+          <div className="pilot-block">
+            <div className="pilot-block-label">Metrics tracked</div>
+            <ul>
+              <li>Referrals received per month</li>
+              <li>Referral packet completeness rate</li>
+              <li>Time from referral → consult</li>
+              <li>Time from consult → leukapheresis</li>
+              <li>Inappropriate referral rate</li>
+              <li>Referring-practice engagement</li>
+            </ul>
+          </div>
+          <div className="pilot-block">
+            <div className="pilot-block-label">Your commitments</div>
+            <ul>
+              <li>Identify a clinical champion</li>
+              <li>30-min onboarding session</li>
+              <li>Monthly 30-min review call</li>
+              <li>Access to referral data (de-identified)</li>
+              <li>Reference call rights post-pilot</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pilot-cta-row">
+          <button className="pilot-charter" onClick={onRequestPilot}>
+            Apply for charter pilot →
+          </button>
+          <div className="pilot-info">
+            <strong>$0</strong> for the first 5 centers · 50% off Year 1 if continuing
+          </div>
+        </div>
+      </div>
+
+      {/* Metrics preview */}
+      <div className="metrics-preview">
+        <div className="metrics-preview-hdr">
+          <h3 className="metrics-preview-title">What your monthly report looks like</h3>
+          <span className="metrics-preview-tag">Sample · illustrative numbers</span>
+        </div>
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-num">47</div>
+            <div className="metric-label">Referrals received via CellTx</div>
+            <div className="metric-sub">↑ from 28 in baseline month</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-num"><em>94%</em></div>
+            <div className="metric-label">Referral packet completeness</div>
+            <div className="metric-sub">↑ from 58% baseline</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-num"><em>9d</em></div>
+            <div className="metric-label">Median referral → consult</div>
+            <div className="metric-sub">↓ from 21d baseline</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-num"><em>4%</em></div>
+            <div className="metric-label">Inappropriate referral rate</div>
+            <div className="metric-sub">↓ from 28% baseline</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-num">12</div>
+            <div className="metric-label">Engaged referring practices</div>
+            <div className="metric-sub">↑ from 4 at pilot start</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-num">23d</div>
+            <div className="metric-label">Median consult → apheresis</div>
+            <div className="metric-sub">↓ from 35d baseline</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Post-pilot pricing */}
+      <div className="centers-pricing">
+        <h3 className="centers-pricing-title">After the pilot</h3>
+        <div className="centers-pricing-grid">
+          <div className="centers-pricing-card featured">
+            <div className="centers-pricing-stage">Charter (first 5 centers)</div>
+            <div className="centers-pricing-amount"><em>$0</em></div>
+            <div className="centers-pricing-period">90-day pilot · free</div>
+            <p className="centers-pricing-desc">
+              First 5 charter centers receive a fully-waived pilot in exchange for
+              case-study and reference-call rights. 50% off Year 1 if continuing.
+            </p>
+          </div>
+          <div className="centers-pricing-card">
+            <div className="centers-pricing-stage">Institutional</div>
+            <div className="centers-pricing-amount">$2,500+</div>
+            <div className="centers-pricing-period">per month · annual contract</div>
+            <p className="centers-pricing-desc">
+              Standard center license. Unlimited referrals, custom branding, monthly
+              metrics, dedicated support. Most centers land here post-pilot.
+            </p>
+          </div>
+          <div className="centers-pricing-card">
+            <div className="centers-pricing-stage">Enterprise (network)</div>
+            <div className="centers-pricing-amount">$25K–$150K+</div>
+            <div className="centers-pricing-period">annual contract · custom</div>
+            <p className="centers-pricing-desc">
+              Multi-site networks · health systems · pharma medical affairs sponsored
+              deployments. SSO · HIPAA BAA · FHIR integration · audit log.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Final CTA */}
+      <div className="centers-final-cta">
+        <div className="centers-final-text">
+          <h3 className="centers-final-title">
+            Worth a <em>30-minute</em> scoping call?
+          </h3>
+          <p className="centers-final-sub">
+            Replies within 1 business day. Ramja Sritharan, Founder · Tumor immunology PhD ·
+            translational oncology workflows.
+          </p>
+        </div>
+        <a
+          href="mailto:sri.ramya003@gmail.com?subject=CellTx%20Match%20-%20Charter%20Pilot%20Inquiry&body=Hi%20Ramja%2C%0A%0AI%27m%20interested%20in%20discussing%20a%20charter%20pilot%20for%20%5BCenter%20Name%5D.%0A%0ATimes%20I%27m%20available%20this%20week%3A%0A-%20%0A%0A"
+          className="centers-hero-cta primary"
+        >
+          Schedule a call →
+        </a>
       </div>
     </div>
   );
@@ -8628,8 +9087,9 @@ export default function App() {
     if (p === "/today") return "today";
     if (p === "/retrospective") return "retrospective";
     if (p === "/research") return "research";
+    if (p === "/centers") return "centers";
     return "screener";
-  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics" | "retrospective" | "research"
+  }); // "screener" | "board" | "today" | "pricing" | "criteria" | "refer" | "about" | "privacy" | "terms" | "disclaimer" | "analytics" | "retrospective" | "research" | "centers"
   const [boardAdded, setBoardAdded] = useState(false);
   const [showAccuracy, setShowAccuracy] = useState(false);
   const [formOpen, setFormOpen] = useState(true); // mobile form collapse
@@ -8667,6 +9127,7 @@ export default function App() {
       : view === "today" ? "/today"
       : view === "retrospective" ? "/retrospective"
       : view === "research" ? "/research"
+      : view === "centers" ? "/centers"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -8714,6 +9175,7 @@ export default function App() {
       else if (p === "/today") setView("today");
       else if (p === "/retrospective") setView("retrospective");
       else if (p === "/research") setView("research");
+      else if (p === "/centers") setView("centers");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -9150,6 +9612,14 @@ export default function App() {
                 </>
               )}
               <button
+                className={`hdr-nav-btn${view === "centers" ? " active" : ""}`}
+                onClick={() => setView("centers")}
+                title="For certified cell therapy centers · charter pilot offer"
+                style={view === "centers" ? {} : { borderColor: "#b54a2c", color: "#b54a2c" }}
+              >
+                For Centers
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "criteria" ? " active" : ""}`}
                 onClick={() => setView("criteria")}
               >
@@ -9468,6 +9938,13 @@ export default function App() {
           onGoToCriteria={() => setView("criteria")}
           onGoToRetro={() => setView("retrospective")}
           onGoToAnalytics={() => setView("analytics")}
+        />
+      )}
+
+      {/* CENTERS (public — primary B2B sales surface for cell therapy centers) */}
+      {view === "centers" && (
+        <CentersView
+          onRequestPilot={() => { trackPricingCta("centers-pilot"); setShowWaitlist(true); }}
         />
       )}
 
@@ -10064,6 +10541,13 @@ export default function App() {
             onClick={() => setView("research")}
           >
             Research &amp; Partnerships →
+          </button>
+          <button
+            className="footer-link"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#b54a2c" }}
+            onClick={() => setView("centers")}
+          >
+            For Centers →
           </button>
           <button
             className="footer-link"
