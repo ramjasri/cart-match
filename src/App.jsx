@@ -25,9 +25,10 @@ import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
 import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
-import { generateMolecularSummary, ESCAT_TIERS } from "./utils/resistance.js";
-import { rankTherapyOptions, basisUrl } from "./utils/evidenceEngine.js";
+import { generateMolecularSummary, ESCAT_TIERS, BIOMARKER_DB } from "./utils/resistance.js";
+import { rankTherapyOptions, basisUrl, PRODUCT_EVIDENCE, TIER_ANNOTATIONS } from "./utils/evidenceEngine.js";
 import { findNearestCenters, US_STATES, INSURANCE_TYPES, PRIOR_AUTH_STATUSES, insuranceConsiderations } from "./utils/centerMatching.js";
+import { verificationMetrics } from "./data/centers.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -2401,6 +2402,135 @@ const CSS = `
     max-width: 880px; margin: 0 auto; padding: 56px 40px 80px;
   }
   @media (max-width: 860px) { .about-view { padding: 36px 20px 60px; } }
+
+  /* DEFENSIBILITY VIEW — the moat scoreboard */
+  .defens-view {
+    max-width: 1100px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .defens-view { padding: 36px 20px 60px; } }
+  .defens-hero { text-align: center; margin-bottom: 48px; }
+  .defens-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    font-weight: 700; margin-bottom: 18px;
+  }
+  .defens-h1 {
+    font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.1; letter-spacing: -0.025em; color: #1a1815;
+    margin: 0 0 22px;
+  }
+  @media (max-width: 860px) { .defens-h1 { font-size: 30px; } }
+  .defens-h1 em { font-style: italic; color: #b54a2c; }
+  .defens-sub {
+    font-size: 15.5px; line-height: 1.65; color: #3a352e;
+    max-width: 760px; margin: 0 auto;
+  }
+
+  .defens-grid {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .defens-card {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    overflow: hidden;
+  }
+  .defens-card.status-pilot-required { border-left-width: 4px; border-left-color: #c4a661; }
+  .defens-card.status-advancing      { border-left-width: 4px; border-left-color: #5a7a4a; }
+  .defens-card.status-seeded         { border-left-width: 4px; border-left-color: #4c6b8c; }
+  .defens-card.status-not-yet-started { border-left-width: 4px; border-left-color: #b54a2c; }
+
+  .defens-card-hdr {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #1a181520;
+  }
+  .defens-card-num {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300;
+    color: #c4a661; line-height: 1; min-width: 36px;
+    flex-shrink: 0;
+  }
+  .defens-card-hdr-text { flex: 1; min-width: 0; }
+  .defens-card-title {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    color: #1a1815; line-height: 1.2; letter-spacing: -0.012em;
+    margin-bottom: 6px;
+  }
+  .defens-card-statement {
+    font-size: 13px; color: #3a352e; line-height: 1.55; font-style: italic;
+  }
+  .defens-status-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700;
+    padding: 4px 8px; flex-shrink: 0;
+  }
+  .defens-status-badge.status-advancing      { background: #5a7a4a; color: #f4f1ea; }
+  .defens-status-badge.status-pilot-required { background: #c4a661; color: #1a1815; }
+  .defens-status-badge.status-seeded         { background: #4c6b8c; color: #f4f1ea; }
+  .defens-status-badge.status-not-yet-started { background: #b54a2c; color: #f4f1ea; }
+
+  .defens-card-body {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
+    padding: 18px 22px;
+  }
+  @media (max-width: 760px) { .defens-card-body { grid-template-columns: 1fr; gap: 16px; } }
+  .defens-card-col-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 10px; font-weight: 700;
+  }
+  .defens-list {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .defens-list li {
+    font-size: 12.5px; color: #1a1815; line-height: 1.55;
+    padding: 4px 0 4px 14px; position: relative;
+  }
+  .defens-list li::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+    color: #5a7a4a;
+  }
+  .defens-list.advances li::before { color: #c4a661; }
+
+  .defens-card-link {
+    padding: 12px 22px; border-top: 1px solid #1a181520;
+    background: #fafaf7;
+  }
+  .defens-link-btn {
+    font-family: 'Inter Tight', sans-serif; font-size: 12.5px;
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: #4c6b8c; border-bottom: 1px dotted #4c6b8c80;
+    letter-spacing: -0.005em;
+  }
+  .defens-link-btn:hover { color: #1a1815; border-bottom-color: #1a1815; }
+
+  .defens-footer {
+    border-top: 2px solid #1a1815; padding-top: 36px;
+  }
+  .defens-footer-title {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+    color: #1a1815; margin: 0 0 18px; letter-spacing: -0.018em;
+  }
+  .defens-footer p {
+    font-size: 14.5px; color: #3a352e; line-height: 1.7; margin: 0 0 14px;
+  }
+  .defens-footer p em { font-style: italic; color: #1a1815; }
+  .defens-footer p strong { color: #1a1815; }
+  .defens-footer-cta-row {
+    display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;
+  }
+  .defens-footer-cta {
+    font-family: 'Inter Tight', sans-serif; font-size: 13.5px; font-weight: 500;
+    padding: 11px 22px; cursor: pointer; border: 1px solid #1a1815;
+    background: transparent; transition: all 150ms;
+  }
+  .defens-footer-cta.primary {
+    background: #1a1815; color: #f4f1ea;
+  }
+  .defens-footer-cta.primary:hover { background: #3a352e; }
+  .defens-footer-cta.secondary { color: #1a1815; }
+  .defens-footer-cta.secondary:hover { background: #1a181508; }
+
 
   .about-hero { text-align: center; margin-bottom: 48px; }
   .about-tag {
@@ -8849,6 +8979,254 @@ function DisclaimerView() {
   );
 }
 
+// ── Defensibility / Moat page ──────────────────────────────────────────────
+// Honest scoreboard against the seven moats. The platform's strategic clarity
+// artifact — what investors, pharma BD, and acquirers should land on first.
+//
+// Each moat is rendered with:
+//   - the moat statement (in the consultant's own words where possible)
+//   - what we have now (concrete: numbers, files, features that exist)
+//   - what advances it (the operational/partnership work that has to happen)
+//   - status (seeded / advancing / pilot-required / not-yet-started)
+function DefensibilityView({ onBackToScreener, onGoToCenters, onGoToCriteria, onGoToRetrospective, onRequestPilot }) {
+  // Live counts from the actual code — no fudging
+  const biomarkerCount = BIOMARKER_DB.length;
+  const evidenceRuleCount = Object.values(PRODUCT_EVIDENCE).reduce((acc, rules) => acc + rules.length, 0);
+  const tierAnnotationCount = TIER_ANNOTATIONS.length;
+  const pathwayCount = PATHWAY_CATALOG.length;
+  const trialRuleCount = TRIAL_SCORING_RULES.length;
+  const productCount = ALL_PRODUCTS.length;
+  const citationCount = Object.keys(PRODUCT_CITATIONS).length;
+  const centerMetrics = verificationMetrics();
+
+  const moats = [
+    {
+      n: 1,
+      title: "Curated clinical evidence graph",
+      statement: "Hand-curated, versioned, peer-cited, ESCAT-tiered. Every rule traces to a paper or label.",
+      status: "advancing",
+      have: [
+        `${biomarkerCount} curated biomarkers with regex extractors, ESCAT tiers, resistance contexts, and references`,
+        `${evidenceRuleCount} per-product per-context evidence rules, each linked to its pivotal trial`,
+        `${tierAnnotationCount} patient-specific tier annotations (subgroup signals from published literature)`,
+        `${pathwayCount} NCCN-aware disease pathways`,
+        `${productCount} FDA-approved products with structured eligibility, organ thresholds, exclusions, citations`,
+        `${citationCount} product citation records (BLA + FDA approval date + pivotal trials with NCT IDs)`,
+        "Public versioned API at /api/criteria/v1.json — re-citable for research",
+      ],
+      advances: [
+        "Quarterly clinical review cycle with named oncology advisors",
+        "Expand biomarker coverage to 50+ alterations (currently focused on heme + key solid-tumor)",
+        "Publish curation methodology + advisory board sign-off as a citable artifact",
+        "Add provenance fields to every rule (curatedBy, lastReviewedAt, advisorSignoff)",
+      ],
+      link: { label: "Browse the criteria catalog", onClick: onGoToCriteria },
+    },
+    {
+      n: 2,
+      title: "Verified center-level referral data",
+      statement: "Public directory data is not a moat. Named coordinators, current bed availability, payer-contract details, and intake protocols are.",
+      status: "pilot-required",
+      have: [
+        `${centerMetrics.total} US programs indexed from FACT registry + NMDP affiliates`,
+        `Verification status schema in place: ${centerMetrics.verified} of ${centerMetrics.total} verified (${centerMetrics.verifiedPct}%)`,
+        "State-based nearest-match with regional fallback already shipping in the screener",
+        "Per-center fields ready to fill: acceptingReferrals, typicalIntakeDays, namedCoordinator, payerContracts",
+      ],
+      advances: [
+        "Launch the 90-day charter pilot — limited to 5 founding centers",
+        "Per-pilot center: confirm coordinator contact, intake SLA, payer specifics, custom packet branding",
+        "Upgrade each pilot center from 'public_directory' → 'confirmed' → 'pilot' → 'contracted'",
+        "Surface 'Partnership-verified' badge in the UI only when status ≥ confirmed",
+      ],
+      link: { label: "Request a charter pilot", onClick: onRequestPilot },
+    },
+    {
+      n: 3,
+      title: "Real-world referral workflow usage",
+      statement: "Cases processed, time-to-referral compressed, redirect rates, eligibility-loss-prevented — only pilots produce this data.",
+      status: "pilot-required",
+      have: [
+        "Case lifecycle (12 stages) instrumented with timestamps for every transition",
+        "Activity log + event stream per case (de-identifiable for analytics)",
+        "Operations dashboard at /today already aggregates pending items across cases",
+        "Plausible analytics (cookie-free, no PHI) tracking page-level + event-level usage",
+      ],
+      advances: [
+        "Launch pilots — usage data is a byproduct of real adoption, nothing else creates it",
+        "Build the pilot KPI dashboard: cases/month, median time-to-referral, eligibility-at-infusion preservation rate",
+        "Establish baseline against published referral-delay literature for comparison",
+      ],
+      link: null,
+    },
+    {
+      n: 4,
+      title: "Outcome-labeled resistance / referral dataset",
+      statement: "Patient outcomes linked back to engine decisions. The dataset that lets us learn what works, what doesn't, and why.",
+      status: "advancing",
+      have: [
+        "Retrospective tool /retrospective accepts historical CSV, runs each row through engines, produces 4 study-grade endpoints (missed-early-referral rate, delayed-referral rate, timely-referral rate, median delay)",
+        "Case timeline preserves apheresis date, manufacturing dates, infusion date, conditioning start — the timing fields needed for outcome analysis",
+        "FHIR R4 Bundle export — 16 resource types, makes case data portable for outcomes research",
+        "Sample retrospective dataset shipping with the tool for demo / validation",
+      ],
+      advances: [
+        "Add structured outcome capture to case lifecycle (final response, eligibility-at-infusion, time-on-treatment)",
+        "Partner with one center on a 100-case retrospective study → first publication-ready dataset",
+        "Publish anonymized aggregate statistics (referral-delay distributions by disease, by payer, by geography)",
+      ],
+      link: { label: "Run a retrospective analysis", onClick: onGoToRetrospective },
+    },
+    {
+      n: 5,
+      title: "Clinician trust",
+      statement: "Earned by transparency, conservative claims, peer-reviewed work, and named advisors. Not by marketing.",
+      status: "advancing",
+      have: [
+        "Every flag traces to a paper or FDA label — visible inline, not buried in docs",
+        "ESCAT framework used explicitly — clinicians recognize it; AI prediction language is absent",
+        "'Evidence summary, not a prediction' framing repeated on every output panel",
+        "Founder credentials (Ramja Sritharan) publicly attributed; open about scope and limits",
+        "21st Century Cures Act §3060(a) CDS exemption posture documented",
+        "Public-facing changelog at /api/criteria/v1.json with version + asOf date",
+      ],
+      advances: [
+        "Name a clinical advisory board (oncology, BMT, molecular pathology, pharmacy)",
+        "First peer-reviewed publication — retrospective validation + workflow impact",
+        "Conference presence: ASH, ASCO, Tandem Meetings — abstract submissions",
+        "Annual clinical review cycle made public + signed",
+      ],
+      link: null,
+    },
+    {
+      n: 6,
+      title: "Compliance-ready deployment",
+      statement: "BAA-ready, HIPAA-safe by architecture, audit-trail enabled, FHIR-native. Healthcare buyers verify this before anything else.",
+      status: "advancing",
+      have: [
+        "No-PHI-on-servers architecture: all patient state in localStorage, share links via URL hash (base64, never transmitted to server)",
+        "Plausible analytics (cookie-free, no PHI events)",
+        "FHIR R4 Bundle export with deterministic resource IDs (idempotent re-exports)",
+        "Audit log per case (immutable event stream)",
+        "Clerk auth with org-aware multi-tenant scaffolding",
+        "Vercel serverless functions are minimal — checkout, email, no patient data",
+      ],
+      advances: [
+        "Complete BAA template for charter pilots",
+        "SOC 2 Type I readiness audit (Type II is a 6-month process)",
+        "Document data-flow diagram for OCR posture review",
+        "Add explicit IRB-friendly research mode (consent capture + de-identification report)",
+      ],
+      link: null,
+    },
+    {
+      n: 7,
+      title: "OncoMarker-style trial integration",
+      statement: "Biomarker-aware trial matching at scale. Trials become first-class citizens of the evidence graph, not a separate lookup.",
+      status: "advancing",
+      have: [
+        "Client-side ClinicalTrials.gov v2 API integration — fresh data, no rate-limit cache",
+        `${trialRuleCount} structured trial-scoring rules feeding the matcher`,
+        "NCT IDs linked from every product's evidence basis (Layer 1 panel → trial page)",
+        "Disease-pathway-aware: trial matcher takes patient state, not just diagnosis",
+      ],
+      advances: [
+        "Build biomarker-to-trial index (e.g. TP53-mutated DLBCL → trials enrolling that subgroup)",
+        "Add ESCAT tiering to trial options (Tier IIB / III based on phase, enrollment size, primary endpoint)",
+        "Surface trial-eligibility-blocking annotations the same way product annotations work",
+        "Public partner offering: an API endpoint that takes a patient summary, returns ranked trials with evidence",
+      ],
+      link: null,
+    },
+  ];
+
+  return (
+    <div className="defens-view">
+      <div className="defens-hero">
+        <div className="defens-tag">Defensibility · The moat scoreboard</div>
+        <h1 className="defens-h1">
+          The moat <em>isn't the code</em>.<br />
+          It's seven specific assets.
+        </h1>
+        <p className="defens-sub">
+          Code is cheap. What we're actually building is a curated clinical evidence graph,
+          a verified center-level referral network, an outcome-labeled dataset, clinician
+          trust earned through transparency, compliance-ready deployment, and biomarker-aware
+          trial integration. Here's an honest scoreboard against each one.
+        </p>
+      </div>
+
+      <div className="defens-grid">
+        {moats.map(m => (
+          <div key={m.n} className={`defens-card status-${m.status}`}>
+            <div className="defens-card-hdr">
+              <div className="defens-card-num">{m.n}</div>
+              <div className="defens-card-hdr-text">
+                <div className="defens-card-title">{m.title}</div>
+                <div className="defens-card-statement">{m.statement}</div>
+              </div>
+              <div className={`defens-status-badge status-${m.status}`}>
+                {m.status === "seeded" && "Seeded"}
+                {m.status === "advancing" && "Advancing"}
+                {m.status === "pilot-required" && "Pilot-required"}
+                {m.status === "not-yet-started" && "Not yet started"}
+              </div>
+            </div>
+
+            <div className="defens-card-body">
+              <div className="defens-card-col">
+                <div className="defens-card-col-head">✓ What's in place</div>
+                <ul className="defens-list">
+                  {m.have.map((h, i) => <li key={i}>{h}</li>)}
+                </ul>
+              </div>
+              <div className="defens-card-col">
+                <div className="defens-card-col-head">→ What advances it</div>
+                <ul className="defens-list advances">
+                  {m.advances.map((a, i) => <li key={i}>{a}</li>)}
+                </ul>
+              </div>
+            </div>
+
+            {m.link && (
+              <div className="defens-card-link">
+                <button onClick={m.link.onClick} className="defens-link-btn">
+                  {m.link.label} →
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="defens-footer">
+        <h2 className="defens-footer-title">The honest read</h2>
+        <p>
+          Three moats are well-represented in the codebase (evidence graph, outcome dataset infrastructure,
+          compliance architecture). Four cannot be advanced by writing more code — they need pilots, named
+          clinical advisors, and time. <strong>That's the point.</strong> AI makes the code work faster.
+          It does not produce the operational and trust assets that make the product hard to replicate.
+        </p>
+        <p>
+          The commercial angle isn't "match patients to CAR-T centers." It's <em>genomic +
+          treatment-history-based resistance and escalation intelligence for advanced oncology referrals</em>,
+          built conservatively as evidence-ranked flags and referral-readiness — not definitive therapy
+          prediction. That gives us a credible path to pilots with oncologists, cell-therapy centers, and
+          eventually pharma / market-access teams, without overclaiming clinically.
+        </p>
+        <div className="defens-footer-cta-row">
+          <button className="defens-footer-cta primary" onClick={onRequestPilot}>
+            Request a charter pilot →
+          </button>
+          <button className="defens-footer-cta secondary" onClick={onBackToScreener}>
+            Back to the product
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── About page ─────────────────────────────────────────────────────────────
 function AboutView({ onBackToScreener, onGoToPricing, onGoToCriteria }) {
   return (
@@ -10174,6 +10552,7 @@ export default function App() {
       : view === "retrospective" ? "/retrospective"
       : view === "research" ? "/research"
       : view === "centers" ? "/centers"
+      : view === "defensibility" ? "/defensibility"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -10222,6 +10601,7 @@ export default function App() {
       else if (p === "/retrospective") setView("retrospective");
       else if (p === "/research") setView("research");
       else if (p === "/centers") setView("centers");
+      else if (p === "/defensibility") setView("defensibility");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -10672,6 +11052,13 @@ export default function App() {
                 Criteria
               </button>
               <button
+                className={`hdr-nav-btn${view === "defensibility" ? " active" : ""}`}
+                onClick={() => setView("defensibility")}
+                title="The moat scoreboard — what makes this hard to replicate"
+              >
+                Moat
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "about" ? " active" : ""}`}
                 onClick={() => setView("about")}
               >
@@ -11030,6 +11417,17 @@ export default function App() {
           onBackToScreener={() => setView("screener")}
           onGoToPricing={() => setView("pricing")}
           onGoToCriteria={() => setView("criteria")}
+        />
+      )}
+
+      {/* DEFENSIBILITY VIEW — the moat scoreboard */}
+      {view === "defensibility" && (
+        <DefensibilityView
+          onBackToScreener={() => setView("screener")}
+          onGoToCenters={() => setView("centers")}
+          onGoToCriteria={() => setView("criteria")}
+          onGoToRetrospective={() => setView("retrospective")}
+          onRequestPilot={() => setShowWaitlist(true)}
         />
       )}
 

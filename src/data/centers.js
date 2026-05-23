@@ -30,6 +30,32 @@ export function regionOf(state) {
   return null;
 }
 
+// Verification status — explicitly tracks the difference between
+// public-directory data (what we have now from FACT registry + NMDP) and
+// partnership-verified data (the actual moat). Default is honest:
+// "public_directory" means we have NOT verified this with the center.
+//
+// Upgrade path:
+//   public_directory  → confirmed (someone at the center has confirmed
+//                       basic accuracy)
+//                     → pilot (active pilot or charter partnership)
+//                     → contracted (signed contract, full data feed)
+//
+// Verified centers will surface a "Partnership-verified" badge in the
+// UI and the data shown becomes a competitive asset rather than a
+// re-aggregation of public sources.
+export const VERIFICATION_STATUSES = {
+  public_directory: { label: "Public directory",         color: "#6b645a", trust: 1 },
+  confirmed:        { label: "Center-confirmed",          color: "#4c6b8c", trust: 2 },
+  pilot:            { label: "Active pilot",              color: "#c4a661", trust: 3 },
+  contracted:       { label: "Partnership-verified",      color: "#5a7a4a", trust: 4 },
+};
+
+// Every center starts as "public_directory" — this is the honest baseline.
+// As pilots launch, individual entries get upgraded with verifiedAt date,
+// verifiedBy contact, acceptingReferrals flag, typicalIntakeDays, etc.
+const PD = { verificationStatus: "public_directory", verifiedAt: null };
+
 export const CENTERS = [
   // ── Northeast ──────────────────────────────────────────────────────────
   { id: "msk",        name: "Memorial Sloan Kettering Cancer Center",   city: "New York",     state: "NY", indications: ["dlbcl", "fl", "mcl", "cll", "all", "mm"], products: ["yescarta", "kymriah", "breyanzi", "tecartus", "abecma", "carvykti"], factAccredited: true, nmdpAffiliated: true, url: "https://www.mskcc.org" },
@@ -94,3 +120,35 @@ export const CENTER_COUNT_BY_STATE = CENTERS.reduce((acc, c) => {
 }, {});
 
 export const TOTAL_CENTERS = CENTERS.length;
+
+// Honest accessor — every center is "public_directory" unless explicitly
+// upgraded. Returns { status, label, color, trust, verifiedAt, verifiedBy }.
+export function verificationOf(center) {
+  const status = center.verificationStatus || "public_directory";
+  return {
+    status,
+    ...VERIFICATION_STATUSES[status],
+    verifiedAt: center.verifiedAt || null,
+    verifiedBy: center.verifiedBy || null,
+    acceptingReferrals: center.acceptingReferrals ?? null,
+    typicalIntakeDays: center.typicalIntakeDays ?? null,
+    namedCoordinator: center.namedCoordinator || null,
+  };
+}
+
+// Moat metrics — the honest count of where each center is on the
+// verification spectrum. Used by /defensibility to show progress over time.
+export function verificationMetrics() {
+  const counts = { public_directory: 0, confirmed: 0, pilot: 0, contracted: 0 };
+  CENTERS.forEach(c => {
+    const status = c.verificationStatus || "public_directory";
+    counts[status] = (counts[status] || 0) + 1;
+  });
+  const verified = counts.confirmed + counts.pilot + counts.contracted;
+  return {
+    counts,
+    total: CENTERS.length,
+    verified,
+    verifiedPct: CENTERS.length > 0 ? Math.round((verified / CENTERS.length) * 100) : 0,
+  };
+}
