@@ -27,6 +27,7 @@ import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
 import { generateMolecularSummary, ESCAT_TIERS } from "./utils/resistance.js";
 import { rankTherapyOptions, basisUrl } from "./utils/evidenceEngine.js";
+import { findNearestCenters, US_STATES, INSURANCE_TYPES, PRIOR_AUTH_STATUSES, insuranceConsiderations } from "./utils/centerMatching.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -1281,6 +1282,18 @@ const CSS = `
   }
   .lab-inp:focus { outline: none; border-color: #1a1815; }
   .lab-inp::placeholder { color: #98908380; }
+  .select-inp {
+    width: 100%; padding: 7px 10px; background: #f4f1ea;
+    border: 1px solid #1a181535; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: #1a1815; border-radius: 0; box-sizing: border-box;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%231a1815%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    cursor: pointer;
+  }
+  .select-inp:focus { outline: none; border-color: #1a1815; }
   .lab-note {
     font-family: 'Inter Tight', sans-serif; font-size: 11px; color: #6b645a;
     margin-top: 8px; line-height: 1.5; font-style: italic;
@@ -1588,6 +1601,212 @@ const CSS = `
     font-size: 10.5px; color: #6b645a; line-height: 1.5;
     margin: 6px 0 0; font-style: italic;
   }
+
+  /* CLINICAL DECISION PACKET HEADER — the integrated MVP wrapper */
+  .packet-header {
+    border: 2px solid #1a1815; background: #1a1815; color: #f4f1ea;
+    padding: 18px 20px; margin-bottom: 20px;
+  }
+  .packet-header.mvp-core { border-color: #c4a661; }
+  .packet-header-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .packet-header-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    color: #c4a661; font-weight: 700;
+  }
+  .packet-header-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: #f4f1ea99; letter-spacing: 0.05em;
+  }
+  .packet-header-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .packet-header-stats {
+    display: flex; gap: 24px;
+  }
+  .packet-stat {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .packet-stat-num {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: #c4a661; line-height: 1; letter-spacing: -0.02em;
+  }
+  .packet-stat-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #f4f1ea99;
+  }
+  .packet-header-ctas {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .packet-cta {
+    font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 10px 18px; border: 1px solid #c4a661; background: transparent;
+    color: #f4f1ea; cursor: pointer; transition: all 150ms;
+    letter-spacing: -0.005em;
+  }
+  .packet-cta.primary {
+    background: #c4a661; color: #1a1815;
+  }
+  .packet-cta.primary:hover { background: #d4b675; }
+  .packet-cta.secondary:hover { background: #c4a66120; }
+
+  .packet-header-flow {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    padding-top: 14px; border-top: 1px solid #f4f1ea1a;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #f4f1eaa0; letter-spacing: 0.08em;
+  }
+  .packet-flow-step {
+    color: #c4a661;
+  }
+  .packet-flow-sep { color: #f4f1ea40; }
+
+  /* NEAREST CENTERS PANEL */
+  .centers-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .centers-panel-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+    cursor: pointer; user-select: none;
+  }
+  .centers-panel-icon-bg {
+    width: 30px; height: 30px; background: #4c6b8c; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 16px; line-height: 1;
+  }
+  .centers-panel-hdr-text { flex: 1; min-width: 0; }
+  .centers-panel-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .centers-panel-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .centers-panel-body { padding: 14px 18px; }
+
+  .center-match {
+    background: #fff; border: 1px solid #1a181520; padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .center-match:last-of-type { margin-bottom: 0; }
+  .center-match.no-indication { opacity: 0.68; }
+  .center-match-hdr {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .center-match-name {
+    flex: 1; font-family: 'Fraunces', serif; font-size: 14.5px;
+    color: #1a1815; font-weight: 500; letter-spacing: -0.005em;
+    min-width: 240px;
+  }
+  .center-match-name a {
+    color: inherit; text-decoration: none;
+    border-bottom: 1px dotted #1a181550;
+  }
+  .center-match-name a:hover { border-bottom-color: #1a1815; }
+  .center-match-prox {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+    padding: 3px 8px; flex-shrink: 0;
+  }
+  .center-match-prox.prox-in-state { background: #5a7a4a; color: #f4f1ea; }
+  .center-match-prox.prox-region   { background: #c4a661; color: #1a1815; }
+  .center-match-prox.prox-national { background: #1a181508; color: #6b645a; border: 1px solid #1a181530; }
+  .center-match-loc {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: #6b645a; margin-bottom: 6px; letter-spacing: 0.04em;
+  }
+  .center-match-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .center-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 2px 7px; font-weight: 600;
+  }
+  .center-tag.fact            { background: #4c6b8c20; color: #4c6b8c; }
+  .center-tag.nmdp            { background: #5a7a4a18; color: #4a6a3a; }
+  .center-tag.indication-yes  { background: #5a7a4a; color: #f4f1ea; }
+  .center-tag.indication-no   { background: #b54a2c18; color: #b54a2c; }
+
+  .centers-panel-footer {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid #1a181520;
+    font-size: 11px; color: #6b645a; line-height: 1.55; font-style: italic;
+  }
+
+  /* INSURANCE & ACCESS PANEL */
+  .insurance-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .insurance-panel-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+    cursor: pointer; user-select: none;
+  }
+  .insurance-panel-icon-bg {
+    width: 30px; height: 30px; background: #c4a661; color: #1a1815;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; line-height: 1;
+  }
+  .insurance-panel-hdr-text { flex: 1; min-width: 0; }
+  .insurance-panel-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .insurance-panel-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .insurance-panel-body { padding: 14px 18px; }
+
+  .insurance-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 600px) { .insurance-grid { grid-template-columns: 1fr; } }
+  .insurance-cell {
+    background: #fff; border: 1px solid #1a181520; padding: 10px 12px;
+  }
+  .insurance-cell-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    margin-bottom: 4px; font-weight: 600;
+  }
+  .insurance-cell-val {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500;
+    color: #1a1815;
+  }
+  .insurance-considerations {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .insurance-consideration {
+    background: #fff; border-left: 3px solid #4c6b8c;
+    padding: 10px 12px;
+  }
+  .insurance-consideration.caution { border-color: #c4a661; background: #c4a66110; }
+  .insurance-consideration.warning { border-color: #b54a2c; background: #b54a2c0c; }
+  .insurance-consideration-label {
+    font-size: 12.5px; font-weight: 600; color: #1a1815;
+    margin-bottom: 3px;
+  }
+  .insurance-consideration-detail {
+    font-size: 11.5px; color: #3a352e; line-height: 1.55;
+  }
+  .insurance-action {
+    margin-top: 12px; padding: 10px 12px;
+    background: #c4a66115; border-left: 3px solid #c4a661;
+    font-size: 11.5px; color: #1a1815; line-height: 1.55;
+  }
+  .insurance-action strong { color: #7a5e10; }
 
   /* EVIDENCE-RANKED OPTIONS PANEL — Layer 1 (the evidence engine) */
   .evidence-panel {
@@ -4898,6 +5117,12 @@ const INIT = {
   priorCd19Therapy: false,
   priorBcmaTherapy: false,
   antigenLoss: false,
+  // Location & insurance basics — drives nearest-center match + access barrier surfacing
+  // Note: ONLY state + zip3 (3-digit prefix) per HIPAA safe-harbor de-identification.
+  state: "",
+  zipCode: "",
+  insuranceType: "",
+  priorAuthStatus: "",
   // Lab values — all optional
   labAlt: "", labAst: "", labCreat: "", labCrcl: "",
   labBil: "", labLvef: "", labSpo2: "",
@@ -6327,6 +6552,204 @@ function WorkupPanel({ pt }) {
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ClinicalDecisionPacketHeader ───────────────────────────────────────────
+// Frames the entire results block as a single integrated decision packet,
+// per the narrow MVP scope (R/R DLBCL or MM). Provides a one-click
+// "download the full referral packet" CTA at the top, and a clear
+// "what you're looking at" framing.
+function ClinicalDecisionPacketHeader({ pt, results, onGeneratePacket, onCreateCase }) {
+  if (!results) return null;
+  const c = (pt.cancerType || "").toLowerCase();
+  const isCore = c.includes("dlbcl") || c.includes("large b") || c.includes("lbcl") || c.includes("myeloma");
+
+  // Count outputs available
+  const productCount = ALL_PRODUCTS.length;
+  const eligibleCount = Object.values(results).filter(r => r?.eligible).length;
+
+  return (
+    <div className={`packet-header${isCore ? " mvp-core" : ""}`}>
+      <div className="packet-header-top">
+        <div className="packet-header-eyebrow">
+          {isCore ? "Clinical Decision Packet · MVP coverage" : "Clinical Decision Packet"}
+        </div>
+        <div className="packet-header-meta">
+          {pt.cancerType} {pt.priorLines ? `· ${pt.priorLines}L+` : ""} {pt.ecog !== "" ? `· ECOG ${pt.ecog}` : ""}
+        </div>
+      </div>
+
+      <div className="packet-header-row">
+        <div className="packet-header-stats">
+          <div className="packet-stat">
+            <div className="packet-stat-num">{eligibleCount}</div>
+            <div className="packet-stat-lbl">of {productCount} eligible</div>
+          </div>
+          <div className="packet-stat">
+            <div className="packet-stat-num">{isCore ? "✓" : "—"}</div>
+            <div className="packet-stat-lbl">MVP indication</div>
+          </div>
+        </div>
+
+        <div className="packet-header-ctas">
+          <button className="packet-cta primary" onClick={onGeneratePacket}>
+            📄 Download referral packet PDF
+          </button>
+          <button className="packet-cta secondary" onClick={onCreateCase}>
+            + Track this case
+          </button>
+        </div>
+      </div>
+
+      <div className="packet-header-flow">
+        <span className="packet-flow-step">1. Evidence-ranked options</span>
+        <span className="packet-flow-sep">→</span>
+        <span className="packet-flow-step">2. Resistance flags</span>
+        <span className="packet-flow-sep">→</span>
+        <span className="packet-flow-step">3. Trial flags</span>
+        <span className="packet-flow-sep">→</span>
+        <span className="packet-flow-step">4. Workup checklist</span>
+        <span className="packet-flow-sep">→</span>
+        <span className="packet-flow-step">5. Nearest centers</span>
+        <span className="packet-flow-sep">→</span>
+        <span className="packet-flow-step">6. Referral packet</span>
+      </div>
+    </div>
+  );
+}
+
+// ── NearestCentersPanel ────────────────────────────────────────────────────
+// Layer 3 surface: matches the patient's state/region to certified cell
+// therapy centers, prioritizing in-state, then same region, with indication
+// coverage as a secondary signal. State-only granularity (HIPAA-friendly).
+function NearestCentersPanel({ pt }) {
+  const [open, setOpen] = useState(true);
+  if (!pt.state) return null;
+  const { matches, summary } = findNearestCenters(pt, { limit: 5 });
+  if (matches.length === 0) return null;
+
+  return (
+    <div className="centers-panel">
+      <div className="centers-panel-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="centers-panel-icon-bg">⚲</div>
+        <div className="centers-panel-hdr-text">
+          <div className="centers-panel-hdr-title">Nearest certified centers</div>
+          <div className="centers-panel-hdr-sub">
+            {summary.inStateCount > 0
+              ? `${summary.inStateCount} in-state · ${summary.regionCount} regional`
+              : `${summary.regionCount} regional centers in ${summary.patientRegion || "your region"}`} · FACT-accredited
+          </div>
+        </div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#4c6b8c" }}>
+          <ChevronDown size={16} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="centers-panel-body">
+          {matches.map(({ center, proximity, proximityLabel, indicationSupported }) => (
+            <div key={center.id} className={`center-match${!indicationSupported ? " no-indication" : ""}`}>
+              <div className="center-match-hdr">
+                <div className="center-match-name">
+                  <a href={center.url} target="_blank" rel="noopener noreferrer">{center.name} ↗</a>
+                </div>
+                <span className={`center-match-prox prox-${proximity}`}>
+                  {proximityLabel}
+                </span>
+              </div>
+              <div className="center-match-loc">{center.city}, {center.state}</div>
+              <div className="center-match-tags">
+                {center.factAccredited && <span className="center-tag fact">FACT-accredited</span>}
+                {center.nmdpAffiliated && <span className="center-tag nmdp">NMDP-affiliated</span>}
+                {indicationSupported
+                  ? <span className="center-tag indication-yes">Treats {pt.cancerType?.split("(")[0].trim() || "this indication"}</span>
+                  : <span className="center-tag indication-no">⚠ Indication not listed</span>}
+              </div>
+            </div>
+          ))}
+
+          <div className="centers-panel-footer">
+            Matched against a curated directory of {summary.totalScreened} US programs (FACT registry + NMDP).
+            Not a contracted partnership list — verify product offerings, payer contracts, and current bed
+            availability directly with each center.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── InsuranceAccessPanel ───────────────────────────────────────────────────
+// Surfaces payer-specific considerations and prior-auth status. Healthcare
+// buyers care enormously about this — even a thin, generic surface signals
+// that we've thought about access barriers.
+function InsuranceAccessPanel({ pt }) {
+  const [open, setOpen] = useState(true);
+  if (!pt.insuranceType && !pt.priorAuthStatus) return null;
+
+  const considerations = pt.insuranceType ? insuranceConsiderations(pt.insuranceType, pt.cancerType) : [];
+  const insuranceLabel = INSURANCE_TYPES.find(i => i.id === pt.insuranceType)?.label || "—";
+  const authLabel = PRIOR_AUTH_STATUSES.find(s => s.id === pt.priorAuthStatus)?.label || "—";
+
+  const authSeverity = {
+    "approved":    { color: "#5a7a4a", text: "Approved" },
+    "denied":      { color: "#b54a2c", text: "Denied — appeal" },
+    "pending":     { color: "#c4a661", text: "Pending" },
+    "not-started": { color: "#b54a2c", text: "Not started" },
+    "na":          { color: "#6b645a", text: "Not yet needed" },
+  }[pt.priorAuthStatus] || null;
+
+  return (
+    <div className="insurance-panel">
+      <div className="insurance-panel-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="insurance-panel-icon-bg">$</div>
+        <div className="insurance-panel-hdr-text">
+          <div className="insurance-panel-hdr-title">Insurance &amp; access</div>
+          <div className="insurance-panel-hdr-sub">Payer route · prior auth status · patient-assistance pathways</div>
+        </div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#c4a661" }}>
+          <ChevronDown size={16} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="insurance-panel-body">
+          <div className="insurance-grid">
+            <div className="insurance-cell">
+              <div className="insurance-cell-lbl">Payer</div>
+              <div className="insurance-cell-val">{insuranceLabel}</div>
+            </div>
+            {pt.priorAuthStatus && (
+              <div className="insurance-cell">
+                <div className="insurance-cell-lbl">Prior auth</div>
+                <div className="insurance-cell-val" style={{ color: authSeverity?.color || "#1a1815" }}>
+                  {authSeverity?.text || authLabel}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {considerations.length > 0 && (
+            <div className="insurance-considerations">
+              {considerations.map((c, i) => (
+                <div key={i} className={`insurance-consideration${c.severity ? " " + c.severity : ""}`}>
+                  <div className="insurance-consideration-label">{c.label}</div>
+                  <div className="insurance-consideration-detail">{c.detail}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(pt.priorAuthStatus === "not-started" || pt.priorAuthStatus === "denied") && (
+            <div className="insurance-action">
+              <strong>Recommended action:</strong> Engage the receiving center's financial counselor BEFORE the
+              clinical referral. Most centers have payer-specific authorization templates that can save 1–3 weeks.
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -10845,6 +11268,72 @@ export default function App() {
               style={{ width: "100%" }} />
           </div>
 
+          {/* LOCATION & INSURANCE — drives nearest-center match + access surfacing */}
+          <div className="sec-head" style={{ borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}>
+            Location &amp; insurance
+            <span style={{ fontSize: 8.5, color: "#4c6b8c", letterSpacing: "0.1em", marginLeft: 6 }}>
+              · nearest center match
+            </span>
+          </div>
+
+          <div className="field">
+            <label className="lbl">State</label>
+            <select
+              className="select-inp"
+              value={pt.state}
+              onChange={e => set("state", e.target.value)}
+            >
+              <option value="">— Select state —</option>
+              {US_STATES.map(([code, name]) => (
+                <option key={code} value={code}>{code} · {name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="lbl">
+              ZIP prefix <span style={{ color: "#98908380", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(first 3 digits only — HIPAA safe harbor)</span>
+            </label>
+            <input
+              className="lab-inp"
+              type="text"
+              inputMode="numeric"
+              maxLength={3}
+              placeholder="e.g. 770"
+              value={pt.zipCode}
+              onChange={e => set("zipCode", e.target.value.replace(/\D/g, "").slice(0, 3))}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div className="field">
+            <label className="lbl">Insurance type</label>
+            <select
+              className="select-inp"
+              value={pt.insuranceType}
+              onChange={e => set("insuranceType", e.target.value)}
+            >
+              <option value="">— Select —</option>
+              {INSURANCE_TYPES.map(i => (
+                <option key={i.id} value={i.id}>{i.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="lbl">Prior authorization status</label>
+            <select
+              className="select-inp"
+              value={pt.priorAuthStatus}
+              onChange={e => set("priorAuthStatus", e.target.value)}
+            >
+              <option value="">— Select —</option>
+              {PRIOR_AUTH_STATUSES.map(s => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+
           {/* LAB VALUES */}
           <div className="sec-head" style={{ cursor: "pointer", borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}
             onClick={() => setShowLab(x => !x)}>
@@ -10943,11 +11432,33 @@ export default function App() {
                 );
               })()}
 
+              {/* Clinical Decision Packet header — the integrated MVP wrapper */}
+              <ClinicalDecisionPacketHeader
+                pt={pt}
+                results={results}
+                onGeneratePacket={() => generateReferralPacket({
+                  patient: pt,
+                  results: results || {},
+                  products: ALL_PRODUCTS,
+                  caseData: null,
+                  referringInstitution: "",
+                  referringCoordinator: userName || "",
+                  referringContact: userEmail || "",
+                })}
+                onCreateCase={addToBoard}
+              />
+
               {/* Evidence-ranked options — Layer 1 (the evidence engine) */}
               <EvidenceRankedOptionsPanel pt={pt} results={results} />
 
               {/* Molecular & resistance intelligence — Layer 2 (resistance/escalation) */}
               <MolecularIntelligencePanel pt={pt} />
+
+              {/* Nearest certified centers — Layer 3 entry point */}
+              <NearestCentersPanel pt={pt} />
+
+              {/* Insurance & access — payer route + prior auth */}
+              <InsuranceAccessPanel pt={pt} />
 
               {/* Consolidated workup checklist — what to do to prepare for referral */}
               <WorkupPanel pt={pt} />
