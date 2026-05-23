@@ -28,7 +28,8 @@ import { calculateReferralDecision } from "./utils/earlyReferral.js";
 import { generateMolecularSummary, ESCAT_TIERS, BIOMARKER_DB } from "./utils/resistance.js";
 import { rankTherapyOptions, basisUrl, PRODUCT_EVIDENCE, TIER_ANNOTATIONS } from "./utils/evidenceEngine.js";
 import { findNearestCenters, US_STATES, INSURANCE_TYPES, PRIOR_AUTH_STATUSES, insuranceConsiderations } from "./utils/centerMatching.js";
-import { verificationMetrics } from "./data/centers.js";
+import { verificationMetrics, CENTERS as ALL_CENTERS } from "./data/centers.js";
+import { DEMO_PATIENTS, TRI_STATE, TRI_STATE_CENTERS } from "./data/demoPatients.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -2402,6 +2403,299 @@ const CSS = `
     max-width: 880px; margin: 0 auto; padding: 56px 40px 80px;
   }
   @media (max-width: 860px) { .about-view { padding: 36px 20px 60px; } }
+
+  /* CLINICIAN DISCLAIMER — visible on every screener analysis */
+  .clinician-disclaimer {
+    background: #c4a66115; border-top: 1px solid #c4a66150; border-bottom: 1px solid #c4a66150;
+    padding: 9px 0;
+  }
+  .clinician-disclaimer-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 40px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; line-height: 1.55; color: #1a1815;
+  }
+  @media (max-width: 860px) { .clinician-disclaimer-inner { padding: 0 20px; font-size: 11px; } }
+  .clinician-disclaimer-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+    display: grid; place-items: center;
+    background: #c4a661; color: #1a1815; font-size: 11px; font-weight: 700;
+    border-radius: 50%;
+  }
+  .clinician-disclaimer strong { color: #1a1815; font-weight: 600; }
+
+  /* DEMO LOADER on the form */
+  .demo-loader {
+    background: #1a181508; border: 1px dashed #1a181540;
+    padding: 12px 14px; margin-bottom: 18px;
+  }
+  .demo-loader-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .demo-loader-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #1a1815; text-transform: uppercase; letter-spacing: 0.14em;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .demo-pill {
+    background: #c4a661; color: #1a1815; padding: 2px 7px;
+    font-size: 9px; letter-spacing: 0.18em;
+  }
+  .demo-loader-select { flex: 1; min-width: 200px; }
+  .demo-loader-hint {
+    font-size: 10.5px; color: #6b645a; line-height: 1.5; font-style: italic;
+  }
+
+  /* CENTER ADMIN VIEW */
+  .admin-view {
+    max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .admin-view { padding: 36px 20px 60px; } }
+  .admin-hero { text-align: center; margin-bottom: 48px; }
+  .admin-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    font-weight: 700; margin-bottom: 18px;
+  }
+  .admin-h1 {
+    font-family: 'Fraunces', serif; font-size: 40px; font-weight: 400;
+    line-height: 1.15; letter-spacing: -0.025em; color: #1a1815;
+    margin: 0 0 18px;
+  }
+  @media (max-width: 860px) { .admin-h1 { font-size: 28px; } }
+  .admin-h1 em { font-style: italic; color: #b54a2c; }
+  .admin-sub {
+    font-size: 14.5px; line-height: 1.65; color: #3a352e;
+    max-width: 760px; margin: 0 auto 20px;
+  }
+  .admin-cta-row {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .admin-cta {
+    font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 10px 22px; border: 1px solid #1a1815;
+    background: transparent; cursor: pointer; transition: all 150ms;
+  }
+  .admin-cta.primary { background: #1a1815; color: #f4f1ea; }
+  .admin-cta.primary:hover { background: #3a352e; }
+  .admin-cta.secondary:hover { background: #1a181508; }
+
+  .admin-summary-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 760px) { .admin-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  .admin-stat-card {
+    border: 1px solid #1a1815; padding: 16px 18px; background: #f4f1ea;
+  }
+  .admin-stat-num {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    color: #1a1815; line-height: 1; margin-bottom: 6px;
+  }
+  .admin-stat-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+  }
+
+  .admin-queue {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .admin-queue-hdr {
+    background: #1a1815; color: #f4f1ea; padding: 12px 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.18em; font-weight: 700;
+  }
+  .admin-table { overflow-x: auto; }
+  .admin-table-row {
+    display: grid; grid-template-columns: 2fr 1.5fr 0.8fr 1.5fr 1.2fr 1.5fr 1.4fr 1fr;
+    gap: 12px; padding: 12px 18px; border-bottom: 1px solid #1a181520;
+    align-items: flex-start; min-width: 1000px;
+    font-size: 11.5px; color: #1a1815;
+  }
+  .admin-table-row.admin-table-hdr {
+    background: #fafaf7;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    font-weight: 700;
+  }
+  .admin-patient { font-weight: 500; }
+  .admin-flags {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
+  }
+  .admin-flag {
+    background: #b54a2c20; color: #b54a2c;
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    font-weight: 600; padding: 1px 5px; letter-spacing: 0.08em;
+  }
+  .admin-indication { font-weight: 500; }
+  .admin-indication-meta { font-size: 10px; color: #6b645a; font-family: 'JetBrains Mono', monospace; }
+  .admin-urgency {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    font-weight: 700; letter-spacing: 0.14em; padding: 3px 7px;
+  }
+  .admin-urgency.high { background: #b54a2c; color: #f4f1ea; }
+  .admin-urgency.medium { background: #c4a661; color: #1a1815; }
+  .admin-urgency.low { background: #5a7a4a18; color: #5a7a4a; }
+  .admin-eligible {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .admin-eligible-pill {
+    background: #1a181508; border: 1px solid #1a181530;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    padding: 1px 5px; color: #1a1815;
+  }
+  .admin-eligible-more {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a;
+  }
+  .admin-tier {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #4c6b8c; margin-top: 3px; font-weight: 600;
+  }
+  .admin-completeness-bar {
+    background: #1a181515; height: 6px; margin-bottom: 4px;
+  }
+  .admin-completeness-fill {
+    background: #5a7a4a; height: 100%; transition: width 200ms;
+  }
+  .admin-completeness-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #1a1815; font-weight: 600;
+  }
+  .admin-referrer, .admin-payer, .admin-date {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: #6b645a; line-height: 1.5;
+  }
+
+  .admin-footer {
+    padding: 14px 18px; background: #c4a66110;
+    border-left: 3px solid #c4a661;
+    font-size: 11.5px; color: #3a352e; line-height: 1.6;
+  }
+  .admin-footer strong { color: #7a5e10; font-weight: 600; }
+
+  /* PILOT PROPOSAL VIEW */
+  .pilot-view {
+    max-width: 1000px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .pilot-view { padding: 36px 20px 60px; } }
+  .pilot-banner { text-align: center; margin-bottom: 48px; }
+  .pilot-banner-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    font-weight: 700; margin-bottom: 18px;
+  }
+  .pilot-banner-h1 {
+    font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.15; letter-spacing: -0.025em; color: #1a1815;
+    margin: 0 0 22px;
+  }
+  @media (max-width: 860px) { .pilot-banner-h1 { font-size: 30px; } }
+  .pilot-banner-h1 em { font-style: italic; color: #b54a2c; }
+  .pilot-banner-sub {
+    font-size: 15.5px; line-height: 1.65; color: #3a352e;
+    max-width: 720px; margin: 0 auto;
+  }
+
+  .pilot-onepage {
+    background: #fafaf7; border: 2px solid #1a1815; padding: 36px 40px;
+    margin-bottom: 56px;
+  }
+  @media (max-width: 700px) { .pilot-onepage { padding: 24px 22px; } }
+  .onepage-hdr {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 18px; border-bottom: 1px solid #1a181520;
+    margin-bottom: 22px; flex-wrap: wrap; gap: 10px;
+  }
+  .onepage-hdr-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    font-weight: 700;
+  }
+  .onepage-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.015em;
+  }
+  .onepage-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
+  }
+  @media (max-width: 760px) { .onepage-grid { grid-template-columns: 1fr; } }
+  .onepage-block {
+    border: 1px solid #1a181520; padding: 14px 16px; background: #fff;
+  }
+  .onepage-block-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #c4a661;
+    font-weight: 700; margin-bottom: 8px;
+  }
+  .onepage-block p {
+    font-size: 12.5px; color: #1a1815; line-height: 1.65; margin: 0;
+  }
+  .onepage-block p strong { color: #1a1815; font-weight: 600; }
+  .onepage-block ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .onepage-block li {
+    font-size: 12px; color: #1a1815; padding: 3px 0 3px 14px;
+    line-height: 1.55; position: relative;
+  }
+  .onepage-block li::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+    color: #4c6b8c;
+  }
+  .onepage-footer {
+    margin-top: 26px; padding-top: 18px;
+    border-top: 1px solid #1a181520;
+    font-size: 11.5px; color: #6b645a; line-height: 1.65;
+  }
+  .onepage-footer strong { color: #1a1815; font-weight: 600; }
+
+  .pilot-deck-title {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #1a1815; margin: 0 0 22px; letter-spacing: -0.018em;
+  }
+  .slide {
+    border: 1px solid #1a1815; background: #f4f1ea;
+    padding: 24px 28px; margin-bottom: 12px;
+    position: relative;
+  }
+  @media (max-width: 700px) { .slide { padding: 18px 20px; } }
+  .slide-num {
+    position: absolute; top: 14px; right: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #c4a661; letter-spacing: 0.18em; font-weight: 700;
+  }
+  .slide-h {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.015em; line-height: 1.25;
+    margin-bottom: 14px;
+  }
+  .slide ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .slide li {
+    font-size: 13.5px; color: #3a352e; padding: 5px 0 5px 16px;
+    line-height: 1.6; position: relative;
+  }
+  .slide li::before {
+    content: '→'; position: absolute; left: 0; font-weight: 700;
+    color: #c4a661; font-size: 11px; top: 7px;
+  }
+  .slide li strong { color: #1a1815; font-weight: 600; }
+  .slide-cta { margin-top: 18px; }
+  .slide-cta-btn {
+    font-family: 'Inter Tight', sans-serif; font-size: 14px; font-weight: 500;
+    padding: 12px 24px; background: #1a1815; color: #f4f1ea;
+    border: 1px solid #1a1815; cursor: pointer; transition: all 150ms;
+  }
+  .slide-cta-btn:hover { background: #3a352e; }
+
+  .pilot-back-row {
+    display: flex; gap: 10px; margin-top: 36px; justify-content: center;
+    flex-wrap: wrap;
+  }
 
   /* DEFENSIBILITY VIEW — the moat scoreboard */
   .defens-view {
@@ -7320,7 +7614,7 @@ function AccuracyModal({ onClose }) {
 }
 
 // ── Centers page (/centers) — pitch + 90-day pilot offer ──────────────────
-function CentersView({ onRequestPilot }) {
+function CentersView({ onRequestPilot, onGoToAdmin, onGoToPilot }) {
   return (
     <div className="centers-view">
       {/* Hero */}
@@ -7341,9 +7635,12 @@ function CentersView({ onRequestPilot }) {
           <button className="centers-hero-cta primary" onClick={onRequestPilot}>
             Request 90-day charter pilot →
           </button>
-          <a href="/api/fhir/example.json" target="_blank" rel="noopener noreferrer" className="centers-hero-cta secondary">
-            See sample referral packet
-          </a>
+          <button className="centers-hero-cta secondary" onClick={onGoToPilot}>
+            See pilot proposal
+          </button>
+          <button className="centers-hero-cta secondary" onClick={onGoToAdmin}>
+            See admin dashboard preview
+          </button>
         </div>
       </div>
 
@@ -9227,6 +9524,358 @@ function DefensibilityView({ onBackToScreener, onGoToCenters, onGoToCriteria, on
   );
 }
 
+// ── Center Admin Dashboard (mock for pilot demos) ──────────────────────────
+// Simulates what a receiving cell therapy center would see — inbound
+// referrals ranked by urgency, completeness of intake, eligibility flags.
+// Mock data for tri-state pilot demos.
+function CenterAdminView({ board, onBackToScreener, onGoToPilot }) {
+  // Build a mock inbound queue. Cases from the user's board are surfaced
+  // here as if they were inbound referrals to the center. Plus 2 synthetic
+  // cases so the dashboard isn't empty for a new viewer.
+  const synth = [
+    {
+      id: "synth-1",
+      patientLabel: "Patient · DLBCL referral",
+      cancerType: "DLBCL", priorLines: "2", ecog: "1",
+      urgencyLevel: "high", urgencyScore: 7,
+      completeness: 85,
+      eligibleProducts: ["Yescarta", "Breyanzi"],
+      preferredTier: "IA",
+      flags: ["TP53-mutated", "Bulky disease", "Primary refractory"],
+      referredFrom: "Community oncology · Westchester County NY",
+      submittedAt: "2026-05-19",
+      payerStatus: "Commercial · auth not started",
+    },
+    {
+      id: "synth-2",
+      patientLabel: "Patient · MM referral",
+      cancerType: "Multiple myeloma", priorLines: "5", ecog: "1",
+      urgencyLevel: "medium", urgencyScore: 4,
+      completeness: 70,
+      eligibleProducts: ["Talvey", "Tecvayli"],
+      preferredTier: "IB",
+      flags: ["Prior BCMA Tx — alt target", "Extramedullary disease"],
+      referredFrom: "Community oncology · Bergen County NJ",
+      submittedAt: "2026-05-17",
+      payerStatus: "Medicare · auth submitted",
+    },
+  ];
+  const items = [
+    ...synth,
+    ...(board || []).slice(0, 5).map(c => {
+      const u = calculateUrgency(c.patient || {}) || { level: "low", score: 0 };
+      return {
+        id: c.id,
+        patientLabel: c.patientLabel || "Patient referral",
+        cancerType: c.patient?.cancerType || "—",
+        priorLines: c.patient?.priorLines || "—",
+        ecog: c.patient?.ecog || "—",
+        urgencyLevel: u.level,
+        urgencyScore: u.score,
+        completeness: 60,
+        eligibleProducts: Object.entries(c.results || {}).filter(([, r]) => r?.eligible).map(([k]) => k).slice(0, 3),
+        preferredTier: "IB",
+        flags: [],
+        referredFrom: "CellTx Match referrer",
+        submittedAt: (c.timeline?.referralCreatedAt || "").slice(0, 10) || "—",
+        payerStatus: "—",
+      };
+    }),
+  ];
+
+  return (
+    <div className="admin-view">
+      <div className="admin-hero">
+        <div className="admin-tag">Mock dashboard · Center admin preview</div>
+        <h1 className="admin-h1">
+          Inbound CAR-T referrals — <em>pre-qualified</em>, pre-screened, ranked.
+        </h1>
+        <p className="admin-sub">
+          This is the view a charter-pilot center would see for inbound referrals from community
+          oncology practices using CellTx Match. Mock data — for demonstration only. Each row
+          arrives with completeness scoring, eligibility flagged in advance, urgency triaged,
+          and the referring practice attached.
+        </p>
+        <div className="admin-cta-row">
+          <button className="admin-cta primary" onClick={onGoToPilot}>
+            See the pilot proposal →
+          </button>
+          <button className="admin-cta secondary" onClick={onBackToScreener}>
+            Back to the product
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-summary-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-num">{items.length}</div>
+          <div className="admin-stat-lbl">Inbound queue</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-num" style={{ color: "#b54a2c" }}>
+            {items.filter(i => i.urgencyLevel === "high").length}
+          </div>
+          <div className="admin-stat-lbl">High urgency</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-num" style={{ color: "#5a7a4a" }}>
+            {Math.round(items.reduce((a, i) => a + (i.completeness || 0), 0) / Math.max(items.length, 1))}%
+          </div>
+          <div className="admin-stat-lbl">Avg intake completeness</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-num">~3</div>
+          <div className="admin-stat-lbl">Days saved per referral</div>
+        </div>
+      </div>
+
+      <div className="admin-queue">
+        <div className="admin-queue-hdr">Inbound referral queue</div>
+        <div className="admin-table">
+          <div className="admin-table-row admin-table-hdr">
+            <div>Patient</div>
+            <div>Indication</div>
+            <div>Urgency</div>
+            <div>Eligible</div>
+            <div>Completeness</div>
+            <div>Referrer</div>
+            <div>Payer</div>
+            <div>Date</div>
+          </div>
+          {items.map(it => (
+            <div key={it.id} className="admin-table-row">
+              <div>
+                <div className="admin-patient">{it.patientLabel}</div>
+                {it.flags.length > 0 && (
+                  <div className="admin-flags">
+                    {it.flags.map((f, i) => <span key={i} className="admin-flag">{f}</span>)}
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="admin-indication">{it.cancerType}</div>
+                <div className="admin-indication-meta">{it.priorLines}L · ECOG {it.ecog}</div>
+              </div>
+              <div>
+                <span className={`admin-urgency ${it.urgencyLevel}`}>
+                  {it.urgencyLevel === "high" ? "HIGH" : it.urgencyLevel === "medium" ? "MED" : "LOW"}
+                </span>
+              </div>
+              <div>
+                <div className="admin-eligible">
+                  {it.eligibleProducts.slice(0, 2).map((p, i) => (
+                    <span key={i} className="admin-eligible-pill">{p}</span>
+                  ))}
+                  {it.eligibleProducts.length > 2 && (
+                    <span className="admin-eligible-more">+{it.eligibleProducts.length - 2}</span>
+                  )}
+                </div>
+                {it.preferredTier && (
+                  <div className="admin-tier">{it.preferredTier} preferred</div>
+                )}
+              </div>
+              <div>
+                <div className="admin-completeness-bar">
+                  <div className="admin-completeness-fill" style={{ width: `${it.completeness}%` }} />
+                </div>
+                <div className="admin-completeness-num">{it.completeness}%</div>
+              </div>
+              <div className="admin-referrer">{it.referredFrom}</div>
+              <div className="admin-payer">{it.payerStatus}</div>
+              <div className="admin-date">{it.submittedAt}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="admin-footer">
+        <strong>For demonstration only.</strong> Real center dashboards under pilot would include named
+        coordinator contact, custom intake protocols, branded packets, payer-specific routing,
+        outcome capture, and a feed back to the referring practice when intake status changes.
+      </div>
+    </div>
+  );
+}
+
+// ── Pilot Proposal View — 1-page center proposal + slides ──────────────────
+function PilotProposalView({ onBackToScreener, onRequestPilot }) {
+  return (
+    <div className="pilot-view">
+      <div className="pilot-banner">
+        <div className="pilot-banner-tag">90-day Charter Pilot · Tri-state launch · NY · NJ · CT</div>
+        <h1 className="pilot-banner-h1">
+          A <em>scoped, low-risk evaluation</em> at your center.<br />
+          Free for charter institutions.
+        </h1>
+        <p className="pilot-banner-sub">
+          One disease area. One center. One disease team. 90 days. After that, decide whether
+          to continue under Institutional pricing — pilot fee credited toward your first year
+          if you continue.
+        </p>
+      </div>
+
+      <div className="pilot-onepage">
+        <div className="onepage-hdr">
+          <div className="onepage-hdr-num">1-page proposal</div>
+          <div className="onepage-hdr-title">CellTx Match Charter Pilot</div>
+        </div>
+
+        <div className="onepage-grid">
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">The problem</div>
+            <p>Up to 30% of community oncology CAR-T referrals arrive incomplete, ineligible-on-arrival, or
+            past the eligibility window. Your referral office spends coordinator hours chasing intake. Your
+            consult slots get used on patients who shouldn't have been referred.</p>
+          </div>
+
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">The pilot scope</div>
+            <ul>
+              <li>One disease area — R/R LBCL or multiple myeloma</li>
+              <li>One center · one disease team</li>
+              <li>90-day fixed engagement</li>
+              <li>Custom intake configuration to your protocols</li>
+              <li>Branded referral packets with your center's letterhead</li>
+              <li>Named coordinator endpoint for referring practices</li>
+            </ul>
+          </div>
+
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">What CellTx Match delivers</div>
+            <ul>
+              <li>Free decision-support tool in your referring community practices</li>
+              <li>Standardized referral packets — eligibility pre-screened, workup checklist included</li>
+              <li>Urgency-triaged inbound queue (your admin dashboard)</li>
+              <li>FHIR R4 Bundle export — works with any EHR</li>
+              <li>Monthly metrics report — cases received, time-to-consult, redirect rate</li>
+              <li>No PHI on CellTx servers — localStorage architecture · BAA-ready</li>
+            </ul>
+          </div>
+
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">Metrics we'll track</div>
+            <ul>
+              <li>Referrals received (baseline vs pilot)</li>
+              <li>Intake completeness on arrival (target: ≥90%)</li>
+              <li>Time-to-consult from referral receipt</li>
+              <li>Eligible-on-arrival rate (target: ≥85%)</li>
+              <li>Coordinator-hours saved per case</li>
+            </ul>
+          </div>
+
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">What we ask for</div>
+            <ul>
+              <li>BAA signed (we provide template)</li>
+              <li>30-min kickoff with disease team to confirm intake protocols</li>
+              <li>Named coordinator point of contact</li>
+              <li>Quarterly metrics review (30 min)</li>
+              <li>Quote of attribution at conferences/publications, if results warrant</li>
+            </ul>
+          </div>
+
+          <div className="onepage-block">
+            <div className="onepage-block-lbl">Investment</div>
+            <p><strong>$0 to the center for the 90-day pilot.</strong> If you continue under Institutional
+            pricing afterward, the pilot value ($0–500 typical setup) is credited toward year 1.
+            Limited to the first 5 founding charter centers.</p>
+          </div>
+        </div>
+
+        <div className="onepage-footer">
+          <strong>About:</strong> CellTx Match is a clinician-facing precision oncology referral platform that
+          converts genomic reports and treatment history into evidence-ranked resistance flags, trial options,
+          and cell-therapy referral packets. Built by Ramja Sritharan. Operates under the 21st Century Cures
+          Act §3060(a) CDS exemption. Available at cart-match.vercel.app.
+        </div>
+      </div>
+
+      <div className="pilot-deck">
+        <h2 className="pilot-deck-title">The pitch — 6 slides</h2>
+
+        <div className="slide">
+          <div className="slide-num">1 / 6</div>
+          <div className="slide-h">Community-to-academic CAR-T referrals are broken.</div>
+          <ul>
+            <li>Up to 30% of inbound referrals arrive ineligible</li>
+            <li>Median time-to-consult: 4–8 weeks · eligibility windows close</li>
+            <li>Coordinator hours wasted chasing intake</li>
+            <li>Community practices under-refer because criteria feel uncertain</li>
+          </ul>
+        </div>
+
+        <div className="slide">
+          <div className="slide-num">2 / 6</div>
+          <div className="slide-h">CellTx Match runs in the community, sends pre-qualified referrals to you.</div>
+          <ul>
+            <li>Free deployment in community oncology practices</li>
+            <li>Patient profile → ESCAT-tiered ranked options + resistance flags + workup checklist + nearest centers</li>
+            <li>Every referral arrives with eligibility flagged + completeness verified</li>
+            <li>FHIR Bundle export · branded packets · BAA-ready architecture</li>
+          </ul>
+        </div>
+
+        <div className="slide">
+          <div className="slide-num">3 / 6</div>
+          <div className="slide-h">Three-layer platform.</div>
+          <ul>
+            <li><strong>Layer 1 — Evidence:</strong> 18 biomarkers · 30 ESCAT rules · linked to pivotal trials</li>
+            <li><strong>Layer 2 — Resistance:</strong> 10-factor nonresponse scoring · antigen-loss flags · TP53 caveats</li>
+            <li><strong>Layer 3 — Referral:</strong> case lifecycle · packet generator · 48 US centers indexed</li>
+          </ul>
+        </div>
+
+        <div className="slide">
+          <div className="slide-num">4 / 6</div>
+          <div className="slide-h">90-day charter pilot · what we promise.</div>
+          <ul>
+            <li>Free to the center · scoped to one disease area · branded packets</li>
+            <li>Custom intake protocols built to your team's spec</li>
+            <li>Inbound dashboard: urgency-triaged, completeness-scored queue</li>
+            <li>Monthly metrics report against pre-pilot baseline</li>
+          </ul>
+        </div>
+
+        <div className="slide">
+          <div className="slide-num">5 / 6</div>
+          <div className="slide-h">Tri-state launch — NY · NJ · CT.</div>
+          <ul>
+            <li>MSK · Mount Sinai · Columbia · NYU · Hackensack · Rutgers Cancer Inst · Yale</li>
+            <li>Dense community oncology referral network</li>
+            <li>Founder is local; can be on-site for kickoff &amp; quarterly reviews</li>
+            <li>Five founding charter slots — first center pilot Q3 2026</li>
+          </ul>
+        </div>
+
+        <div className="slide">
+          <div className="slide-num">6 / 6</div>
+          <div className="slide-h">Next step.</div>
+          <ul>
+            <li>30-min intro call with cell therapy program leadership</li>
+            <li>BAA + scoped pilot agreement (we provide templates)</li>
+            <li>Kickoff inside 14 days · first referrals visible Day 30</li>
+            <li>Decision to continue or discontinue at Day 90 — no obligation</li>
+          </ul>
+          <div className="slide-cta">
+            <button className="slide-cta-btn" onClick={onRequestPilot}>
+              Request the intro call →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="pilot-back-row">
+        <button className="defens-footer-cta secondary" onClick={onBackToScreener}>
+          Back to the product
+        </button>
+        <button className="defens-footer-cta primary" onClick={onRequestPilot}>
+          Request a pilot →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── About page ─────────────────────────────────────────────────────────────
 function AboutView({ onBackToScreener, onGoToPricing, onGoToCriteria }) {
   return (
@@ -10553,6 +11202,8 @@ export default function App() {
       : view === "research" ? "/research"
       : view === "centers" ? "/centers"
       : view === "defensibility" ? "/defensibility"
+      : view === "center-admin" ? "/center-admin"
+      : view === "pilot" ? "/pilot"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -10602,6 +11253,8 @@ export default function App() {
       else if (p === "/research") setView("research");
       else if (p === "/centers") setView("centers");
       else if (p === "/defensibility") setView("defensibility");
+      else if (p === "/center-admin") setView("center-admin");
+      else if (p === "/pilot") setView("pilot");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -11052,6 +11705,14 @@ export default function App() {
                 Criteria
               </button>
               <button
+                className={`hdr-nav-btn${view === "pilot" ? " active" : ""}`}
+                onClick={() => setView("pilot")}
+                title="90-day charter pilot · tri-state launch"
+                style={view === "pilot" ? {} : { borderColor: "#c4a661", color: "#7a5e10" }}
+              >
+                Pilot
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "defensibility" ? " active" : ""}`}
                 onClick={() => setView("defensibility")}
                 title="The moat scoreboard — what makes this hard to replicate"
@@ -11379,6 +12040,8 @@ export default function App() {
       {view === "centers" && (
         <CentersView
           onRequestPilot={() => { trackPricingCta("centers-pilot"); setShowWaitlist(true); }}
+          onGoToAdmin={() => setView("center-admin")}
+          onGoToPilot={() => setView("pilot")}
         />
       )}
 
@@ -11431,6 +12094,23 @@ export default function App() {
         />
       )}
 
+      {/* CENTER ADMIN VIEW — mock dashboard for receiving cell therapy centers */}
+      {view === "center-admin" && (
+        <CenterAdminView
+          board={board}
+          onBackToScreener={() => setView("screener")}
+          onGoToPilot={() => setView("pilot")}
+        />
+      )}
+
+      {/* PILOT PROPOSAL VIEW — 1-page center proposal + deck */}
+      {view === "pilot" && (
+        <PilotProposalView
+          onBackToScreener={() => setView("screener")}
+          onRequestPilot={() => setShowWaitlist(true)}
+        />
+      )}
+
       {/* PRICING VIEW */}
       {view === "pricing" && (
         <PricingView
@@ -11462,6 +12142,17 @@ export default function App() {
 
       {view === "screener" && <>
 
+      {/* CLINICIAN DISCLAIMER — visible at the top of every analysis */}
+      <div className="clinician-disclaimer">
+        <div className="clinician-disclaimer-inner">
+          <span className="clinician-disclaimer-icon">ⓘ</span>
+          <span>
+            <strong>For referral support only.</strong> Does not determine eligibility or recommend treatment.
+            Final clinical decisions remain with the treating physician and the receiving cell therapy center.
+          </span>
+        </div>
+      </div>
+
       {/* CASE LOADED BANNER */}
       {caseLoaded && (
         <div className="case-banner">
@@ -11486,6 +12177,37 @@ export default function App() {
             )}
           </div>
           <div className={`form-fields-wrap${(!formOpen && ran) ? " collapsed" : ""}`}>
+
+          {/* DEMO MODE LOADER — no-PHI fictional patients for sales/demo flow */}
+          <div className="demo-loader">
+            <div className="demo-loader-row">
+              <div className="demo-loader-label">
+                <span className="demo-pill">DEMO</span>
+                Load a no-PHI case
+              </div>
+              <select
+                className="select-inp demo-loader-select"
+                value=""
+                onChange={e => {
+                  if (!e.target.value) return;
+                  const d = DEMO_PATIENTS.find(d => d.id === e.target.value);
+                  if (!d) return;
+                  setPt({ ...INIT, ...d.patient });
+                  setRan(false);
+                  setResults(null);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                <option value="">— Select a fictional case —</option>
+                {DEMO_PATIENTS.map(d => (
+                  <option key={d.id} value={d.id}>{d.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="demo-loader-hint">
+              Fictional patients. No PHI. Each case exercises a different engine path — pick one to run the workflow end-to-end.
+            </div>
+          </div>
 
           <div className="field">
             <label className="lbl">Cancer type</label>
