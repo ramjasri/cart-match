@@ -425,7 +425,7 @@ export function generatePdf({ patient, results, products, grayscale = false }) {
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     setColor(doc, [180, 170, 155]);
-    doc.text("CellTx Match · Cell Therapy Referral Intelligence · cart-match.vercel.app", ML, 293);
+    doc.text("CellTx Match · Precision Oncology Referral Platform · cart-match.vercel.app", ML, 293);
     doc.text(`Page ${i} of ${pages}`, W - MR, 293, { align: "right" });
   }
 

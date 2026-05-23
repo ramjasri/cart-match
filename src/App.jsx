@@ -8207,7 +8207,7 @@ function TermsView() {
 
       <div id="about" className="legal-section">
         <h2>1. About the service</h2>
-        <p>CellTx Match ("the Service") is an online reference and decision-support platform for cell therapy referral intelligence, operated by Ramja Sritharan ("we", "us", "our"). The Service provides structured, sourced reference information about FDA-approved CAR-T and bispecific antibody products, NCCN-aligned disease pathways, and recruiting clinical trials.</p>
+        <p>CellTx Match ("the Service") is a clinician-facing precision oncology referral platform operated by Ramja Sritharan ("we", "us", "our"). The Service converts genomic reports and treatment history into evidence-ranked resistance flags, trial options, and cell-therapy referral packets, drawing on structured, sourced reference information about FDA-approved CAR-T and bispecific antibody products, NCCN-aligned disease pathways, and recruiting clinical trials.</p>
         <p>The Service is intended for use by licensed healthcare professionals, healthcare administrative staff, and clinical trainees as an educational and operational reference tool. The Service is <strong>not a medical device</strong>, <strong>not a substitute for clinical judgment</strong>, and <strong>not intended for diagnostic use</strong>.</p>
       </div>
 
@@ -8439,27 +8439,36 @@ function AboutView({ onBackToScreener, onGoToPricing, onGoToCriteria }) {
         </h1>
       </div>
 
-      {/* Mission — opening line is the user's exact framing */}
+      {/* Mission */}
       <div className="about-mission">
         <p>
-          CellTx Match was built to address a recurring operational problem in modern oncology:
-          patients becoming ineligible for cell therapy because referrals happen too late, or
-          because incomplete information delays evaluation.
+          <strong>CellTx Match is a clinician-facing precision oncology referral platform
+          that converts genomic reports and treatment history into evidence-ranked
+          resistance flags, trial options, and cell-therapy referral packets.</strong>
         </p>
         <p>
-          Every CAR-T program sees it. A relapsed patient loses eligibility while a community
-          oncologist works through standard salvage chemotherapy — organ function declines,
-          performance status drops, and the clinical window closes before the referral pathway
-          completes. Existing decision support tools handle pieces of this: a prescribing
-          information document here, a guideline page there, a static eligibility list on a
-          vendor's website. Nothing brings the full workflow together at the point of decision.
+          We built it to address a recurring operational problem in modern oncology:
+          patients becoming ineligible for cell therapy because referrals happen too late,
+          or because the molecular and treatment-history signals that should have escalated
+          them earlier never reached a tumor board. Every CAR-T program sees it. A relapsed
+          patient loses eligibility while a community oncologist works through standard
+          salvage chemotherapy — organ function declines, performance status drops, and
+          the clinical window closes before the referral pathway completes.
         </p>
         <p>
-          CellTx Match runs a single patient profile through a deterministic rule library
-          sourced from FDA prescribing information, NCCN guidelines, and pivotal trial entry
-          criteria. The output is decision-focused: which approved products fit, what blocks
-          eligibility today, what workup is needed before referral, which trials match, and
-          when the clinical window is closing.
+          Existing tools handle pieces of this: a prescribing-information document here,
+          a guideline page there, a static eligibility list on a vendor's website, an NGS
+          report sitting in a PDF nobody re-reads after diagnosis. Nothing brings the full
+          picture together at the point of decision. CellTx Match does that across three
+          layers — an <strong>evidence engine</strong> (ESCAT-tiered ranked therapy options),
+          a <strong>resistance and escalation engine</strong> (post-NGS interpretation, cell
+          therapy nonresponse risk, antigen-loss flags), and a <strong>referral workflow</strong>
+          (one-click packet, FHIR Bundle export, certified-center directory).
+        </p>
+        <p>
+          The platform surfaces evidence — it does not predict response or recommend therapy.
+          Every tier traces to a specific trial; every annotation traces to a specific paper;
+          final therapeutic decisions remain with the treating physician.
         </p>
       </div>
 
@@ -10164,7 +10173,7 @@ export default function App() {
             <div className="brand-glyph"><Dna size={18} strokeWidth={1.4} /></div>
             <div>
               <div className="brand-name">CELLTX MATCH</div>
-              <div className="brand-sub">Cell Therapy Referral Intelligence Platform</div>
+              <div className="brand-sub">Precision Oncology Referral Platform</div>
             </div>
           </div>
           <div className="hdr-meta">
@@ -10270,15 +10279,15 @@ export default function App() {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-text fade-in">
-            <div className="hero-tag">Precision Referral Intelligence · ESCAT-tiered · May 2026</div>
+            <div className="hero-tag">Precision Oncology Referral Platform · ESCAT-tiered · May 2026</div>
             <h1 className="hero-h1">
-              Post-NGS <em>cell therapy</em> intelligence,<br />ready for tumor board
+              Genomic reports in.<br /><em>Evidence-ranked</em> referrals out.
             </h1>
             <p className="hero-sub">
-              Three layers in one workflow: ESCAT-tiered evidence interpretation of NGS findings,
-              resistance &amp; escalation flags for cell therapy nonresponse risk, and a referral
-              pipeline that gets your patient to the right center. All 12 FDA-approved CAR-T and
-              bispecific products — evaluated simultaneously, in seconds.
+              A clinician-facing precision oncology referral platform that converts genomic
+              reports and treatment history into evidence-ranked resistance flags, trial
+              options, and cell-therapy referral packets — across all 12 FDA-approved CAR-T
+              and bispecific products.
             </p>
 
             <div className="hero-pills">
@@ -10380,7 +10389,7 @@ export default function App() {
       <section className="capability-section">
         <div className="capability-eyebrow">What you get</div>
         <h2 className="capability-title">
-          Built for the way <em>oncology teams</em> actually work — not a generic checklist tool.
+          Genomic reports + treatment history → <em>evidence-ranked</em> resistance flags, trial options, and referral packets.
         </h2>
 
         <div className="capability-grid">
