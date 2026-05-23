@@ -25,6 +25,7 @@ import { BLOCK_ACTIONS, WARNING_ACTIONS } from "./utils/actions.js";
 import { URGENCY_RUBRIC } from "./utils/urgency.js";
 import { TRIAL_SCORING_RULES } from "./utils/trialMatcher.js";
 import { calculateReferralDecision } from "./utils/earlyReferral.js";
+import { generateMolecularSummary, ESCAT_TIERS } from "./utils/resistance.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -1570,6 +1571,169 @@ const CSS = `
     line-height: 1.5; font-style: italic;
   }
   .pathway-caveat::before { content: '⚠'; flex-shrink: 0; }
+
+  /* NGS TEXTAREA in form */
+  .ngs-textarea {
+    width: 100%; border: 1px solid #1a181830; background: #fff;
+    padding: 10px 12px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: #1a1815; line-height: 1.55;
+    resize: vertical; min-height: 88px;
+    transition: border-color 120ms;
+  }
+  .ngs-textarea:focus {
+    outline: none; border-color: #4c6b8c; background: #fafaf7;
+  }
+  .ngs-hint {
+    font-size: 10.5px; color: #6b645a; line-height: 1.5;
+    margin: 6px 0 0; font-style: italic;
+  }
+
+  /* MOLECULAR & RESISTANCE INTELLIGENCE PANEL */
+  .molecular-panel {
+    border: 1px solid #1a1815; background: #f4f1ea; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .molecular-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #1a1815; color: #f4f1ea;
+    cursor: pointer; user-select: none;
+  }
+  .molecular-icon-bg {
+    width: 30px; height: 30px; background: #4c6b8c; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 16px; line-height: 1;
+  }
+  .molecular-hdr-text { flex: 1; min-width: 0; }
+  .molecular-hdr-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1;
+  }
+  .molecular-hdr-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: #c4a661; margin-top: 4px;
+  }
+  .molecular-body { padding: 18px 20px; }
+
+  /* Risk score block */
+  .risk-score-block {
+    border-left: 4px solid;
+    background: #fafaf7;
+    padding: 14px 16px; margin-bottom: 18px;
+  }
+  .risk-score-row {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 8px;
+  }
+  .risk-score-headline {
+    flex: 1; font-family: 'Fraunces', serif; font-size: 16px;
+    font-weight: 500; letter-spacing: -0.01em;
+  }
+  .risk-score-num {
+    width: 36px; height: 36px; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
+  }
+  .risk-score-rec {
+    font-size: 12.5px; color: #3a352e; line-height: 1.6; margin-bottom: 12px;
+  }
+  .risk-factors {
+    border-top: 1px solid #1a181518; padding-top: 10px;
+  }
+  .risk-factors-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #6b645a;
+    margin-bottom: 8px;
+  }
+  .risk-factor-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 5px 0; border-bottom: 1px solid #1a181510;
+  }
+  .risk-factor-row:last-child { border-bottom: none; }
+  .risk-factor-weight {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: #b54a2c; min-width: 26px; padding-top: 1px; flex-shrink: 0;
+  }
+  .risk-factor-body { flex: 1; min-width: 0; }
+  .risk-factor-label {
+    font-size: 12px; color: #1a1815; line-height: 1.4;
+  }
+  .risk-factor-detail {
+    font-size: 10.5px; color: #6b645a; line-height: 1.45;
+    margin-top: 2px; font-style: italic;
+  }
+
+  /* Biomarker groups */
+  .biomarker-group { margin-bottom: 18px; }
+  .biomarker-group:last-of-type { margin-bottom: 0; }
+  .biomarker-group-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    margin-bottom: 10px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .biomarker-group-count {
+    background: #1a181508; border: 1px solid #1a181520;
+    padding: 1px 6px; font-size: 9px; font-weight: 700;
+    color: #1a1815;
+  }
+  .biomarker-incidental-note {
+    font-size: 11px; color: #6b645a; font-style: italic;
+    line-height: 1.5; margin-bottom: 10px;
+  }
+
+  /* Biomarker card */
+  .biomarker-card {
+    background: #fff; border: 1px solid #1a181520; padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .biomarker-card:last-child { margin-bottom: 0; }
+  .biomarker-card-hdr {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  }
+  .biomarker-name {
+    flex: 1; font-family: 'Fraunces', serif; font-size: 14px;
+    color: #1a1815; font-weight: 500; letter-spacing: -0.005em;
+  }
+  .biomarker-tier {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #f4f1ea; padding: 2px 7px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    flex-shrink: 0;
+  }
+  .biomarker-summary {
+    font-size: 11.5px; color: #3a352e; line-height: 1.55; margin-bottom: 8px;
+  }
+  .biomarker-block { margin-top: 8px; }
+  .biomarker-block-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+    margin-bottom: 4px;
+  }
+  .biomarker-list {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .biomarker-list li {
+    font-size: 11.5px; color: #1a1815; padding: 2px 0 2px 12px;
+    line-height: 1.5; position: relative;
+  }
+  .biomarker-list li::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+    color: #4c6b8c;
+  }
+  .biomarker-refs {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid #1a181510;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .biomarker-ref {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; background: #1a181508; padding: 2px 6px;
+  }
+  .molecular-footer {
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid #1a181520;
+    font-size: 11px; color: #6b645a; line-height: 1.55;
+  }
+  .molecular-footer strong { color: #1a1815; font-weight: 600; }
 
   /* URGENCY BANNER */
   .urgency-banner {
@@ -4560,6 +4724,13 @@ const INIT = {
   btkiVenetoclaxExposed: false, richtersTransformation: false,
   age25OrYounger: false, phPositive: false,
   lenalidomideRefractory: false, extramedullaryDisease: false, highRiskCytogenetics: false,
+  // Molecular & resistance intelligence layer
+  ngsReport: "",
+  bulkyDisease: false,
+  ldhMultipleUln: "",
+  priorCd19Therapy: false,
+  priorBcmaTherapy: false,
+  antigenLoss: false,
   // Lab values — all optional
   labAlt: "", labAst: "", labCreat: "", labCrcl: "",
   labBil: "", labLvef: "", labSpo2: "",
@@ -5989,6 +6160,148 @@ function WorkupPanel({ pt }) {
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── MolecularIntelligencePanel ─────────────────────────────────────────────
+// Renders detected biomarkers (grouped by category) + ESCAT tier badges +
+// resistance flags + cell therapy nonresponse risk score. The defensible
+// moat layer — post-NGS interpretation that surfaces evidence rather than
+// claiming prediction.
+function MolecularIntelligencePanel({ pt }) {
+  const [open, setOpen] = useState(true);
+  const summary = generateMolecularSummary(pt, pt.ngsReport || "");
+  if (!summary.hasAnyFindings) return null;
+
+  const { actionable, resistance, prognostic, incidental, risk } = summary;
+
+  const BiomarkerCard = ({ bm }) => {
+    const tierMeta = ESCAT_TIERS[bm.tier] || ESCAT_TIERS.X;
+    return (
+      <div className="biomarker-card">
+        <div className="biomarker-card-hdr">
+          <div className="biomarker-name">{bm.name}</div>
+          <span className="biomarker-tier" style={{ background: tierMeta.color }}>
+            {tierMeta.label}
+          </span>
+        </div>
+        <div className="biomarker-summary">{bm.summary}</div>
+        {bm.resistance && bm.resistance.length > 0 && (
+          <div className="biomarker-block">
+            <div className="biomarker-block-head">Resistance / failure context</div>
+            <ul className="biomarker-list">
+              {bm.resistance.map((r, i) => <li key={i}>{r}</li>)}
+            </ul>
+          </div>
+        )}
+        {bm.implications && bm.implications.length > 0 && (
+          <div className="biomarker-block">
+            <div className="biomarker-block-head">Clinical implications</div>
+            <ul className="biomarker-list">
+              {bm.implications.map((r, i) => <li key={i}>{r}</li>)}
+            </ul>
+          </div>
+        )}
+        {bm.references && bm.references.length > 0 && (
+          <div className="biomarker-refs">
+            {bm.references.map((r, i) => <span key={i} className="biomarker-ref">{r}</span>)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="molecular-panel">
+      <div className="molecular-hdr" onClick={() => setOpen(o => !o)}>
+        <div className="molecular-icon-bg">⬢</div>
+        <div className="molecular-hdr-text">
+          <div className="molecular-hdr-title">Molecular &amp; resistance intelligence</div>
+          <div className="molecular-hdr-sub">Post-NGS interpretation · ESCAT evidence tiers · cell therapy nonresponse risk</div>
+        </div>
+        <div className={`chevron${open ? " open" : ""}`} style={{ color: "#4c6b8c" }}>
+          <ChevronDown size={16} />
+        </div>
+      </div>
+
+      {open && (
+        <div className="molecular-body">
+          {/* Cell therapy nonresponse risk score */}
+          {risk.score > 0 && (
+            <div className="risk-score-block" style={{ borderLeftColor: risk.color }}>
+              <div className="risk-score-row">
+                <div className="risk-score-headline" style={{ color: risk.color }}>
+                  {risk.headline}
+                </div>
+                <div className="risk-score-num" style={{ background: risk.color }}>
+                  {risk.score}
+                </div>
+              </div>
+              <div className="risk-score-rec">{risk.recommendation}</div>
+              <div className="risk-factors">
+                <div className="risk-factors-head">Contributing factors</div>
+                {risk.factors.map((f, i) => (
+                  <div key={i} className="risk-factor-row">
+                    <span className="risk-factor-weight">+{f.weight}</span>
+                    <div className="risk-factor-body">
+                      <div className="risk-factor-label">{f.label}</div>
+                      {f.detail && <div className="risk-factor-detail">{f.detail}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actionable findings */}
+          {actionable.length > 0 && (
+            <div className="biomarker-group">
+              <div className="biomarker-group-head" style={{ color: "#5a7a4a" }}>
+                Actionable findings <span className="biomarker-group-count">{actionable.length}</span>
+              </div>
+              {actionable.map(bm => <BiomarkerCard key={bm.id} bm={bm} />)}
+            </div>
+          )}
+
+          {/* Resistance findings */}
+          {resistance.length > 0 && (
+            <div className="biomarker-group">
+              <div className="biomarker-group-head" style={{ color: "#b54a2c" }}>
+                Resistance signals <span className="biomarker-group-count">{resistance.length}</span>
+              </div>
+              {resistance.map(bm => <BiomarkerCard key={bm.id} bm={bm} />)}
+            </div>
+          )}
+
+          {/* Prognostic findings */}
+          {prognostic.length > 0 && (
+            <div className="biomarker-group">
+              <div className="biomarker-group-head" style={{ color: "#c4a661" }}>
+                Adverse prognostic <span className="biomarker-group-count">{prognostic.length}</span>
+              </div>
+              {prognostic.map(bm => <BiomarkerCard key={bm.id} bm={bm} />)}
+            </div>
+          )}
+
+          {/* Incidental — detected but not relevant to this cancer */}
+          {incidental.length > 0 && (
+            <div className="biomarker-group">
+              <div className="biomarker-group-head" style={{ color: "#98908380" }}>
+                Detected · other tumor types <span className="biomarker-group-count">{incidental.length}</span>
+              </div>
+              <div className="biomarker-incidental-note">
+                These alterations were detected in the NGS report but are typically actionable in other tumor types. Listed for completeness.
+              </div>
+              {incidental.map(bm => <BiomarkerCard key={bm.id} bm={bm} />)}
+            </div>
+          )}
+
+          <div className="molecular-footer">
+            <strong>Evidence-only.</strong> CellTx Match surfaces published evidence and resistance context — it does not predict response or recommend therapy. Final therapeutic decisions require molecular tumor board review and treating-physician judgment. ESCAT tiers per Mateo et al. <em>Annals of Oncology</em> 2018.
+          </div>
         </div>
       )}
     </div>
@@ -9656,14 +9969,15 @@ export default function App() {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-text fade-in">
-            <div className="hero-tag">Cell Therapy Referral Intelligence · May 2026</div>
+            <div className="hero-tag">Precision Referral Intelligence · ESCAT-tiered · May 2026</div>
             <h1 className="hero-h1">
-              Identify <em>cell therapy</em> candidates,<br />ready for tumor board
+              Post-NGS <em>cell therapy</em> intelligence,<br />ready for tumor board
             </h1>
             <p className="hero-sub">
-              Evaluate any patient against all 12 FDA-approved CAR-T and bispecific antibody
-              products simultaneously. Generate referral-ready intelligence in seconds — with
-              the criteria, recruiting trials, and bridging pathways your tumor board needs.
+              Three layers in one workflow: ESCAT-tiered evidence interpretation of NGS findings,
+              resistance &amp; escalation flags for cell therapy nonresponse risk, and a referral
+              pipeline that gets your patient to the right center. All 12 FDA-approved CAR-T and
+              bispecific products — evaluated simultaneously, in seconds.
             </p>
 
             <div className="hero-pills">
@@ -10181,6 +10495,46 @@ export default function App() {
             );
           })()}
 
+          {/* MOLECULAR & RESISTANCE INTELLIGENCE — paste NGS report + resistance flags */}
+          <div className="sec-head" style={{ borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}>
+            Molecular &amp; resistance
+            <span style={{ fontSize: 8.5, color: "#4c6b8c", letterSpacing: "0.1em", marginLeft: 6 }}>
+              · ESCAT-tiered
+            </span>
+          </div>
+
+          <div className="field">
+            <label className="lbl">
+              NGS report <span style={{ color: "#98908380", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(paste free text — TP53, del(17p), MYC, etc.)</span>
+            </label>
+            <textarea
+              className="ngs-textarea"
+              rows={4}
+              placeholder="e.g.&#10;TP53 p.R175H mutation detected&#10;del(17p) by FISH&#10;Double-hit lymphoma — MYC and BCL2 rearrangements&#10;Complex karyotype"
+              value={pt.ngsReport}
+              onChange={e => set("ngsReport", e.target.value)}
+            />
+            <p className="ngs-hint">
+              Free-text NGS / cytogenetics. Engine extracts curated biomarkers and maps to ESCAT evidence tiers + resistance implications. Never leaves your browser.
+            </p>
+          </div>
+
+          <Checkbox checked={pt.bulkyDisease} onChange={() => tog("bulkyDisease")}
+            label="Bulky disease (>10 cm or >7.5 cm with B symptoms)" />
+          <Checkbox checked={pt.priorCd19Therapy} onChange={() => tog("priorCd19Therapy")}
+            label="Prior CD19-directed therapy (CAR-T, blinatumomab, tafasitamab)" />
+          <Checkbox checked={pt.priorBcmaTherapy} onChange={() => tog("priorBcmaTherapy")}
+            label="Prior BCMA-directed therapy (CAR-T, belantamab, teclistamab)" />
+          <Checkbox checked={pt.antigenLoss} onChange={() => tog("antigenLoss")}
+            label="Documented antigen loss on relapse (CD19, BCMA, etc.)" />
+
+          <div className="field">
+            <label className="lbl">LDH × ULN <span style={{ color: "#98908380", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional — sharpens risk score)</span></label>
+            <input className="lab-inp" type="number" step="0.1" min="0" placeholder="e.g. 2.5"
+              value={pt.ldhMultipleUln} onChange={e => set("ldhMultipleUln", e.target.value)}
+              style={{ width: "100%" }} />
+          </div>
+
           {/* LAB VALUES */}
           <div className="sec-head" style={{ cursor: "pointer", borderTop: "1px solid #1a181818", paddingTop: 14, marginTop: 18 }}
             onClick={() => setShowLab(x => !x)}>
@@ -10278,6 +10632,9 @@ export default function App() {
                   </div>
                 );
               })()}
+
+              {/* Molecular & resistance intelligence — defensible moat layer */}
+              <MolecularIntelligencePanel pt={pt} />
 
               {/* Consolidated workup checklist — what to do to prepare for referral */}
               <WorkupPanel pt={pt} />
