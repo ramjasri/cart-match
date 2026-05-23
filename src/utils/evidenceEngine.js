@@ -339,7 +339,10 @@ export function rankTherapyOptions(pt, products) {
       annotations,
       eligible,
       blocks: score?.blocks || [],
+      consults: score?.consults || [],
       warnings: score?.warnings || [],
+      needsConsult: !!score?.needsConsult,
+      hardBlocked: !!score?.hardBlocked,
     };
   });
 

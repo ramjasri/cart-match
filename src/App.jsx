@@ -521,19 +521,33 @@ const ALL_PRODUCTS = [...PRODUCTS, ...BISPECIFICS];
 
 // ── Eligibility engine ─────────────────────────────────────────────────────
 function score(product, pt) {
-  const blocks = [], warnings = [], passes = [];
+  // Safety-bias design:
+  //   blocks      = ABSOLUTE biological/safety contraindications only (e.g.
+  //                 antigen-negative, active CNS, hard label exclusions).
+  //                 These are framed as "specialist consultation strongly
+  //                 indicated" — never "patient is excluded."
+  //   consults    = potentially-optimizable issues (organ function, ECOG,
+  //                 prior lines, allo-SCT timing). These bias toward
+  //                 referral with bridging / optimization recommendations.
+  //   warnings    = missing info, unconfirmed status, schedule-only flags.
+  //   passes      = criteria explicitly met.
+  //
+  // The eligible flag is reserved for criteria-met cases. Even when not
+  // eligible, the tool defaults to "refer for specialist consultation" —
+  // it does not tell a referring physician to exclude a patient.
+  const blocks = [], consults = [], warnings = [], passes = [];
   const cancerLow = (pt.cancerType || "").toLowerCase();
 
-  // Indication
+  // Indication — soft consult, not a block
   const indicationMatch = product.cancerKeys.some(k => cancerLow.includes(k));
-  if (!indicationMatch) blocks.push("Cancer type not in approved indications");
+  if (!indicationMatch) consults.push("Cancer type outside FDA labels for this product — may still be trial-eligible · specialist consultation recommended");
   else passes.push("Indication matches an approved indication");
 
-  // Target marker
+  // Target marker — antigen-negative IS a biological block (treatment will not work)
   if (indicationMatch) {
     const markerMap = { CD19: pt.cd19, BCMA: pt.bcma, CD20: pt.cd20, GPRC5D: pt.gprc5d };
     const markerVal = markerMap[product.targetMarker] ?? "unknown";
-    if (markerVal === "negative") blocks.push(`${product.targetMarker}-negative — product requires ${product.targetMarker} expression`);
+    if (markerVal === "negative") blocks.push(`${product.targetMarker}-negative confirmed — this product targets ${product.targetMarker}; specialist consult to consider alternative-target therapy or dual-target trial`);
     else if (markerVal === "positive") passes.push(`${product.targetMarker} expression: confirmed positive`);
     else warnings.push(`${product.targetMarker} status unknown — confirm before proceeding`);
   }
@@ -543,21 +557,21 @@ function score(product, pt) {
     warnings.push("Requires obinutuzumab (Gazyva) pretreatment 7 days before cycle 1 — schedule accordingly");
   }
 
-  // Prior lines
+  // Prior lines — soft consult, labels evolve and trial-eligibility exists
   const lines = parseInt(pt.priorLines, 10);
   if (!isNaN(lines)) {
-    if (lines < product.minPriorLines) blocks.push(`Requires ≥${product.minPriorLines} prior lines; patient has ${lines}`);
+    if (lines < product.minPriorLines) consults.push(`Below current label threshold (≥${product.minPriorLines} prior lines; patient has ${lines}) — earlier-line indications evolving (e.g. CARTITUDE-4) · specialist consult recommended to assess trial eligibility and current label`);
     else passes.push(`Prior lines: ${lines} (threshold of ${product.minPriorLines} met)`);
   }
 
-  // ECOG
+  // ECOG — soft consult, bridging can improve performance status
   const ecog = parseInt(pt.ecog, 10);
   if (!isNaN(ecog)) {
-    if (ecog > product.ecogMax) blocks.push(`ECOG ${ecog} exceeds maximum of ${product.ecogMax}`);
+    if (ecog > product.ecogMax) consults.push(`ECOG ${ecog} above label threshold of ${product.ecogMax} — performance status may improve with bridging therapy; specialist consult recommended rather than exclusion`);
     else passes.push(`ECOG ${ecog}: within acceptable range`);
   }
 
-  // MM prior therapy
+  // MM prior therapy — soft warnings (already)
   if (product.mmReqs && indicationMatch) {
     if (pt.priorImid) passes.push("Prior IMiD: confirmed");
     else warnings.push("Prior IMiD required (lenalidomide / pomalidomide) — confirm exposure");
@@ -567,21 +581,23 @@ function score(product, pt) {
     else warnings.push("Prior anti-CD38 required (daratumumab) — confirm exposure");
   }
 
-  // Exclusions
-  if (pt.activeCns) blocks.push("Active CNS disease: absolute exclusion for all products");
+  // Active CNS — absolute (CRS/ICANS safety concern) — keep as hard block but reframe
+  if (pt.activeCns) blocks.push("Active CNS disease — CRS/ICANS safety concern; specialist consult required before CAR-T (may be eligible after CNS-directed therapy and remission)");
   else passes.push("No active CNS disease");
 
-  if (pt.activeAutoimmune) blocks.push("Active autoimmune disease requiring systemic treatment");
+  // Active autoimmune — soft consult; many well-controlled cases proceed
+  if (pt.activeAutoimmune) consults.push("Active autoimmune disease — specialist consult to determine whether immunosuppression status allows referral");
   else passes.push("No active autoimmune disease");
 
+  // Allo-SCT timing — soft consult; bridging window is a real option
   if (pt.alloSct) {
     const months = parseInt(pt.alloSctMonths, 10);
-    if (!isNaN(months) && months < 6) blocks.push(`Allo-SCT only ${months} months ago (minimum 6 months required)`);
+    if (!isNaN(months) && months < 6) consults.push(`Allo-SCT ${months} months ago — most labels require ≥6 months · specialist consult to assess timing and GVHD status`);
     else if (!isNaN(months)) warnings.push("Prior allo-SCT — screen carefully for active GVHD");
     else warnings.push("Prior allo-SCT reported — confirm timing and GVHD status");
   }
 
-  // Organ function — only evaluate if values are entered
+  // Organ function — soft consults; values can be optimized pre-apheresis
   const t = product.organThresholds;
   const lab = (key) => pt[key] !== "" ? parseFloat(pt[key]) : null;
 
@@ -590,11 +606,11 @@ function score(product, pt) {
   const bil  = lab("labBil"),  lvef = lab("labLvef"), spo2 = lab("labSpo2");
 
   if (alt !== null) {
-    if (alt > t.altMax) blocks.push(`ALT ${alt} U/L exceeds limit of ${t.altMax} U/L for this product`);
+    if (alt > t.altMax) consults.push(`ALT ${alt} U/L above ${t.altMax} U/L label threshold — may be optimizable; specialist consult recommended`);
     else passes.push(`ALT ${alt} U/L: within range (≤ ${t.altMax} U/L)`);
   }
   if (ast !== null) {
-    if (ast > t.astMax) blocks.push(`AST ${ast} U/L exceeds limit of ${t.astMax} U/L for this product`);
+    if (ast > t.astMax) consults.push(`AST ${ast} U/L above ${t.astMax} U/L label threshold — may be optimizable; specialist consult recommended`);
     else passes.push(`AST ${ast} U/L: within range (≤ ${t.astMax} U/L)`);
   }
   if (creat !== null || crcl !== null) {
@@ -605,26 +621,39 @@ function score(product, pt) {
       passes.push(`Renal function: ${detail} meets threshold`);
     } else {
       const detail = creat !== null ? `Creatinine ${creat} mg/dL (limit ${t.creatMax})` : `CrCl ${crcl} mL/min (minimum ${t.crclMin})`;
-      blocks.push(`Renal function: ${detail} — does not meet threshold`);
+      consults.push(`Renal function below threshold: ${detail} — may be optimizable with hydration/nephrology consult; specialist consult recommended`);
     }
   }
   if (bil !== null) {
-    if (bil > t.bilMax) blocks.push(`Bilirubin ${bil} mg/dL exceeds limit of ${t.bilMax} mg/dL for this product`);
+    if (bil > t.bilMax) consults.push(`Bilirubin ${bil} mg/dL above ${t.bilMax} mg/dL label threshold — workup for cause; specialist consult recommended`);
     else passes.push(`Bilirubin ${bil} mg/dL: within range (≤ ${t.bilMax} mg/dL)`);
   }
   if (lvef !== null && t.lvefMin > 0) {
-    if (lvef < t.lvefMin) blocks.push(`LVEF ${lvef}% is below minimum of ${t.lvefMin}% for this product`);
+    if (lvef < t.lvefMin) consults.push(`LVEF ${lvef}% below ${t.lvefMin}% label threshold — cardio-oncology consult before referral`);
     else passes.push(`LVEF ${lvef}%: meets threshold (≥ ${t.lvefMin}%)`);
   }
   if (spo2 !== null && t.spo2Min > 0) {
-    if (spo2 < t.spo2Min) blocks.push(`SpO₂ ${spo2}% is below minimum of ${t.spo2Min}%`);
+    if (spo2 < t.spo2Min) consults.push(`SpO₂ ${spo2}% below ${t.spo2Min}% threshold — workup for cause; specialist consult recommended`);
     else passes.push(`SpO₂ ${spo2}%: meets threshold (≥ ${t.spo2Min}%)`);
   }
 
+  // Output shape:
+  //   eligible        = no hard blocks AND no soft-consults (meets all label criteria)
+  //   meetsAllCriteria = same as eligible (alias for clarity downstream)
+  //   needsConsult    = no hard blocks but has consults (consult-required, not excluded)
+  //   hardBlocked     = has hard blocks (specialist consultation strongly indicated)
+  //   hasWarning      = has unconfirmed / scheduling items
+  // The legacy `blocks` field is preserved for backward compatibility; downstream
+  // UI now reads consults separately and frames them as "Consult specialist"
+  // rather than "Blocked."
+  const meetsAll = blocks.length === 0 && consults.length === 0;
   return {
-    eligible: blocks.length === 0,
-    hasWarning: blocks.length === 0 && warnings.length > 0,
-    blocks, warnings, passes,
+    eligible: meetsAll,
+    meetsAllCriteria: meetsAll,
+    needsConsult: blocks.length === 0 && consults.length > 0,
+    hardBlocked: blocks.length > 0,
+    hasWarning: meetsAll && warnings.length > 0,
+    blocks, consults, warnings, passes,
   };
 }
 
@@ -2404,6 +2433,59 @@ const CSS = `
   }
   @media (max-width: 860px) { .about-view { padding: 36px 20px 60px; } }
 
+  /* SAFETY CONSULT BANNER — always-on at top of results */
+  .safety-consult-banner {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: #4c6b8c12; border: 1px solid #4c6b8c55;
+    border-left: 4px solid #4c6b8c;
+    padding: 14px 18px; margin-bottom: 16px;
+  }
+  .safety-consult-icon {
+    width: 28px; height: 28px; background: #4c6b8c; color: #f4f1ea;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 16px; line-height: 1;
+  }
+  .safety-consult-body {
+    flex: 1; font-size: 12.5px; color: #1a1815; line-height: 1.6;
+  }
+  .safety-consult-body strong { color: #1a1815; font-weight: 600; }
+
+  /* Replace "blocked" pill with "consult" pill family */
+  .evidence-status-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+    padding: 2px 7px; margin-left: auto; flex-shrink: 0;
+  }
+  .evidence-status-pill.hard-consult { background: #b54a2c; color: #f4f1ea; }
+  .evidence-status-pill.soft-consult { background: #c4a661; color: #1a1815; }
+
+  .evidence-row.hard-consult { opacity: 0.72; background: #b54a2c08; }
+  .evidence-row.soft-consult { opacity: 0.92; background: #c4a66108; }
+  .soft-consult-item { color: #7a5e10 !important; }
+  .soft-consult-item::before { color: #c4a661 !important; }
+
+  .evidence-footer-safety {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid #1a181515;
+    font-size: 11px; color: #3a352e; line-height: 1.6;
+  }
+  .evidence-footer-safety strong { color: #4c6b8c; font-weight: 600; }
+  .evidence-footer-freshness {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    color: #6b645a; letter-spacing: 0.05em;
+  }
+
+  .centers-panel-independence {
+    background: #4c6b8c12; border-left: 3px solid #4c6b8c;
+    padding: 8px 10px; margin-bottom: 8px;
+    font-size: 11.5px; color: #1a1815; line-height: 1.55; font-style: normal;
+  }
+  .centers-panel-independence strong { color: #4c6b8c; font-weight: 600; }
+  .centers-panel-source {
+    font-size: 11px; color: #6b645a; line-height: 1.55; font-style: italic;
+  }
+
   /* CLINICIAN DISCLAIMER — visible on every screener analysis */
   .clinician-disclaimer {
     background: #c4a66115; border-top: 1px solid #c4a66150; border-bottom: 1px solid #c4a66150;
@@ -2797,6 +2879,55 @@ const CSS = `
     letter-spacing: -0.005em;
   }
   .defens-link-btn:hover { color: #1a1815; border-bottom-color: #1a1815; }
+
+  .defens-freshness {
+    border: 1px solid #4c6b8c; background: #4c6b8c08;
+    padding: 24px 28px; margin-bottom: 36px;
+  }
+  @media (max-width: 760px) { .defens-freshness { padding: 18px 20px; } }
+  .defens-freshness-title {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; margin: 0 0 10px; letter-spacing: -0.015em;
+  }
+  .defens-freshness-sub {
+    font-size: 13px; color: #3a352e; line-height: 1.65; margin: 0 0 16px;
+  }
+  .defens-freshness-sub strong { color: #1a1815; font-weight: 600; }
+  .defens-freshness-sub a { color: #4c6b8c; border-bottom: 1px dotted #4c6b8c80; text-decoration: none; }
+  .defens-freshness-grid {
+    display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
+  }
+  .defens-freshness-row {
+    display: grid; grid-template-columns: 200px 1fr; gap: 14px;
+    padding: 6px 0; border-bottom: 1px solid #1a181515;
+  }
+  @media (max-width: 700px) { .defens-freshness-row { grid-template-columns: 1fr; gap: 2px; } }
+  .defens-freshness-key {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: #4c6b8c; letter-spacing: 0.06em; font-weight: 700;
+  }
+  .defens-freshness-val {
+    font-size: 12px; color: #1a1815; line-height: 1.55;
+  }
+  .defens-freshness-stale {
+    background: #b54a2c10; border-left: 3px solid #b54a2c;
+    padding: 10px 14px; margin-top: 14px;
+  }
+  .defens-freshness-stale-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #b54a2c;
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .defens-freshness-stale ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .defens-freshness-stale li {
+    font-size: 12px; color: #1a1815; padding: 2px 0 2px 14px;
+    line-height: 1.55; position: relative;
+  }
+  .defens-freshness-stale li::before {
+    content: '⚠'; position: absolute; left: 0; color: #b54a2c; font-size: 10px;
+  }
 
   .defens-footer {
     border-top: 2px solid #1a1815; padding-top: 36px;
@@ -4291,6 +4422,27 @@ const CSS = `
   .centers-hero-cta.secondary:hover {
     background: #1a181508; border-color: #1a1815;
   }
+
+  /* Independence policy block on /centers */
+  .centers-independence {
+    border: 1px solid #4c6b8c; background: #4c6b8c08;
+    padding: 28px 32px; margin-bottom: 36px;
+  }
+  @media (max-width: 760px) { .centers-independence { padding: 22px 20px; } }
+  .centers-independence-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #4c6b8c;
+    font-weight: 700; margin-bottom: 12px;
+  }
+  .centers-independence-h2 {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.015em; line-height: 1.3;
+    margin: 0 0 14px;
+  }
+  .centers-independence p {
+    font-size: 13.5px; color: #3a352e; line-height: 1.7; margin: 0 0 10px;
+  }
+  .centers-independence p:last-child { margin-bottom: 0; }
 
   /* Two-column problem/solution section */
   .ps-section {
@@ -7097,9 +7249,15 @@ function NearestCentersPanel({ pt }) {
           ))}
 
           <div className="centers-panel-footer">
-            Matched against a curated directory of {summary.totalScreened} US programs (FACT registry + NMDP).
-            Not a contracted partnership list — verify product offerings, payer contracts, and current bed
-            availability directly with each center.
+            <div className="centers-panel-independence">
+              <strong>Independence:</strong> No center pays for placement, ranking, or inclusion.
+              Centers are ranked purely by patient-state proximity, indication coverage, and accreditation
+              status. The directory is built from public sources (FACT registry · NMDP affiliates).
+            </div>
+            <div className="centers-panel-source">
+              Matched against {summary.totalScreened} US programs · last updated {CATALOG_META.lastUpdated} ·
+              verify product offerings, payer contracts, and current bed availability directly with each center.
+            </div>
           </div>
         </div>
       )}
@@ -7228,10 +7386,20 @@ function EvidenceRankedOptionsPanel({ pt, results }) {
       {open && (
         <div className="evidence-body">
           {visible.map(row => {
-            const { product, tier, tierMeta, context, basis, nccnPreferred, annotations, eligible, blocks, warnings } = row;
+            const { product, tier, tierMeta, context, basis, nccnPreferred, annotations, eligible, blocks, consults = [], warnings, needsConsult, hardBlocked } = row;
             const ctUrl = basisUrl(basis);
+            // Status pill — bias toward "consult" rather than "blocked":
+            //   • hardBlocked → "Specialist consult" (absolute contraindication; still requires specialist input, not exclusion)
+            //   • needsConsult → "Consult recommended" (soft thresholds — optimizable)
+            //   • eligible → no pill (clean state)
+            let statusPill = null;
+            if (hardBlocked) {
+              statusPill = <span className="evidence-status-pill hard-consult">Specialist consult</span>;
+            } else if (needsConsult) {
+              statusPill = <span className="evidence-status-pill soft-consult">Consult recommended</span>;
+            }
             return (
-              <div key={product.id} className={`evidence-row${eligible ? "" : " blocked"}`}>
+              <div key={product.id} className={`evidence-row${hardBlocked ? " hard-consult" : needsConsult ? " soft-consult" : ""}`}>
                 <div className="evidence-row-hdr">
                   <span className="evidence-tier-badge" style={{ background: tierMeta.color }}>
                     {tierMeta.label}
@@ -7243,9 +7411,7 @@ function EvidenceRankedOptionsPanel({ pt, results }) {
                   {nccnPreferred && (
                     <span className="evidence-nccn-pref">NCCN preferred</span>
                   )}
-                  {!eligible && (
-                    <span className="evidence-blocked-pill">Blocked</span>
-                  )}
+                  {statusPill}
                 </div>
 
                 <div className="evidence-context">{context}</div>
@@ -7286,12 +7452,17 @@ function EvidenceRankedOptionsPanel({ pt, results }) {
                   </div>
                 )}
 
-                {!eligible && blocks.length > 0 && (
+                {(blocks.length > 0 || consults.length > 0) && (
                   <div className="evidence-blocks">
-                    <span className="evidence-blocks-label">Eligibility blocks</span>
+                    <span className="evidence-blocks-label">
+                      {blocks.length > 0 ? "Specialist consult — absolute" : "Specialist consult — optimizable"}
+                    </span>
                     <ul className="evidence-blocks-list">
-                      {blocks.slice(0, 3).map((b, i) => <li key={i}>{b}</li>)}
-                      {blocks.length > 3 && <li className="evidence-blocks-more">+ {blocks.length - 3} more — see product card below</li>}
+                      {blocks.slice(0, 2).map((b, i) => <li key={`b${i}`}>{b}</li>)}
+                      {consults.slice(0, 3 - Math.min(blocks.length, 2)).map((c, i) => <li key={`c${i}`} className="soft-consult-item">{c}</li>)}
+                      {(blocks.length + consults.length) > 3 && (
+                        <li className="evidence-blocks-more">+ {blocks.length + consults.length - 3} more — see product card below</li>
+                      )}
                     </ul>
                   </div>
                 )}
@@ -7307,6 +7478,16 @@ function EvidenceRankedOptionsPanel({ pt, results }) {
             baseline evidence tier. Final therapeutic decisions require treating-physician
             judgment.
             {hasAnyAnnotation && " Patient-specific annotations shown above are derived from published subgroup analyses and the NGS / risk factors entered."}
+            <div className="evidence-footer-safety">
+              <strong>Safety bias:</strong> the table never says "ineligible" or "excluded."
+              All soft thresholds (organ function, prior lines, ECOG) are reframed as
+              "specialist consult recommended" — bridging therapy, label expansion, trial
+              eligibility, and clinician judgment can change the picture. When in doubt, refer.
+            </div>
+            <div className="evidence-footer-freshness">
+              Rule library {CATALOG_META.version} · last updated {CATALOG_META.lastUpdated} ·
+              reviewed by {CATALOG_META.reviewedBy}
+            </div>
           </div>
         </div>
       )}
@@ -7642,6 +7823,25 @@ function CentersView({ onRequestPilot, onGoToAdmin, onGoToPilot }) {
             See admin dashboard preview
           </button>
         </div>
+      </div>
+
+      {/* INDEPENDENCE DISCLOSURE — surfaces the no-paid-routing policy */}
+      <div className="centers-independence">
+        <div className="centers-independence-tag">Independence policy</div>
+        <h2 className="centers-independence-h2">
+          No center pays for placement, ranking, or inclusion in this directory.
+        </h2>
+        <p>
+          Centers are ranked purely by patient-state proximity, indication coverage, and
+          accreditation status (FACT, NMDP). The directory itself is built from public
+          sources. Charter pilot partnerships are commercial agreements separate from
+          listing — they do not change a center's rank in the matcher, and a partnership
+          is publicly disclosed on the center's row when active.
+        </p>
+        <p>
+          We don't accept referral fees, kickbacks, or click-payments from centers, payers,
+          or product manufacturers. Decision-support output is identical for every user.
+        </p>
       </div>
 
       {/* Problem / Solution split */}
@@ -9494,6 +9694,32 @@ function DefensibilityView({ onBackToScreener, onGoToCenters, onGoToCriteria, on
             )}
           </div>
         ))}
+      </div>
+
+      {/* DATA FRESHNESS — addresses the "stale data = clinicians stop trusting it" risk */}
+      <div className="defens-freshness">
+        <h2 className="defens-freshness-title">Data freshness</h2>
+        <p className="defens-freshness-sub">
+          Catalog <strong>{CATALOG_META.version}</strong> · last updated <strong>{CATALOG_META.lastUpdated}</strong> ·
+          reviewed by <strong>{CATALOG_META.reviewedBy}</strong>. The rule library is publicly
+          versioned at <a href="/api/criteria/v1.json" target="_blank" rel="noopener noreferrer">/api/criteria/v1.json</a>.
+        </p>
+        <div className="defens-freshness-grid">
+          {Object.entries(CATALOG_META.freshnessPolicy).filter(([k]) => k !== "targetReviewCadence").map(([key, val]) => (
+            <div key={key} className="defens-freshness-row">
+              <div className="defens-freshness-key">{key.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase())}</div>
+              <div className="defens-freshness-val">{val}</div>
+            </div>
+          ))}
+        </div>
+        {CATALOG_META.knownStaleAreas?.length > 0 && (
+          <div className="defens-freshness-stale">
+            <div className="defens-freshness-stale-head">Known stale / unvalidated areas</div>
+            <ul>
+              {CATALOG_META.knownStaleAreas.map((s, i) => <li key={i}>{s}</li>)}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="defens-footer">
@@ -12525,6 +12751,20 @@ export default function App() {
             </div>
           ) : (
             <>
+              {/* SAFETY BIAS BANNER — always-on. The product surfaces evidence;
+                  it does not exclude patients. When in doubt, refer. */}
+              <div className="safety-consult-banner">
+                <div className="safety-consult-icon">⚕</div>
+                <div className="safety-consult-body">
+                  <strong>When in doubt, refer for specialist consultation.</strong>
+                  &nbsp;This tool surfaces evidence — it does not determine eligibility, exclude
+                  patients, or recommend treatment. Soft thresholds (organ function, ECOG, prior
+                  lines) are framed as "consult required," not "ineligible." Hard contraindications
+                  (active CNS, antigen-negative on target) still warrant specialist input rather
+                  than exclusion.
+                </div>
+              </div>
+
               {/* Urgency banner — drives referral triage */}
               {(() => {
                 const urgency = calculateUrgency(pt);

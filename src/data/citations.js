@@ -117,12 +117,27 @@ export const ctGovUrl = (nctId) => `https://clinicaltrials.gov/study/${nctId}`;
 
 // ─── Catalog metadata (versioning) ─────────────────────────────────────────
 export const CATALOG_META = {
-  version:     "v1.0.0",
+  version:     "v1.1.0",
   schemaUrl:   "https://cart-match.vercel.app/api/criteria/v1.json",
   asOf:        "2026-05",
   lastUpdated: new Date().toISOString().slice(0, 10),
-  reviewedBy:  "CellTx Match clinical content team",
+  reviewedBy:  "CellTx Match clinical content team (pending advisory board)",
+  // Freshness policy — what the user sees in the UI when this catalog is consulted
+  freshnessPolicy: {
+    fdaLabels:     "Reviewed monthly against FDA Drug Approvals + the active prescribing information PDFs",
+    nccnGuidelines: "Reviewed quarterly against NCCN B-Cell Lymphomas, MM, ALL, CLL/SLL latest published versions",
+    pivotalTrials:  "ClinicalTrials.gov v2 API queried live (per-request) — no stale cache",
+    centerDirectory: "FACT registry + NMDP affiliate list re-pulled monthly",
+    biomarkers:     "Curated quarterly · stale-rule warnings surfaced when not reviewed in 90 days",
+    targetReviewCadence: "Quarterly catalog version bump · monthly delta review for label changes",
+  },
+  knownStaleAreas: [
+    "Partnership-verified center status (currently 0% — by design, until pilots launch)",
+    "Resistance scoring weights not yet validated against retrospective cohort",
+    "Biomarker regex patterns not benchmarked against labeled NGS corpus",
+  ],
   changelog: [
-    { date: "2026-05", change: "Initial catalog v1.0.0 — 12 FDA-approved products + 6 disease pathways" },
+    { date: "2026-05", change: "v1.1.0 — added evidence engine (PRODUCT_EVIDENCE), tier annotations, biomarker DB (18), center directory (48), demo patients (5), safety-bias language" },
+    { date: "2026-05", change: "v1.0.0 — initial catalog: 12 FDA products + 6 disease pathways" },
   ],
 };
