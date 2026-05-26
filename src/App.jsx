@@ -30,6 +30,7 @@ import { rankTherapyOptions, basisUrl, PRODUCT_EVIDENCE, TIER_ANNOTATIONS } from
 import { findNearestCenters, US_STATES, INSURANCE_TYPES, PRIOR_AUTH_STATUSES, insuranceConsiderations } from "./utils/centerMatching.js";
 import { verificationMetrics, CENTERS as ALL_CENTERS } from "./data/centers.js";
 import { DEMO_PATIENTS, TRI_STATE, TRI_STATE_CENTERS } from "./data/demoPatients.js";
+import { ADVISORS, SIGNOFFS, SIGNOFF_CATEGORIES, signoffBadge, advisoryMetrics } from "./data/advisors.js";
 import { generateWorkup, CATEGORY_LABELS, PRIORITY_META, workupItemCount } from "./utils/workup.js";
 import { PRODUCT_CITATIONS, NCCN_REFS, ctGovUrl, CATALOG_META } from "./data/citations.js";
 import {
@@ -2432,6 +2433,225 @@ const CSS = `
     max-width: 880px; margin: 0 auto; padding: 56px 40px 80px;
   }
   @media (max-width: 860px) { .about-view { padding: 36px 20px 60px; } }
+
+  /* ADVISOR REVIEW BADGE — inline signoff signal on every panel */
+  .panel-advisor-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 0 0 14px;
+    border-bottom: 1px solid #1a181515;
+    margin-bottom: 14px;
+  }
+  .advisor-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.04em;
+    border: 1px solid; background: transparent; cursor: pointer;
+    transition: all 120ms;
+  }
+  .advisor-badge.pending {
+    color: #6b645a; border-color: #1a181530;
+  }
+  .advisor-badge.pending:hover {
+    color: #1a1815; border-color: #1a1815; background: #1a181508;
+  }
+  .advisor-badge.signed {
+    color: #4a6a3a; border-color: #5a7a4a; background: #5a7a4a08;
+  }
+  .advisor-badge.signed:hover {
+    background: #5a7a4a15;
+  }
+  .advisor-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .advisor-badge.pending .advisor-badge-dot { background: #c4a661; }
+  .advisor-badge.signed .advisor-badge-dot  { background: #5a7a4a; }
+
+  /* CLINICAL ADVISORS VIEW */
+  .advisors-view {
+    max-width: 1080px; margin: 0 auto; padding: 56px 40px 80px;
+  }
+  @media (max-width: 860px) { .advisors-view { padding: 36px 20px 60px; } }
+  .advisors-hero { text-align: center; margin-bottom: 40px; }
+  .advisors-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.22em; color: #c4a661;
+    font-weight: 700; margin-bottom: 18px;
+  }
+  .advisors-h1 {
+    font-family: 'Fraunces', serif; font-size: 42px; font-weight: 400;
+    line-height: 1.15; letter-spacing: -0.025em; color: #1a1815;
+    margin: 0 0 22px;
+  }
+  @media (max-width: 860px) { .advisors-h1 { font-size: 28px; } }
+  .advisors-h1 em { font-style: italic; color: #b54a2c; }
+  .advisors-sub {
+    font-size: 15px; line-height: 1.65; color: #3a352e;
+    max-width: 740px; margin: 0 auto;
+  }
+  .advisors-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin-bottom: 48px;
+  }
+  @media (max-width: 760px) { .advisors-metrics { grid-template-columns: repeat(2, 1fr); } }
+  .advisors-metric {
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 16px 18px;
+  }
+  .advisors-metric-num {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: #1a1815; line-height: 1; margin-bottom: 6px;
+  }
+  .advisors-metric-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: #6b645a;
+  }
+
+  .advisors-section { margin-bottom: 48px; }
+  .advisors-section-title {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+    color: #1a1815; margin: 0 0 14px; letter-spacing: -0.018em;
+  }
+  .advisors-section-sub {
+    font-size: 13.5px; color: #3a352e; line-height: 1.6;
+    margin: 0 0 18px; max-width: 720px;
+  }
+
+  .advisors-empty {
+    border: 1px dashed #1a181555; background: #fafaf7;
+    padding: 28px 32px; text-align: left;
+  }
+  @media (max-width: 700px) { .advisors-empty { padding: 22px 20px; } }
+  .advisors-empty-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #c4a661;
+    font-weight: 700; margin-bottom: 10px;
+  }
+  .advisors-empty p {
+    font-size: 13.5px; color: #1a1815; line-height: 1.7; margin: 0 0 12px;
+  }
+  .advisors-empty p strong { color: #1a1815; font-weight: 600; }
+  .advisors-empty-cta {
+    margin-top: 10px;
+    font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 10px 22px; background: #1a1815; color: #f4f1ea;
+    border: 1px solid #1a1815; cursor: pointer; transition: all 150ms;
+  }
+  .advisors-empty-cta:hover { background: #3a352e; }
+
+  .advisors-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  }
+  @media (max-width: 760px) { .advisors-grid { grid-template-columns: 1fr; } }
+  .advisor-card {
+    border: 1px solid #1a1815; background: #f4f1ea; padding: 18px 20px;
+  }
+  .advisor-card-name {
+    font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+    color: #1a1815; letter-spacing: -0.012em;
+  }
+  .advisor-card-cred {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: #c4a661; letter-spacing: 0.08em; margin-top: 2px;
+  }
+  .advisor-card-inst {
+    font-size: 12.5px; color: #3a352e; margin-top: 6px;
+  }
+  .advisor-card-bio {
+    font-size: 12.5px; color: #1a1815; line-height: 1.6; margin: 10px 0;
+  }
+  .advisor-card-meta {
+    display: flex; justify-content: space-between; gap: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; padding-top: 10px;
+    border-top: 1px solid #1a181520;
+  }
+  .advisor-card-coi {
+    margin-top: 8px; font-size: 11px; color: #6b645a;
+    line-height: 1.5; font-style: italic;
+  }
+  .advisor-card-coi strong { color: #1a1815; font-style: normal; }
+
+  /* Category signoff log */
+  .advisors-cat-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .advisors-cat {
+    border: 1px solid #1a181530; background: #f4f1ea; padding: 14px 18px;
+  }
+  .advisors-cat.status-signed { border-color: #5a7a4a; background: #5a7a4a06; }
+  .advisors-cat-hdr {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 14px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .advisors-cat-label {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500;
+    color: #1a1815;
+  }
+  .advisors-cat-desc {
+    font-size: 12px; color: #3a352e; line-height: 1.55; margin-top: 3px;
+  }
+  .advisors-cat-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700;
+    padding: 3px 8px; flex-shrink: 0;
+  }
+  .advisors-cat-status.pending { background: #1a181508; color: #6b645a; border: 1px solid #1a181530; }
+  .advisors-cat-status.signed  { background: #5a7a4a; color: #f4f1ea; }
+  .advisors-cat-meta {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding-top: 10px; border-top: 1px solid #1a181520;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #6b645a; flex-wrap: wrap;
+  }
+  .advisors-cat-rule-loc { letter-spacing: 0.04em; }
+  .advisors-cat-signoff { color: #4a6a3a; }
+  .advisors-cat.status-pending .advisors-cat-signoff { color: #c4a661; }
+
+  /* Recruitment block */
+  .advisors-recruit {
+    border-top: 2px solid #1a1815; padding-top: 36px;
+  }
+  .advisors-recruit-title {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #1a1815; margin: 0 0 22px; letter-spacing: -0.018em;
+  }
+  .advisors-recruit-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 760px) { .advisors-recruit-grid { grid-template-columns: 1fr; } }
+  .advisors-recruit-col {
+    border: 1px solid #1a181530; background: #fafaf7; padding: 16px 18px;
+  }
+  .advisors-recruit-lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: #c4a661;
+    font-weight: 700; margin-bottom: 10px;
+  }
+  .advisors-recruit-col ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .advisors-recruit-col li {
+    font-size: 12.5px; color: #1a1815; padding: 4px 0 4px 14px;
+    line-height: 1.55; position: relative;
+  }
+  .advisors-recruit-col li::before {
+    content: '·'; position: absolute; left: 4px; font-weight: 700;
+    color: #4c6b8c;
+  }
+  .advisors-recruit-col li strong { color: #1a1815; font-weight: 600; }
+  .advisors-recruit-cta-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .advisors-recruit-cta {
+    font-family: 'Inter Tight', sans-serif; font-size: 13.5px; font-weight: 500;
+    padding: 11px 22px; cursor: pointer; border: 1px solid #1a1815;
+    background: transparent; transition: all 150ms;
+  }
+  .advisors-recruit-cta.primary {
+    background: #1a1815; color: #f4f1ea;
+  }
+  .advisors-recruit-cta.primary:hover { background: #3a352e; }
+  .advisors-recruit-cta.secondary:hover { background: #1a181508; }
 
   /* SAFETY CONSULT BANNER — always-on at top of results */
   .safety-consult-banner {
@@ -7385,6 +7605,10 @@ function EvidenceRankedOptionsPanel({ pt, results }) {
 
       {open && (
         <div className="evidence-body">
+          <div className="panel-advisor-row">
+            <AdvisorReviewBadge category="evidenceRules" />
+            <AdvisorReviewBadge category="tierAnnotations" />
+          </div>
           {visible.map(row => {
             const { product, tier, tierMeta, context, basis, nccnPreferred, annotations, eligible, blocks, consults = [], warnings, needsConsult, hardBlocked } = row;
             const ctUrl = basisUrl(basis);
@@ -7558,6 +7782,10 @@ function MolecularIntelligencePanel({ pt }) {
 
       {open && (
         <div className="molecular-body">
+          <div className="panel-advisor-row">
+            <AdvisorReviewBadge category="biomarkers" />
+            <AdvisorReviewBadge category="nonresponseRisk" />
+          </div>
           {/* Cell therapy nonresponse risk score */}
           {risk.score > 0 && (
             <div className="risk-score-block" style={{ borderLeftColor: risk.color }}>
@@ -9923,6 +10151,204 @@ function CenterAdminView({ board, onBackToScreener, onGoToPilot }) {
   );
 }
 
+// ── AdvisorReviewBadge — small inline badge for panel headers ──────────────
+// Shows "Reviewed by Dr. X · MSK · 2026-04" when an advisor has signed off
+// on the rule category powering this panel, or "Clinical review pending"
+// in the honest empty state. Once an advisor is recruited and a single
+// field in src/data/advisors.js flips, this badge lights up across every
+// matching panel in the product.
+function AdvisorReviewBadge({ category, onClick }) {
+  const sig = signoffBadge(category);
+  const cls = `advisor-badge ${sig.state}`;
+  const handler = onClick || (() => {
+    // SPA-friendly route nav: pushState + dispatch popstate so the App
+    // popstate handler picks up the change.
+    window.history.pushState({}, "", "/advisors");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.scrollTo({ top: 0 });
+  });
+  return (
+    <button className={cls} onClick={handler} title="Clinical Advisory Board — review signoff">
+      <span className="advisor-badge-dot" />
+      <span className="advisor-badge-text">{sig.text}</span>
+    </button>
+  );
+}
+
+// ── Clinical Advisory Board View ───────────────────────────────────────────
+// Honest landing for the moat layer that's genuinely uncopyable: named KOL
+// signoff on the rule library. Today the board is empty by design — the
+// page itself is the recruitment surface, articulating what an advisor
+// would sign off on, the cadence, and how their endorsement appears in
+// the product.
+function AdvisorsView({ onBackToScreener, onRequestAdvisor }) {
+  const metrics = advisoryMetrics();
+
+  return (
+    <div className="advisors-view">
+      <div className="advisors-hero">
+        <div className="advisors-tag">Clinical Advisory Board · Recruitment open</div>
+        <h1 className="advisors-h1">
+          Named oncology KOLs review the rule library<br />
+          on a <em>public quarterly cadence</em>.
+        </h1>
+        <p className="advisors-sub">
+          The rule library that powers every panel — biomarkers, evidence tiers,
+          resistance flags, product eligibility, trial scoring — is reviewed by named
+          clinical advisors on a published cadence. Their endorsement appears
+          inline on every output. A competitor cannot acquire credibility; they have
+          to recruit their own KOLs.
+        </p>
+      </div>
+
+      <div className="advisors-metrics">
+        <div className="advisors-metric">
+          <div className="advisors-metric-num">{metrics.advisorCount}</div>
+          <div className="advisors-metric-lbl">Advisors signed on</div>
+        </div>
+        <div className="advisors-metric">
+          <div className="advisors-metric-num">{metrics.signedCategories} / {metrics.totalCategories}</div>
+          <div className="advisors-metric-lbl">Rule categories reviewed</div>
+        </div>
+        <div className="advisors-metric">
+          <div className="advisors-metric-num">{metrics.signedPct}%</div>
+          <div className="advisors-metric-lbl">Coverage signed off</div>
+        </div>
+        <div className="advisors-metric">
+          <div className="advisors-metric-num">Q</div>
+          <div className="advisors-metric-lbl">Review cadence (per category)</div>
+        </div>
+      </div>
+
+      {/* Current board — empty state by design */}
+      <div className="advisors-section">
+        <h2 className="advisors-section-title">Current advisory board</h2>
+        {ADVISORS.length === 0 ? (
+          <div className="advisors-empty">
+            <div className="advisors-empty-eyebrow">Board recruitment in progress</div>
+            <p>
+              The advisory board is being built. We're recruiting 4–6 oncology KOLs across
+              heme/lymphoma, BMT/cellular therapy, molecular pathology, and oncology pharmacy.
+              Initial focus: tri-state academic centers (MSK, Mount Sinai, Columbia, NYU, Yale).
+            </p>
+            <p>
+              Once signed, each advisor's name, institution, and review cadence appears below,
+              and the corresponding panels in the product show <strong>"Reviewed by Dr. X · MSK · YYYY-MM"</strong>
+              inline. The endorsement is published, not internal — it's a public commitment.
+            </p>
+            <button className="advisors-empty-cta" onClick={onRequestAdvisor}>
+              Become a charter advisor →
+            </button>
+          </div>
+        ) : (
+          <div className="advisors-grid">
+            {ADVISORS.map(a => (
+              <div key={a.id} className="advisor-card">
+                <div className="advisor-card-name">{a.name}</div>
+                <div className="advisor-card-cred">{a.credentials}</div>
+                <div className="advisor-card-inst">{a.institution} · {a.role}</div>
+                <p className="advisor-card-bio">{a.bio}</p>
+                <div className="advisor-card-meta">
+                  <span>Focus: {a.focus.join(" · ")}</span>
+                  <span>Joined: {a.joinedAt}</span>
+                </div>
+                {a.conflictsOfInterest?.length > 0 && (
+                  <div className="advisor-card-coi">
+                    <strong>Disclosed COIs:</strong> {a.conflictsOfInterest.join(" · ")}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Per-category signoff log */}
+      <div className="advisors-section">
+        <h2 className="advisors-section-title">Rule library — review status by category</h2>
+        <p className="advisors-section-sub">
+          Each category below corresponds to a specific code path in the rule library.
+          The badge appearing on the corresponding output panel updates the moment a
+          signoff is recorded.
+        </p>
+        <div className="advisors-cat-grid">
+          {SIGNOFF_CATEGORIES.map(cat => {
+            const sig = signoffBadge(cat.id);
+            return (
+              <div key={cat.id} className={`advisors-cat status-${sig.state}`}>
+                <div className="advisors-cat-hdr">
+                  <div>
+                    <div className="advisors-cat-label">{cat.label}</div>
+                    <div className="advisors-cat-desc">{cat.description}</div>
+                  </div>
+                  <div className={`advisors-cat-status ${sig.state}`}>
+                    {sig.state === "signed" ? "Signed" : "Pending"}
+                  </div>
+                </div>
+                <div className="advisors-cat-meta">
+                  <span className="advisors-cat-rule-loc">{cat.rulesIn}</span>
+                  <span className="advisors-cat-signoff">{sig.text}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recruitment CTA */}
+      <div className="advisors-recruit">
+        <h2 className="advisors-recruit-title">Become a charter advisor</h2>
+        <div className="advisors-recruit-grid">
+          <div className="advisors-recruit-col">
+            <div className="advisors-recruit-lbl">What you sign off on</div>
+            <ul>
+              <li>One rule category aligned to your specialty</li>
+              <li>Quarterly review (1–2 hours per quarter)</li>
+              <li>Sign off on accuracy + completeness against latest NCCN / FDA labels</li>
+              <li>Optional: review changelog before public release</li>
+            </ul>
+          </div>
+          <div className="advisors-recruit-col">
+            <div className="advisors-recruit-lbl">How it appears</div>
+            <ul>
+              <li>Your name, credentials, institution publicly attributed on /advisors</li>
+              <li><strong>"Reviewed by [you] · [institution] · YYYY-MM"</strong> badge on every relevant output panel</li>
+              <li>Optional: co-authorship on the validation paper (target: Transplantation and Cellular Therapy)</li>
+              <li>Disclosed COIs published alongside</li>
+            </ul>
+          </div>
+          <div className="advisors-recruit-col">
+            <div className="advisors-recruit-lbl">What you don't do</div>
+            <ul>
+              <li>No patient-level review (this is rule-level only)</li>
+              <li>No marketing endorsement of products</li>
+              <li>No on-call clinical responsibility</li>
+              <li>No conflict with your institution's commercial relationships</li>
+            </ul>
+          </div>
+          <div className="advisors-recruit-col">
+            <div className="advisors-recruit-lbl">Time commitment</div>
+            <ul>
+              <li>1-hour initial onboarding</li>
+              <li>~1–2 hours per quarter</li>
+              <li>Annual 30-min board call</li>
+              <li>Honorarium per institutional policy</li>
+            </ul>
+          </div>
+        </div>
+        <div className="advisors-recruit-cta-row">
+          <button className="advisors-recruit-cta primary" onClick={onRequestAdvisor}>
+            Request to join the board →
+          </button>
+          <button className="advisors-recruit-cta secondary" onClick={onBackToScreener}>
+            Back to the product
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Pilot Proposal View — 1-page center proposal + slides ──────────────────
 function PilotProposalView({ onBackToScreener, onRequestPilot }) {
   return (
@@ -11430,6 +11856,7 @@ export default function App() {
       : view === "defensibility" ? "/defensibility"
       : view === "center-admin" ? "/center-admin"
       : view === "pilot" ? "/pilot"
+      : view === "advisors" ? "/advisors"
       : "/";
     if (window.location.pathname !== target) {
       window.history.pushState({}, "", target + window.location.hash);
@@ -11481,6 +11908,7 @@ export default function App() {
       else if (p === "/defensibility") setView("defensibility");
       else if (p === "/center-admin") setView("center-admin");
       else if (p === "/pilot") setView("pilot");
+      else if (p === "/advisors") setView("advisors");
       else setView("screener");
     };
     window.addEventListener("popstate", onPop);
@@ -11939,6 +12367,13 @@ export default function App() {
                 Pilot
               </button>
               <button
+                className={`hdr-nav-btn${view === "advisors" ? " active" : ""}`}
+                onClick={() => setView("advisors")}
+                title="Clinical Advisory Board — review signoff per rule category"
+              >
+                Advisors
+              </button>
+              <button
                 className={`hdr-nav-btn${view === "defensibility" ? " active" : ""}`}
                 onClick={() => setView("defensibility")}
                 title="The moat scoreboard — what makes this hard to replicate"
@@ -12334,6 +12769,14 @@ export default function App() {
         <PilotProposalView
           onBackToScreener={() => setView("screener")}
           onRequestPilot={() => setShowWaitlist(true)}
+        />
+      )}
+
+      {/* CLINICAL ADVISORY BOARD VIEW — the uncopyable signal */}
+      {view === "advisors" && (
+        <AdvisorsView
+          onBackToScreener={() => setView("screener")}
+          onRequestAdvisor={() => setShowWaitlist(true)}
         />
       )}
 

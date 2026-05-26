@@ -4,7 +4,7 @@
     "version": "v1.1.0",
     "schemaUrl": "https://cart-match.vercel.app/api/criteria/v1.json",
     "asOf": "2026-05",
-    "lastUpdated": "2026-05-23",
+    "lastUpdated": "2026-05-26",
     "reviewedBy": "CellTx Match clinical content team (pending advisory board)",
     "freshnessPolicy": {
       "fdaLabels": "Reviewed monthly against FDA Drug Approvals + the active prescribing information PDFs",
@@ -29,7 +29,7 @@
         "change": "v1.0.0 — initial catalog: 12 FDA products + 6 disease pathways"
       }
     ],
-    "generatedAt": "2026-05-23T03:15:44.422Z",
+    "generatedAt": "2026-05-26T15:03:17.686Z",
     "productCount": 12,
     "pathwayCount": 6,
     "blockActionCount": 14,
